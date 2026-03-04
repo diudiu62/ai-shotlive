@@ -1,6 +1,6 @@
 # 使用多阶段构建来优化镜像大小
 # 阶段1: 构建阶段
-FROM node:20-alpine AS builder
+FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/node:20-alpine AS builder
 
 # 设置工作目录
 WORKDIR /app
@@ -21,7 +21,7 @@ RUN npm run build:client
 RUN npm run build:server
 
 # 阶段2: 生产阶段
-FROM node:20-alpine
+FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/node:20-alpine
 
 WORKDIR /app
 
