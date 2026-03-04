@@ -1,5 +1,5 @@
 /**
- * 将 ai-shotlive 项目数据适配为 CutOS 编辑器格式
+ * 将 ai-drama 项目数据适配为 CutOS 编辑器格式
  */
 import type { ProjectState, Shot } from '../../types';
 import { getCompletedShots } from '../utils';

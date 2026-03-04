@@ -132,7 +132,7 @@
 
 GitHub リポジトリで Issue の報告、機能リクエスト、他のクリエイターとの交流ができます：
 
-**[GitHub: sorker/ai-shotlive](https://github.com/sorker/ai-shotlive)**
+**[GitHub: sorker/ai-drama](https://github.com/sorker/ai-drama)**
 
 ---
 
@@ -168,8 +168,8 @@ GitHub リポジトリで Issue の報告、機能リクエスト、他のクリ
 
 ```bash
 # 1. リポジトリをクローン
-git clone https://github.com/shuyu-labs/ai-shotlive-Director.git
-cd ai-shotlive-Director
+git clone https://github.com/shuyu-labs/ai-drama-Director.git
+cd ai-drama-Director
 
 # 2. 依存関係をインストール
 npm install
@@ -185,8 +185,8 @@ npm run dev
 
 ```bash
 # 1. リポジトリをクローン
-git clone https://github.com/shuyu-labs/ai-shotlive-Director.git
-cd ai-shotlive-Director
+git clone https://github.com/shuyu-labs/ai-drama-Director.git
+cd ai-drama-Director
 
 # 2. Docker Compose でビルドして起動
 docker-compose up -d --build
@@ -205,23 +205,23 @@ docker-compose down
 
 ```bash
 # 1. リポジトリをクローン
-git clone https://github.com/shuyu-labs/ai-shotlive-Director.git
-cd ai-shotlive-Director
+git clone https://github.com/shuyu-labs/ai-drama-Director.git
+cd ai-drama-Director
 
 # 2. イメージをビルド
-docker build -t ai-shotlive .
+docker build -t ai-drama .
 
 # 3. コンテナを起動
-docker run -d -p 3005:80 --name ai-shotlive-app ai-shotlive
+docker run -d -p 3005:80 --name ai-drama-app ai-drama
 
 # 4. ブラウザでアクセス
 # http://localhost:3005 を開く
 
 # ログを確認
-docker logs -f ai-shotlive-app
+docker logs -f ai-drama-app
 
 # コンテナを停止
-docker stop ai-shotlive-app
+docker stop ai-drama-app
 ```
 
 ### その他のコマンド

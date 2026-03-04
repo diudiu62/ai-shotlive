@@ -11,7 +11,7 @@
 - **注意**: Next.js 标准中间件文件名为 `middleware.ts`，proxy.ts 可能是自定义命名或需重命名
 
 ### 2. 技术栈
-| 项目 | CutOS | ai-shotlive |
+| 项目 | CutOS | ai-drama |
 |------|-------|-------------|
 | 框架 | Next.js 16 (App Router) | Vite + React |
 | API | Next.js API Routes (`app/api/*`) | Express (`server/src/routes/*`) |
@@ -20,7 +20,7 @@
 | 样式 | Tailwind 语义 token (bg-background, border-border) | CSS 变量 (var(--bg-primary)) |
 
 ### 3. CutOS API 路由一览
-| 路由 | 用途 | ai-shotlive 对应 |
+| 路由 | 用途 | ai-drama 对应 |
 |------|------|------------------|
 | POST /api/agent | AI 剪辑 Agent（OpenAI） | POST /api/cutos/agent ✓ |
 | POST /api/transcribe | 视频/音频字幕生成（Whisper） | POST /api/cutos/captions ✓（DashScope qwen3-livetranslate） |
@@ -66,7 +66,7 @@ TwelveLabs 功能：文本查询 → 返回匹配的视频片段及时间戳 (vi
 
 ### 4. 代理差异
 - **CutOS**: 无显式 HTTP 代理，API 为同源 Next.js 路由
-- **ai-shotlive**: Vite `proxy` 将 `/api` 转发到 Express `:3001`；另有 `/api/proxy/dashscope`、`/api/proxy/volcengine` 等第三方代理
+- **ai-drama**: Vite `proxy` 将 `/api` 转发到 Express `:3001`；另有 `/api/proxy/dashscope`、`/api/proxy/volcengine` 等第三方代理
 
 ## 二、迁移方式与不一致点
 
@@ -83,8 +83,8 @@ TwelveLabs 功能：文本查询 → 返回匹配的视频片段及时间戳 (vi
 |------|------|
 | 1. /api/transcribe → /api/cutos/captions | 已修复：editor-context 改为调用 `/api/cutos/captions` |
 | 2. TwelveLabs 搜索 | 已修复：projectId 为 null 时提前返回，不发起请求 |
-| 3. projectId 为 null | CutOS editor-context 有 projectId（Supabase 项目），ai-shotlive 本地模式无 projectId，TwelveLabs 等依赖 projectId 的功能不可用 |
-| 4. 样式 token 混用 | 部分组件仍用 `bg-primary`、`text-primary-foreground` 等 Tailwind 语义类，可能未在 ai-shotlive 主题中定义 |
+| 3. projectId 为 null | CutOS editor-context 有 projectId（Supabase 项目），ai-drama 本地模式无 projectId，TwelveLabs 等依赖 projectId 的功能不可用 |
+| 4. 样式 token 混用 | 部分组件仍用 `bg-primary`、`text-primary-foreground` 等 Tailwind 语义类，可能未在 ai-drama 主题中定义 |
 
 ### 3. UI 界面不一致（与 CutOS 原版对比）
 
@@ -106,13 +106,13 @@ TwelveLabs 功能：文本查询 → 返回匹配的视频片段及时间戳 (vi
 | 录音 UI | 脉冲环、声波动画、AnimatePresence | 已恢复完整动效 | ✓ 已修复 |
 | 新建对话弹窗 | "Start New Chat?" / "Cancel" / "Start New Chat" | 英文 | ✓ 已修复 |
 | **Media Panel** | 英文 | 英文 | 已一致 |
-| **样式** | `bg-background`、`border-border`、`bg-card` | `var(--bg-primary)` 等 | 视 ai-shotlive 主题而定 |
+| **样式** | `bg-background`、`border-border`、`bg-card` | `var(--bg-primary)` 等 | 视 ai-drama 主题而定 |
 
 ## 三、建议修复项
 
 1. **添加 /api/cutos/captions**：✓ 已实现（server/src/routes/cutosAgent.ts）
 2. **media-panel**：✓ 已实现 - 无 projectId 时隐藏 NLP 搜索提示与结果，indexing 提示仅在 nlpAvailable 时显示
-3. **统一样式**：✓ 已实现 - media-panel、video-preview、timeline、export-modal 已统一使用 ai-shotlive CSS 变量
+3. **统一样式**：✓ 已实现 - media-panel、video-preview、timeline、export-modal 已统一使用 ai-drama CSS 变量
 4. **README**：更新迁移说明，明确与 CutOS 的差异和限制
 5. **UI 对齐 CutOS**：Editor Shell 与 Inspector Panel 的文案、动效、布局与 CutOS 原版保持一致（见上表）
-6. **react-resizable-panels v2 布局适配**：已修复。使用 PanelGroup/PanelResizeHandle (v2 API)，defaultSize 为数字 1-100 表示百分比。面板容器需 `min-w-0` 以允许 flex 子项正确收缩；Media/Inspector 面板需使用 ai-shotlive 的 CSS 变量 (--bg-elevated, --border-primary 等) 替代 Tailwind 语义 token
+6. **react-resizable-panels v2 布局适配**：已修复。使用 PanelGroup/PanelResizeHandle (v2 API)，defaultSize 为数字 1-100 表示百分比。面板容器需 `min-w-0` 以允许 flex 子项正确收缩；Media/Inspector 面板需使用 ai-drama 的 CSS 变量 (--bg-elevated, --border-primary 等) 替代 Tailwind 语义 token

@@ -178,7 +178,7 @@ const Login: React.FC = () => {
 
         {/* Footer */}
         <div className="mt-6 text-center text-[9px] text-[var(--text-muted)] font-mono uppercase tracking-widest">
-          Powered by AI shotlive
+          Powered by AI Drama Director
         </div>
       </div>
     </div>

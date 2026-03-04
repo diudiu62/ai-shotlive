@@ -17,19 +17,19 @@ docker-compose down
 方式二:使用 Docker 命令
 
 # 构建镜像
-docker build -t ai-shotlive .
+docker build -t ai-drama .
 
 # 无缓存构建（强制重新拉取/执行每一层）
-docker build --no-cache -t ai-shotlive .
+docker build --no-cache -t ai-drama .
 
 # 运行容器
-docker run -d -p 3005:80 --name ai-shotlive-app ai-shotlive
+docker run -d -p 3005:80 --name ai-drama-app ai-drama
 
 # 查看日志
-docker logs -f ai-shotlive-app
+docker logs -f ai-drama-app
 
 # 停止容器
-docker stop ai-shotlive-app
+docker stop ai-drama-app
 
 补充：如果你确认容器已更新但页面仍是旧的
 

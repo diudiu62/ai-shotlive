@@ -129,7 +129,7 @@ This project deeply integrates [**AntSK API Platform**](https://api.antsk.cn/), 
 
 Visit our GitHub repository to report issues, request features, and connect with other creators:
 
-**[GitHub: sorker/ai-shotlive](https://github.com/sorker/ai-shotlive)**
+**[GitHub: sorker/ai-drama](https://github.com/sorker/ai-drama)**
 
 ---
 
@@ -165,8 +165,8 @@ Download the installer and get started right away — no development environment
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/shuyu-labs/ai-shotlive-Director.git
-cd ai-shotlive-Director
+git clone https://github.com/shuyu-labs/ai-drama-Director.git
+cd ai-drama-Director
 
 # 2. Install dependencies
 npm install
@@ -182,8 +182,8 @@ npm run dev
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/shuyu-labs/ai-shotlive-Director.git
-cd ai-shotlive-Director
+git clone https://github.com/shuyu-labs/ai-drama-Director.git
+cd ai-drama-Director
 
 # 2. Build and start with Docker Compose
 docker-compose up -d --build
@@ -202,23 +202,23 @@ docker-compose down
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/shuyu-labs/ai-shotlive-Director.git
-cd ai-shotlive-Director
+git clone https://github.com/shuyu-labs/ai-drama-Director.git
+cd ai-drama-Director
 
 # 2. Build image
-docker build -t ai-shotlive .
+docker build -t ai-drama .
 
 # 3. Run container
-docker run -d -p 3005:80 --name ai-shotlive-app ai-shotlive
+docker run -d -p 3005:80 --name ai-drama-app ai-drama
 
 # 4. Open in browser
 # Visit http://localhost:3005
 
 # View logs
-docker logs -f ai-shotlive-app
+docker logs -f ai-drama-app
 
 # Stop container
-docker stop ai-shotlive-app
+docker stop ai-drama-app
 ```
 
 ### Other Commands

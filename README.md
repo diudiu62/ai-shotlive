@@ -173,8 +173,8 @@
 ### 1. 环境配置
 
 ```bash
-git clone https://github.com/shuyu-labs/ai-shotlive-Director.git
-cd ai-shotlive-Director
+git clone https://github.com/shuyu-labs/ai-drama-Director.git
+cd ai-drama-Director
 
 npm install
 cp .env.example .env
@@ -243,7 +243,7 @@ NODE_ENV=production npm start
 ## 项目结构
 
 ```
-ai-shotlive-Director/
+ai-drama-Director/
 ├── .env / .env.example      # 环境变量
 ├── docker-compose.yaml      # Docker 编排
 ├── package.json / vite.config.ts

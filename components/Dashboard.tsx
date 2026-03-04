@@ -262,7 +262,7 @@ const Dashboard: React.FC<Props> = ({ onOpenProject, onShowOnboarding, onShowMod
               <span className="font-medium text-xs tracking-widest uppercase">退出</span>
             </button>
             {/* <a
-              href="https://github.com/sorker/ai-shotlive"
+              href="https://github.com/sorker/ai-drama"
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-center gap-2 px-4 py-3 border border-[var(--border-primary)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--border-secondary)] transition-colors"

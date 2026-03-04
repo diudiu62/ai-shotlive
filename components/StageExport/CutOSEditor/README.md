@@ -1,11 +1,11 @@
 # CutOS AI 剪辑模块
 
-从 [CutOS](https://github.com/vercel/cutos) 项目迁移的 AI 视频剪辑功能，集成到 ai-shotlive 的成片与导出阶段。
+从 [CutOS](https://github.com/vercel/cutos) 项目迁移的 AI 视频剪辑功能，集成到 ai-drama 的成片与导出阶段。
 
 ## 迁移说明
 
 - **CutOS 原项目**: Next.js + Supabase，`proxy.ts` 为中间件（Supabase 会话刷新、/projects 路由保护）
-- **ai-shotlive**: Vite + Express，无 Supabase，API 通过 `/api/cutos/*` 提供
+- **ai-drama**: Vite + Express，无 Supabase，API 通过 `/api/cutos/*` 提供
 - **差异与限制**: 详见 `MIGRATION_ANALYSIS.md`
 
 ## 已集成内容
