@@ -1,4 +1,4 @@
-# AI shotlive Director
+# AI Drama Director
 
 > **AI-Powered End-to-End Short Drama & Motion Comic Platform**
 
@@ -7,9 +7,9 @@
 [![日本語](https://img.shields.io/badge/Language-日本語-gray.svg)](./README_JA.md)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-**AI shotlive Director** is an **AI-powered, one-stop platform** for **short dramas** and **motion comics**, built for creators who want to go from idea to final video fast.
+**AI Drama Director** is an **AI-powered, one-stop platform** for **short dramas** and **motion comics**, built for creators who want to go from idea to final video fast.
 
-Moving away from the traditional "slot machine" style of random generation, AiShotlive adopts an industrial **"Script-to-Asset-to-Keyframe"** workflow. With deep integration of AntSK API’s advanced AI models, it enables **one-sentence to complete drama** — fully automated from **script** to **final video**, while maintaining precise control over character consistency, scene continuity, and camera movement.
+Moving away from the traditional "slot machine" style of random generation, AiDrama adopts an industrial **"Script-to-Asset-to-Keyframe"** workflow. With deep integration of AntSK API’s advanced AI models, it enables **one-sentence to complete drama** — fully automated from **script** to **final video**, while maintaining precise control over character consistency, scene continuity, and camera movement.
 ## UI Showcase
 
 ### Project Management
@@ -36,7 +36,7 @@ Moving away from the traditional "slot machine" style of random generation, AiSh
 ![Prompt Management](./images/提示词管理.png)
 ## Core Philosophy: Keyframe-Driven
 
-Traditional Text-to-Video models often struggle with specific camera movements and precise start/end states. AiShotlive introduces the animation concept of **Keyframes**:
+Traditional Text-to-Video models often struggle with specific camera movements and precise start/end states. AiDrama introduces the animation concept of **Keyframes**:
 
 1.  **Draw First, Move Later**: First, generate precise Start and End frames.
 2.  **Interpolation**: Use the Veo model to generate smooth video transitions between these two frames.
@@ -137,7 +137,7 @@ Visit our GitHub repository to report issues, request features, and connect with
 
 For **quick one-off creative tasks**, try our online tool platform:
 
-**AiShotlive Creation Studio** offers:
+**AiDrama Creation Studio** offers:
 * 📷 **AI Image Generation**: Text-to-image with multiple styles
 * 📊 **AI PowerPoint**: Generate presentations instantly
 * 🎬 **AI Video**: Intelligent video content generation
@@ -153,7 +153,7 @@ For **quick one-off creative tasks**, try our online tool platform:
 
 Download the installer and get started right away — no development environment needed:
 
-**[📥 Download AI shotlive Director Client (Windows)](https://tree456.oss-cn-beijing.aliyuncs.com/AiShotlive%20AI%20Director%20Setup%201.0.0.exe?Expires=1770908400&OSSAccessKeyId=TMP.3KofXPaUNdnvbUpRP5MqiRmMMxuGwiftTgQfn7U3ntRtFvMYHpMB2kPb17r7rPXksvo7DFncrz4dWSfs3K33wVgGXfnCy4&Signature=wiOZbN%2BcZNuyZdiEI3KR1CqkFhM%3D)**
+**[📥 Download AI Drama Director Client (Windows)](https://tree456.oss-cn-beijing.aliyuncs.com/AiDrama%20AI%20Director%20Setup%201.0.0.exe?Expires=1770908400&OSSAccessKeyId=TMP.3KofXPaUNdnvbUpRP5MqiRmMMxuGwiftTgQfn7U3ntRtFvMYHpMB2kPb17r7rPXksvo7DFncrz4dWSfs3K33wVgGXfnCy4&Signature=wiOZbN%2BcZNuyZdiEI3KR1CqkFhM%3D)**
 
 > 💡 Just download and install — supports Windows.
 
@@ -264,4 +264,4 @@ This project is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/lic
 
 
 ---
-*Built for Creators, by AiShotlive.*
+*Built for Creators, by AiDrama.*

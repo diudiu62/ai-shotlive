@@ -96,13 +96,13 @@ export const exportProjectData = async (project: ProjectState): Promise<IndexedD
   return {
     schemaVersion: EXPORT_SCHEMA_VERSION,
     exportedAt: Date.now(),
-    scope: 'project',
-    dbName: 'AiShotliveDB',
+    scope: "project",
+    dbName: "AiDramaDB",
     dbVersion: 2,
     stores: {
       projects: [project],
-      assetLibrary: []
-    }
+      assetLibrary: [],
+    },
   };
 };
 
@@ -138,7 +138,9 @@ export const exportUserDataArchive = async (): Promise<void> => {
   const blob = await res.blob();
   const disposition = res.headers.get('Content-Disposition') || '';
   const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
-  const filename = filenameMatch?.[1] || `aishotlive_backup_${new Date().toISOString().replace(/[:.]/g, '-')}.zip`;
+  const filename =
+    filenameMatch?.[1] ||
+    `AiDrama_backup_${new Date().toISOString().replace(/[:.]/g, "-")}.zip`;
 
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

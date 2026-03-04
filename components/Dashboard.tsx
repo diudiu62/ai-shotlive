@@ -261,7 +261,7 @@ const Dashboard: React.FC<Props> = ({ onOpenProject, onShowOnboarding, onShowMod
               <LogOut className="w-4 h-4" />
               <span className="font-medium text-xs tracking-widest uppercase">退出</span>
             </button>
-            <a
+            {/* <a
               href="https://github.com/sorker/ai-shotlive"
               target="_blank"
               rel="noopener noreferrer"
@@ -269,7 +269,7 @@ const Dashboard: React.FC<Props> = ({ onOpenProject, onShowOnboarding, onShowMod
               title="GitHub 仓库"
             >
               <span className="font-medium text-xs tracking-widest uppercase">GitHub</span>
-            </a>
+            </a> */}
             {onShowOnboarding && (
               <button 
                 onClick={onShowOnboarding}

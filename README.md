@@ -1,6 +1,6 @@
-# AI shotlive Director (AI 漫剧工场)
+# AI Drama Director (AI 漫剧工场)
 
-> **AI 一站式短剧/漫剧生成平台**
+> **AI 一站式短剧/短剧生成平台**
 > *Industrial AI Motion Comic & Video Workbench*
 
 [![中文](https://img.shields.io/badge/Language-中文-blue.svg)](./README.md)
@@ -8,7 +8,7 @@
 [![日本語](https://img.shields.io/badge/Language-日本語-gray.svg)](./README_JA.md)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-**AI shotlive Director** 是面向创作者的 **AI 短剧/漫剧生产平台**，采用 **「小说 → 剧本 → 分镜 → 资产 → 关键帧 → 成片」** 的工业化工作流，支持**多模型提供商**，从灵感到成片一站式完成。
+**AI Drama Director** 是面向创作者的 **AI 短剧/漫剧生产平台**，采用 **「小说 → 剧本 → 分镜 → 资产 → 关键帧 → 成片」** 的工业化工作流，支持**多模型提供商**，从灵感到成片一站式完成。
 
 - **前后端分离**：React 前端 + Express 后端，数据持久化于 MySQL，用户隔离。
 - **小说与剧本**：支持上传小说文件、自动解析章节，选章生成剧集剧本；也支持直接输入故事/剧本生成分镜。项目设置（标题、体裁、风格等）集成在小说管理页面，一处完成所有配置。
@@ -189,7 +189,7 @@ DB_USER=banana
 DB_PASSWORD=banana
 DB_NAME=banana
 
-JWT_SECRET=aishotlive_jwt_secret_change_me_in_production
+JWT_SECRET=AiDrama_jwt_secret_change_me_in_production
 SERVER_PORT=3001
 NODE_ENV=development
 ```
@@ -344,9 +344,9 @@ ai-shotlive-Director/
 
 ---
 
-**Windows 客户端**（开箱即用）：[下载 AI shotlive Director 安装包](https://tree456.oss-cn-beijing.aliyuncs.com/AiShotlive%20AI%20Director%20Setup%201.0.0.exe?Expires=1770908400&OSSAccessKeyId=TMP.3KofXPaUNdnvbUpRP5MqiRmMMxuGwiftTgQfn7U3ntRtFvMYHpMB2kPb17r7rPXksvo7DFncrz4dWSfs3K33wVgGXfnCy4&Signature=wiOZbN%2BcZNuyZdiEI3KR1CqkFhM%3D)
+**Windows 客户端**（开箱即用）：[下载 AI Drama Director 安装包](https://tree456.oss-cn-beijing.aliyuncs.com/AiDrama%20AI%20Director%20Setup%201.0.0.exe?Expires=1770908400&OSSAccessKeyId=TMP.3KofXPaUNdnvbUpRP5MqiRmMMxuGwiftTgQfn7U3ntRtFvMYHpMB2kPb17r7rPXksvo7DFncrz4dWSfs3K33wVgGXfnCy4&Signature=wiOZbN%2BcZNuyZdiEI3KR1CqkFhM%3D)
 
-**轻量创作工具**：AiShotlive 创作工坊 — AI 绘图、PPT、视频、小红书文案、小说、动漫等，浏览器即用。本项目更适合**系统化短剧制作与工业化工作流**。
+**轻量创作工具**：AiDrama 创作工坊 — AI 绘图、PPT、视频、小红书文案、小说、动漫等，浏览器即用。本项目更适合**系统化短剧制作与工业化工作流**。
 
 ---
 
@@ -365,4 +365,4 @@ ai-shotlive-Director/
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) — 允许个人与非商业使用及在相同许可下修改与二次创作；
 
-*Built for Creators, by AiShotlive.*
+*Built for Creators, by AiDrama.*

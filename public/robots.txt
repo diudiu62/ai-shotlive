@@ -1,4 +1,4 @@
-# AI shotlive Director - Robots.txt
+# AI Drama Director - Robots.txt
 
 User-agent: *
 Allow: /

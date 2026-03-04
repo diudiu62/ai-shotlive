@@ -347,8 +347,8 @@ router.post('/export', async (req: AuthRequest, res: Response) => {
     res.json({
       schemaVersion: 1,
       exportedAt: Date.now(),
-      scope: 'all',
-      dbName: 'AiShotliveDB',
+      scope: "all",
+      dbName: "AiDramaDB",
       dbVersion: 2,
       stores: {
         projects,

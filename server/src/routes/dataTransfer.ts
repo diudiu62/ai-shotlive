@@ -125,9 +125,9 @@ router.get('/export', async (req: AuthRequest, res: Response) => {
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     res.set({
-      'Content-Type': 'application/zip',
-      'Content-Disposition': `attachment; filename="aishotlive_backup_${username}_${timestamp}.zip"`,
-      'Content-Length': String(zipBuffer.length),
+      "Content-Type": "application/zip",
+      "Content-Disposition": `attachment; filename="AiDrama_backup_${username}_${timestamp}.zip"`,
+      "Content-Length": String(zipBuffer.length),
     });
     res.send(zipBuffer);
   } catch (err) {

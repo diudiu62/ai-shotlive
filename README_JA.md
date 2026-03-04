@@ -1,4 +1,4 @@
-# AI shotlive Director (AI 漫劇工場)
+# AI Drama Director (AI 漫劇工場)
 
 > **AI 一站式 短編ドラマ／モーションコミック生成プラットフォーム**
 > *Industrial AI Motion Comic & Video Workbench*
@@ -8,7 +8,7 @@
 [![日本語](https://img.shields.io/badge/Language-日本語-blue.svg)](./README_JA.md)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-**AI shotlive Director** は、**AI 一站式の短編ドラマ／モーションコミックプラットフォーム**です。アイデアから完成動画までを高速に制作したいクリエイター向けに設計されています。
+**AI Drama Director** は、**AI 一站式の短編ドラマ／モーションコミックプラットフォーム**です。アイデアから完成動画までを高速に制作したいクリエイター向けに設計されています。
 
 従来の「ガチャ」的な生成手法を捨て、**「脚本 -> アセット -> キーフレーム」** という産業用ワークフローを採用しています。AntSK API の先進的な AI モデルを深く統合することで、**「一文で完全な短編ドラマを生成し、脚本から完成動画までを全自動化」** しつつ、キャラクターの一貫性、シーンの連続性、そしてカメラワークの精密な制御を実現しました。
 
@@ -39,7 +39,7 @@
 
 ## 核となる概念：キーフレーム駆動 (Keyframe-Driven)
 
-従来の Text-to-Video モデルでは、具体的なカメラの動きや開始・終了状態を制御することが困難でした。AiShotlive はアニメーション制作における **キーフレーム (Keyframe)** の概念を導入しました：
+従来の Text-to-Video モデルでは、具体的なカメラの動きや開始・終了状態を制御することが困難でした。AiDrama はアニメーション制作における **キーフレーム (Keyframe)** の概念を導入しました：
 
 1.  **静止画先行**: まず、正確な開始フレーム (Start) と終了フレーム (End) を生成します。
 2.  **補間生成**: Veo モデルを使用して、2つのフレーム間に滑らかな動画トランジションを生成します。
@@ -140,7 +140,7 @@ GitHub リポジトリで Issue の報告、機能リクエスト、他のクリ
 
 **単発のクリエイティブタスク**を素早く完成させたい場合は、オンラインツールプラットフォームをお試しください：
 
-**AiShotlive クリエイションスタジオ** では以下を提供：
+**AiDrama クリエイションスタジオ** では以下を提供：
 * 📷 **AI 画像生成**：テキストから画像へ、複数のスタイルに対応
 * 📊 **AI パワーポイント**：プレゼンテーションを瞬時に生成
 * 🎬 **AI ビデオ**：インテリジェントな動画コンテンツ生成
@@ -156,7 +156,7 @@ GitHub リポジトリで Issue の報告、機能リクエスト、他のクリ
 
 インストーラーをダウンロードして、すぐに使い始められます。開発環境の構築は不要です：
 
-**[📥 AI shotlive Director クライアントをダウンロード (Windows)](https://tree456.oss-cn-beijing.aliyuncs.com/AiShotlive%20AI%20Director%20Setup%201.0.0.exe?Expires=1770908400&OSSAccessKeyId=TMP.3KofXPaUNdnvbUpRP5MqiRmMMxuGwiftTgQfn7U3ntRtFvMYHpMB2kPb17r7rPXksvo7DFncrz4dWSfs3K33wVgGXfnCy4&Signature=wiOZbN%2BcZNuyZdiEI3KR1CqkFhM%3D)**
+**[📥 AI Drama Director クライアントをダウンロード (Windows)](https://tree456.oss-cn-beijing.aliyuncs.com/AiDrama%20AI%20Director%20Setup%201.0.0.exe?Expires=1770908400&OSSAccessKeyId=TMP.3KofXPaUNdnvbUpRP5MqiRmMMxuGwiftTgQfn7U3ntRtFvMYHpMB2kPb17r7rPXksvo7DFncrz4dWSfs3K33wVgGXfnCy4&Signature=wiOZbN%2BcZNuyZdiEI3KR1CqkFhM%3D)**
 
 > 💡 ダウンロードしてインストールするだけで使えます。Windows に対応しています。
 
@@ -266,4 +266,4 @@ docker-compose up -d --force-recreate
 - ✅ 同じライセンスの下での改変と二次的著作物が許可されています
 
 ---
-*Built for Creators, by AiShotlive.*
+*Built for Creators, by AiDrama.*

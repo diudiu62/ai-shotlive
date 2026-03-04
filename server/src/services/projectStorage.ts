@@ -166,10 +166,10 @@ export async function saveProjectNormalized(
        raw_script, selected_episode_id, is_parsing_script,
        has_script_data, script_title, script_genre, script_logline, art_direction,
        created_at_ms, last_modified_ms, is_normalized
-     ) VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE
        title = VALUES(title),
-       data = NULL,
+       data = VALUES(data),
        stage = VALUES(stage),
        novel_genre = VALUES(novel_genre),
        novel_synopsis = VALUES(novel_synopsis),
@@ -187,18 +187,21 @@ export async function saveProjectNormalized(
        art_direction = VALUES(art_direction),
        created_at_ms = VALUES(created_at_ms),
        last_modified_ms = VALUES(last_modified_ms),
-       is_normalized = 1,
+       is_normalized = VALUES(is_normalized),
        updated_at = CURRENT_TIMESTAMP`,
     [
-      pid, userId, project.title || '未命名项目',
-      project.stage || 'script',
-      project.novelGenre || '',
-      project.novelSynopsis || '',
-      project.targetDuration || '60s',
-      project.language || '中文',
-      project.visualStyle || 'live-action',
+      pid,
+      userId,
+      project.title || "未命名项目",
+      null,
+      project.stage || "script",
+      project.novelGenre || "",
+      project.novelSynopsis || "",
+      project.targetDuration || "60s",
+      project.language || "中文",
+      project.visualStyle || "live-action",
       project.shotGenerationModel || null,
-      project.rawScript || '',
+      project.rawScript || "",
       project.selectedEpisodeId || null,
       project.isParsingScript ? 1 : 0,
       hasScriptData,
@@ -208,7 +211,8 @@ export async function saveProjectNormalized(
       sd?.artDirection ? JSON.stringify(sd.artDirection) : null,
       project.createdAt || Date.now(),
       project.lastModified || Date.now(),
-    ]
+      1,
+    ],
   );
 
   // ②a 使用预读的图片备份（如果没有传入则在事务内读取作为 fallback）

@@ -1,6 +1,6 @@
 // Onboarding 常量配置
 
-export const ONBOARDING_STORAGE_KEY = 'aishotlive_onboarding_completed';
+export const ONBOARDING_STORAGE_KEY = "AiDrama_onboarding_completed";
 
 export const ONBOARDING_PAGES = {
   WELCOME: 0,

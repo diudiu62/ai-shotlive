@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, Users, Clapperboard, Film, ChevronLeft, ListTree, HelpCircle, Cpu, Sun, Moon, Loader2, LogOut } from 'lucide-react';
-import logoImg from '../logo.png';
+// import logoImg from '../logo.png';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import ProfileModal from './ProfileModal';
@@ -38,9 +38,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentStage, setStage, onExit, proje
           rel="noopener noreferrer"
           className="flex items-center gap-3 mb-6 group cursor-pointer"
         >
-          <img src={logoImg} alt="Logo" className="w-8 h-8 flex-shrink-0 transition-transform group-hover:scale-110" />
+          {/* <img src={logoImg} alt="Logo" className="w-8 h-8 flex-shrink-0 transition-transform group-hover:scale-110" /> */}
+          <span>🍌</span>
           <div className="overflow-hidden">
-            <h1 className="text-sm font-bold text-[var(--text-primary)] tracking-wider group-hover:text-[var(--text-secondary)] transition-colors">AiShotlive</h1>
+            <h1 className="text-sm font-bold text-[var(--text-primary)] tracking-wider group-hover:text-[var(--text-secondary)] transition-colors">AiDrama</h1>
             <p className="text-[10px] text-[var(--text-tertiary)] tracking-widest group-hover:text-[var(--text-secondary)] transition-colors">Studio Pro</p>
           </div>
         </a>

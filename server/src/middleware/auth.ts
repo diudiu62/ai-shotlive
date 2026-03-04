@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'aishotlive_jwt_secret_change_me_in_production';
+const JWT_SECRET =
+  process.env.JWT_SECRET || "AiDrama_jwt_secret_change_me_in_production";
 
 export interface AuthRequest extends Request {
   userId?: number;

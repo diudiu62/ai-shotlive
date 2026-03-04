@@ -663,8 +663,8 @@ const generateImageOpenAI = async (
     if (fetchError.message?.includes('Failed to fetch') || (fetchError.name === 'TypeError' && !fetchError.status)) {
       throw new Error(
         `无法连接到 ${apiBase}（浏览器跨域限制）。` +
-        `该提供商的 API 不支持浏览器直接调用。` +
-        `请在模型配置中将该模型的提供商切换为支持浏览器调用的代理服务（如 AiShotlive API）。`
+          `该提供商的 API 不支持浏览器直接调用。` +
+          `请在模型配置中将该模型的提供商切换为支持浏览器调用的代理服务（如 AntSK API）。`,
       );
     }
     throw fetchError;

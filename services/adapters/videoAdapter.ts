@@ -28,8 +28,8 @@ const retryOperation = async <T>(
       if (error.name === 'TypeError' && error.message?.includes('Failed to fetch')) {
         throw new Error(
           `无法连接到 API（浏览器跨域限制）。` +
-          `该提供商的 API 不支持浏览器直接调用。` +
-          `请在模型配置中将该模型的提供商切换为支持浏览器调用的代理服务（如 AiShotlive API）。`
+            `该提供商的 API 不支持浏览器直接调用。` +
+            `请在模型配置中将该模型的提供商切换为支持浏览器调用的代理服务（如 AntSK API）。`,
         );
       }
       if (error.message?.includes('400') || 
@@ -371,8 +371,8 @@ const callSoraApi = async (
     if (fetchError.message?.includes('Failed to fetch') || fetchError.name === 'TypeError') {
       throw new Error(
         `无法连接到 ${apiBase}（浏览器跨域限制）。` +
-        `该提供商的 API 不支持浏览器直接调用。` +
-        `请在模型配置中将该模型的提供商切换为支持浏览器调用的代理服务（如 AiShotlive API）。`
+          `该提供商的 API 不支持浏览器直接调用。` +
+          `请在模型配置中将该模型的提供商切换为支持浏览器调用的代理服务（如 AntSK API）。`,
       );
     }
     throw fetchError;
@@ -532,25 +532,25 @@ export const callVideoApi = async (
   // 获取当前激活的模型
   const activeModel = model || getActiveVideoModel();
   if (!activeModel) {
-    throw new Error('没有可用的视频模型');
+    throw new Error("没有可用的视频模型");
   }
 
   // 获取 API 配置
   const apiKey = getApiKeyForModel(activeModel.id);
   if (!apiKey) {
-    throw new ApiKeyError('API Key 缺失，请在设置中配置 API Key');
+    throw new ApiKeyError("API Key 缺失，请在设置中配置 API Key");
   }
-  
+
   const apiBase = getApiBaseUrlForModel(activeModel.id);
   const provider = getProviderById(activeModel.providerId);
-  const providerBaseUrl = provider?.baseUrl || '';
+  const providerBaseUrl = provider?.baseUrl || "";
 
   // ========================================
   // DashScope (万象) → 原生适配器
   // ========================================
   if (
-    activeModel.providerId === 'qwen' ||
-    providerBaseUrl.includes('dashscope.aliyuncs.com')
+    activeModel.providerId === "qwen" ||
+    providerBaseUrl.includes("dashscope.aliyuncs.com")
   ) {
     console.log(`🔄 检测到 DashScope 提供商，使用万象原生适配器...`);
     const apiModel = activeModel.apiModel || activeModel.id;
@@ -569,9 +569,9 @@ export const callVideoApi = async (
   // 火山引擎 Seedance → 原生适配器
   // ========================================
   if (
-    activeModel.providerId === 'doubao' &&
-    providerBaseUrl.includes('ark.cn-beijing.volces.com') &&
-    (activeModel.apiModel || activeModel.id).includes('seedance')
+    activeModel.providerId === "doubao" &&
+    providerBaseUrl.includes("ark.cn-beijing.volces.com") &&
+    (activeModel.apiModel || activeModel.id).includes("seedance")
   ) {
     console.log(`🔄 检测到火山引擎 Seedance 提供商，使用原生适配器...`);
     const apiModel = activeModel.apiModel || activeModel.id;
@@ -587,9 +587,9 @@ export const callVideoApi = async (
   }
 
   // ========================================
-  // 通用模式（AiShotlive 代理、OpenAI 兼容等）
+  // 通用模式（AiDrama 代理、OpenAI 兼容等）
   // ========================================
-  if (activeModel.params.mode === 'async') {
+  if (activeModel.params.mode === "async") {
     return callSoraApi(options, activeModel, apiKey, apiBase);
   } else {
     return callVeoApi(options, activeModel, apiKey, apiBase);

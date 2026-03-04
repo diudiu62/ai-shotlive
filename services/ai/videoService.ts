@@ -148,8 +148,8 @@ const generateVideoAsync = async (
     if (fetchError.message?.includes('Failed to fetch') || fetchError.name === 'TypeError') {
       throw new Error(
         `无法连接到 ${apiBase}（浏览器跨域限制）。` +
-        `该提供商的 API 不支持浏览器直接调用。` +
-        `请在模型配置中将该模型的提供商切换为支持浏览器调用的代理服务（如 AiShotlive API）。`
+          `该提供商的 API 不支持浏览器直接调用。` +
+          `请在模型配置中将该模型的提供商切换为支持浏览器调用的代理服务（如 AntSK API）。`,
       );
     }
     throw fetchError;
@@ -338,10 +338,10 @@ export const generateVideo = async (
   aspectRatio: AspectRatio = '16:9',
   duration: VideoDuration = 8
 ): Promise<string> => {
-  const resolvedVideoModel = resolveModel('video', model);
-  const requestModel = resolveRequestModel('video', model) || model;
-  const apiKey = checkApiKey('video', model);
-  const apiBase = getApiBase('video', model);
+  const resolvedVideoModel = resolveModel("video", model);
+  const requestModel = resolveRequestModel("video", model) || model;
+  const apiKey = checkApiKey("video", model);
+  const apiBase = getApiBase("video", model);
 
   // ========================================
   // 检测提供商，使用原生适配器
@@ -349,12 +349,12 @@ export const generateVideo = async (
   const modelDef = resolvedVideoModel || getModelById(model);
   const providerId = modelDef?.providerId;
   const provider = providerId ? getProviderById(providerId) : undefined;
-  const providerBaseUrl = provider?.baseUrl || '';
+  const providerBaseUrl = provider?.baseUrl || "";
 
   // DashScope (阿里百炼 / 万象) → 使用原生 DashScope 适配器
   if (
-    providerId === 'qwen' ||
-    providerBaseUrl.includes('dashscope.aliyuncs.com')
+    providerId === "qwen" ||
+    providerBaseUrl.includes("dashscope.aliyuncs.com")
   ) {
     console.log(`🔄 检测到 DashScope 提供商，使用万象原生适配器...`);
     return generateDashScopeVideo({
@@ -369,11 +369,11 @@ export const generateVideo = async (
   }
 
   // 火山引擎 (豆包 Seedance) → 使用原生 Volcengine 适配器
-  // 仅当直连火山引擎时使用（通过 AiShotlive 代理时仍走通用逻辑）
+  // 仅当直连火山引擎时使用（通过 AiDrama 代理时仍走通用逻辑）
   if (
-    providerId === 'doubao' &&
-    providerBaseUrl.includes('ark.cn-beijing.volces.com') &&
-    requestModel.includes('seedance')
+    providerId === "doubao" &&
+    providerBaseUrl.includes("ark.cn-beijing.volces.com") &&
+    requestModel.includes("seedance")
   ) {
     console.log(`🔄 检测到火山引擎 Seedance 提供商，使用原生适配器...`);
     return generateSeedanceVideo({
@@ -388,12 +388,12 @@ export const generateVideo = async (
   }
 
   // ========================================
-  // 通用模式（AiShotlive 代理、OpenAI 兼容等）
+  // 通用模式（AiDrama 代理、OpenAI 兼容等）
   // ========================================
   const isAsyncMode =
-    (resolvedVideoModel?.params as any)?.mode === 'async' ||
-    requestModel === 'sora-2' ||
-    requestModel.toLowerCase().startsWith('veo_3_1-fast');
+    (resolvedVideoModel?.params as any)?.mode === "async" ||
+    requestModel === "sora-2" ||
+    requestModel.toLowerCase().startsWith("veo_3_1-fast");
 
   // 异步模式
   if (isAsyncMode) {
@@ -404,45 +404,45 @@ export const generateVideo = async (
       apiKey,
       aspectRatio,
       duration,
-      requestModel || 'sora-2'
+      requestModel || "sora-2",
     );
   }
 
   // Veo 模型使用同步模式
   let actualModel = requestModel;
-  if (actualModel === 'veo' || actualModel.startsWith('veo_3_1')) {
+  if (actualModel === "veo" || actualModel.startsWith("veo_3_1")) {
     const hasReferenceImage = !!startImageBase64;
     actualModel = getVeoModelName(hasReferenceImage, aspectRatio);
     console.log(`🎬 使用 Veo 首尾帧模式: ${actualModel} (${aspectRatio})`);
   }
 
-  if (aspectRatio === '1:1' && actualModel.startsWith('veo_')) {
-    console.warn('⚠️ Veo 不支持方形视频 (1:1)，将使用横屏 (16:9)');
-    actualModel = getVeoModelName(!!startImageBase64, '16:9');
+  if (aspectRatio === "1:1" && actualModel.startsWith("veo_")) {
+    console.warn("⚠️ Veo 不支持方形视频 (1:1)，将使用横屏 (16:9)");
+    actualModel = getVeoModelName(!!startImageBase64, "16:9");
   }
 
-  const messages: any[] = [
-    { role: 'user', content: prompt }
-  ];
+  const messages: any[] = [{ role: "user", content: prompt }];
 
-  const cleanStart = startImageBase64?.replace(/^data:image\/(png|jpeg|jpg);base64,/, '') || '';
-  const cleanEnd = endImageBase64?.replace(/^data:image\/(png|jpeg|jpg);base64,/, '') || '';
+  const cleanStart =
+    startImageBase64?.replace(/^data:image\/(png|jpeg|jpg);base64,/, "") || "";
+  const cleanEnd =
+    endImageBase64?.replace(/^data:image\/(png|jpeg|jpg);base64,/, "") || "";
 
   if (cleanStart) {
     messages[0].content = [
-      { type: 'text', text: prompt },
+      { type: "text", text: prompt },
       {
-        type: 'image_url',
-        image_url: { url: `data:image/png;base64,${cleanStart}` }
-      }
+        type: "image_url",
+        image_url: { url: `data:image/png;base64,${cleanStart}` },
+      },
     ];
   }
 
   if (cleanEnd) {
     if (Array.isArray(messages[0].content)) {
       messages[0].content.push({
-        type: 'image_url',
-        image_url: { url: `data:image/png;base64,${cleanEnd}` }
+        type: "image_url",
+        image_url: { url: `data:image/png;base64,${cleanEnd}` },
       });
     }
   }
@@ -453,26 +453,27 @@ export const generateVideo = async (
   try {
     const response = await retryOperation(async () => {
       const res = await fetch(`${apiBase}/v1/chat/completions`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model: actualModel,
           messages: messages,
           stream: false,
-          temperature: 0.7
+          temperature: 0.7,
         }),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       if (!res.ok) {
         if (res.status === 400) {
-          throw new Error('提示词可能包含不安全或违规内容，未能处理。请修改后重试。');
-        }
-        else if (res.status === 500) {
-          throw new Error('当前请求较多，暂时未能处理成功，请稍后重试。');
+          throw new Error(
+            "提示词可能包含不安全或违规内容，未能处理。请修改后重试。",
+          );
+        } else if (res.status === 500) {
+          throw new Error("当前请求较多，暂时未能处理成功，请稍后重试。");
         }
 
         let errorMessage = `HTTP错误: ${res.status}`;
@@ -492,29 +493,29 @@ export const generateVideo = async (
     clearTimeout(timeoutId);
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
+    const content = data.choices?.[0]?.message?.content || "";
 
     const urlMatch = content.match(/(https?:\/\/[^\s]+\.mp4)/);
-    const videoUrl = urlMatch ? urlMatch[1] : '';
+    const videoUrl = urlMatch ? urlMatch[1] : "";
 
     if (!videoUrl) {
       throw new Error("视频生成失败 (No video URL returned)");
     }
 
-    console.log('🎬 视频URL获取成功,正在转换为base64...');
+    console.log("🎬 视频URL获取成功,正在转换为base64...");
 
     try {
       const videoBase64 = await convertVideoUrlToBase64(videoUrl);
-      console.log('✅ 视频已转换为base64格式,可安全存储到IndexedDB');
+      console.log("✅ 视频已转换为base64格式,可安全存储到IndexedDB");
       return videoBase64;
     } catch (error: any) {
-      console.error('❌ 视频转base64失败,返回原始URL:', error);
+      console.error("❌ 视频转base64失败,返回原始URL:", error);
       return videoUrl;
     }
   } catch (error: any) {
     clearTimeout(timeoutId);
-    if (error.name === 'AbortError') {
-      throw new Error('视频生成超时 (20分钟)');
+    if (error.name === "AbortError") {
+      throw new Error("视频生成超时 (20分钟)");
     }
     throw error;
   }

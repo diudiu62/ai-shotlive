@@ -61,10 +61,10 @@ const Login: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-3xl font-light text-[var(--text-primary)] tracking-tight mb-2">
-            AI shotlive Director
+            AI Drama Director
           </h1>
           <p className="text-xs text-[var(--text-muted)] font-mono uppercase tracking-[0.2em]">
-            AI 漫剧生成平台
+            AI 短剧生成平台
           </p>
         </div>
 
