@@ -13,7 +13,7 @@ import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { resolveToFilePath } from '../services/fileStorage.js';
 import { resolveApiUrlToFilePath } from '../services/imageResolver.js';
 
-const router = Router();
+const router: Router = Router();
 router.use(authMiddleware);
 
 /**
