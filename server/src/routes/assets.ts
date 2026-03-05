@@ -3,7 +3,7 @@ import { getPool } from '../config/database.js';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { RowDataPacket } from 'mysql2';
 
-const router = Router();
+const router: Router = Router();
 
 router.use(authMiddleware);
 
@@ -41,8 +41,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 
     if (!usePagination) {
       const [rows] = await getPool().execute<AssetRow[]>(
-        'SELECT data FROM asset_library WHERE user_id = ? ORDER BY updated_at DESC',
-        [req.userId]
+        "SELECT data FROM asset_library WHERE user_id = ? ORDER BY updated_at DESC",
+        [String(req.userId)],
       );
       const items = rows.map(r => JSON.parse(r.data));
       console.log(`📦 [Assets] GET /api/assets → userId=${req.userId}, 返回全部 ${items.length} 个资产`);
@@ -69,10 +69,9 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       params
     );
     const total = Number((countRows as any)[0]?.total ?? 0);
-
     const [rows] = await getPool().execute<AssetRow[]>(
       `SELECT data FROM asset_library WHERE ${where} ORDER BY updated_at DESC LIMIT ? OFFSET ?`,
-      [...params, pageSize, offset]
+      [String(...params), String(pageSize), String(offset)],
     );
     const items = rows.map(r => JSON.parse(r.data));
 
@@ -80,7 +79,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     try {
       const [optRows] = await getPool().execute<ProjectOptionRow[]>(
         `SELECT DISTINCT project_id, project_name FROM asset_library WHERE user_id = ? AND project_id IS NOT NULL AND TRIM(COALESCE(project_id,'')) != '' ORDER BY project_name`,
-        [req.userId]
+        [String(req.userId)],
       );
       projectOptions = (optRows as ProjectOptionRow[]).map(r => ({
         id: r.project_id ?? '',
@@ -131,8 +130,8 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
   try {
     console.log(`📦 [Assets] DELETE /api/assets/${req.params.id} → userId=${req.userId}`);
     const [result] = await getPool().execute(
-      'DELETE FROM asset_library WHERE id = ? AND user_id = ?',
-      [req.params.id, req.userId]
+      "DELETE FROM asset_library WHERE id = ? AND user_id = ?",
+      [req.params.id, String(req.userId)],
     );
 
     if ((result as any).affectedRows === 0) {
