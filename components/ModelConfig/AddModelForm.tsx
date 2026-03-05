@@ -15,6 +15,7 @@ import {
   DEFAULT_IMAGE_PARAMS,
   DEFAULT_VIDEO_PARAMS_SORA,
   DEFAULT_VIDEO_PARAMS_VEO,
+  ImageApiFormat,
 } from '../../types/model';
 import { getProviders, addProvider } from '../../services/modelRegistry';
 import { useAlert } from '../GlobalAlert';
@@ -25,12 +26,19 @@ interface AddModelFormProps {
   onCancel: () => void;
 }
 
+const IMAGE_API_FORMAT_OPTIONS = [
+  { value: 'gemini' as ImageApiFormat, label: 'Google Gemini' },
+  { value: 'openai-image' as ImageApiFormat, label: 'OpenAI / 火山引擎兼容的' },
+  { value: 'dashscope-image' as ImageApiFormat, label: '阿里云百炼/通义' },
+];
+
 const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) => {
   const existingProviders = getProviders();
   const { showAlert } = useAlert();
   
   const [name, setName] = useState('');
   const [apiModel, setApiModel] = useState('');
+  const [apiFormat, setApiFormat] = useState<ImageApiFormat>('openai-image');
   const [description, setDescription] = useState('');
   const [endpoint, setEndpoint] = useState('');
   const [videoMode, setVideoMode] = useState<'sync' | 'async'>('sync');
@@ -76,7 +84,7 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
     if (type === 'chat') {
       params = { ...DEFAULT_CHAT_PARAMS };
     } else if (type === 'image') {
-      params = { ...DEFAULT_IMAGE_PARAMS };
+      params = { ...DEFAULT_IMAGE_PARAMS, apiFormat };
     } else {
       params = videoMode === 'async' 
         ? { ...DEFAULT_VIDEO_PARAMS_SORA }
@@ -128,6 +136,19 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
         </div>
       </div>
 
+      <div>
+        <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">接口格式</label>
+        {/* 下拉框选择接口格式 */}
+        <select
+          value={apiFormat}
+          onChange={(e) => setApiFormat(e.target.value as ImageApiFormat)}
+          className="w-full bg-[var(--bg-hover)] border border-[var(--border-secondary)] rounded px-3 py-2 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+        >
+          {IMAGE_API_FORMAT_OPTIONS.map(({value, label}) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+      </div>
       <div>
         <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">描述（可选）</label>
         <input

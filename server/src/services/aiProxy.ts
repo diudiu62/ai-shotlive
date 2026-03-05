@@ -825,6 +825,120 @@ export const generateOpenAIImage = async (params: OpenAIImageParams): Promise<Im
 };
 
 // ============================================
+// 图片生成 - 阿里百炼 万相-文生图V2
+// ============================================
+
+export interface WanXiangImageParams {
+  apiBase: string;
+  apiKey: string;
+  endpoint: string;
+  modelId: string;
+  prompt: string;
+  referenceImages: string[];
+  aspectRatio: string;
+}
+
+export const generateWanXiangImage = async (params: WanXiangImageParams): Promise<ImageGenerationResult> => {
+  const { apiBase, apiKey, endpoint, modelId, prompt, referenceImages, aspectRatio } = params;
+
+  // 映射 aspectRatio 到万相API支持的尺寸格式
+  const getResolution = (): string => {
+    switch (aspectRatio) {
+      case '1:1': return '1024*1024';
+      case '9:16': return '720*1280';
+      case '16:9': return '1280*720';
+      case '3:4': return '768*1024';
+      case '4:3': return '1024*768';
+      default: return '1024*1024'; // 默认值
+    }
+  };
+
+  const resolution = getResolution();
+  
+  // 构建符合万相API的消息格式
+  const input: Record<string, any> = { 
+    messages: [{ 
+      role: 'user', 
+      content: [{ text: prompt }] 
+    }] 
+  };
+  // 添加参考图片（如果有）
+  if (referenceImages && referenceImages.length > 0) {
+    const firstImage = referenceImages[0];
+    if (firstImage && firstImage.startsWith('data:')) {
+      // 如果是base64格式，添加到消息内容中
+      input.messages[0].content.push({
+        image: firstImage
+      });
+    } else if (firstImage && /^https?:\/\//i.test(firstImage)) {
+      // 如果是URL格式，也添加到消息内容中
+      input.messages[0].content.push({
+        image: firstImage
+      });
+    }
+  }
+
+  const parameters: Record<string, any> = {
+    // 根据官方文档，万相多模态生成支持以下参数
+    prompt_extend: true,
+    watermark: false,
+    n: 1,      // 生成图片数量
+    size: resolution,
+    negative_prompt: "",
+    enable_interleave: true,
+    stream: true,
+    max_images: 1,
+  };
+
+  console.log(`  🎨 [aiProxy] 万相图片生成: 模型=${modelId}, 尺寸=${resolution}, 提示=${prompt.substring(0, 50)}...`);
+
+  const response = await retryOp(async () => {
+    const res = await fetch(`${apiBase}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+            'x-dashscope-sse': 'enable',
+
+      },
+      body: JSON.stringify({ 
+        model: modelId, 
+        input, 
+        parameters 
+      }),
+    });
+    
+    if (!res.ok) {
+      const errMsg = await parseError(res);
+      const err: any = new Error(errMsg);
+      err.status = res.status;
+      throw err;
+    }
+    
+    return await res.json();
+  });
+
+  // 解析响应
+  const output = (response as any)?.output;
+  if (!output || !output.choices || !Array.isArray(output.choices) || output.choices.length === 0) {
+    throw new Error('万相图片生成失败：未收到有效输出');
+  }
+
+  // 万相API在choices中返回图片的URL
+  const imageUrlResult = output.choices[0]?.message?.content?.[0]?.image;
+  if (!imageUrlResult) {
+    throw new Error('万相图片生成失败：未返回图片URL');
+  }
+
+  const base64 = await downloadAsBase64(imageUrlResult, 'image/png');
+  
+  console.log(`  ✅ [aiProxy] 万相图片生成成功: ${imageUrlResult.substring(0, 60)}...`);
+  
+  return { base64, originalUrl: imageUrlResult };
+};
+
+
+// ============================================
 // 文本生成 - Chat Completion
 // ============================================
 

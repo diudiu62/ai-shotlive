@@ -20,7 +20,7 @@ import {
   TaskCreateParams,
 } from '../services/taskRunner.js';
 
-const router = Router();
+const router: Router = Router();
 
 router.use(authMiddleware);
 

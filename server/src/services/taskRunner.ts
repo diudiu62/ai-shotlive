@@ -21,6 +21,7 @@ import {
   pollSeedanceVideoTask,
   generateGeminiImage,
   generateOpenAIImage,
+  generateWanXiangImage,
   serverChatCompletion,
 } from "./aiProxy.js";
 import { parseScriptFull, ScriptParseResult } from './scriptParser.js';
@@ -717,7 +718,7 @@ const executeImageTask = async (
   }
 
   const finalPrompt = wrapPromptWithReferenceGuide(prompt, referenceImages, isVariation, hasTurnaround);
-
+  console.log("apiFormat", apiFormat);
   if (apiFormat === 'openai-image') {
     const result = await generateOpenAIImage({
       apiBase, apiKey, endpoint, modelId: actualModelId,
@@ -729,6 +730,22 @@ const executeImageTask = async (
     return result.base64;
   }
 
+  if (apiFormat === "dashscope-image") {
+    const result = await generateWanXiangImage({
+      apiBase,
+      apiKey,
+      endpoint,
+      modelId: actualModelId,
+      prompt: finalPrompt,
+      referenceImages,
+      aspectRatio,
+    });
+    if (result.originalUrl) {
+      return JSON.stringify({ base64: result.base64, url: result.originalUrl });
+    }
+    return result.base64;
+  }
+  
   // Gemini generateContent 格式（默认）
   return await generateGeminiImage({
     apiBase, apiKey, endpoint, modelId: actualModelId,
@@ -1199,37 +1216,44 @@ const getUserModelRegistry = async (
  */
 const resolveModelConfig = (
   registry: ModelRegistryState,
-  type: 'chat' | 'image' | 'video',
-  modelId: string
+  type: "chat" | "image" | "video",
+  modelId: string,
 ): {
   apiBase: string;
   apiKey: string;
-  model: ModelRegistryState['models'][0];
-  provider: ModelRegistryState['providers'][0] | undefined;
+  model: ModelRegistryState["models"][0];
+  provider: ModelRegistryState["providers"][0] | undefined;
 } => {
   // 查找模型
-  let model = registry.models.find(m => m.id === modelId && m.type === type);
+  let model = registry.models.find((m) => m.id === modelId && m.type === type);
   if (!model) {
     // 尝试按 apiModel 匹配
-    model = registry.models.find(m => m.apiModel === modelId && m.type === type);
+    model = registry.models.find(
+      (m) => m.apiModel === modelId && m.type === type,
+    );
   }
   if (!model) {
     // 使用激活模型
     const activeId = registry.activeModels[type];
-    model = registry.models.find(m => m.id === activeId);
+    model = registry.models.find((m) => m.id === activeId);
   }
   if (!model) {
     throw new Error(`未找到模型: ${modelId} (${type})`);
   }
 
   // 查找提供商
-  const provider = registry.providers.find(p => p.id === model!.providerId);
+  const provider = registry.providers.find((p) => p.id === model!.providerId);
   const apiKey = provider?.apiKey;
   if (!apiKey) {
-    throw new Error(`模型 ${model.id} 的提供商 ${model.providerId} 未设置 API Key`);
+    throw new Error(
+      `模型 ${model.id} 的提供商 ${model.providerId} 未设置 API Key`,
+    );
   }
 
-  const apiBase = (provider?.baseUrl || 'https://api.antsk.cn').replace(/\/+$/, '');
+  const apiBase = (provider?.baseUrl || "https://api.antsk.cn").replace(
+    /\/+$/,
+    "",
+  );
 
   return { apiBase, apiKey, model, provider };
 };
