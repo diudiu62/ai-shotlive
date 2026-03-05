@@ -692,15 +692,15 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
       supportedDurations: [4, 8, 12] as VideoDuration[],
     },
   },
-  // ========== 万象 (Wan) ==========
+  // ========== 万相 (Wan) ==========
   // 使用 DashScope 原生适配器（通过本地代理解决 CORS）
   // img_url 支持直接传入 URL，无需 base64 转换
   {
     id: "wan2.6-t2v",
-    name: "万象 2.6 文生视频",
+    name: "万相 2.6 文生视频",
     type: "video",
     providerId: "qwen",
-    description: "阿里万象视频生成，支持有声视频（DashScope 原生 API）",
+    description: "阿里万相视频生成，支持有声视频（DashScope 原生 API）",
     isBuiltIn: true,
     isEnabled: true,
     params: {
@@ -713,10 +713,10 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
   },
   {
     id: "wan2.6-i2v-flash",
-    name: "万象 2.6 首帧 Flash",
+    name: "万相 2.6 首帧 Flash",
     type: "video",
     providerId: "qwen",
-    description: "阿里万象首帧图生视频闪电版（DashScope 原生 API）",
+    description: "阿里万相首帧图生视频闪电版（DashScope 原生 API）",
     isBuiltIn: true,
     isEnabled: true,
     params: {
@@ -729,10 +729,10 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
   },
   {
     id: "wan2.6-i2v",
-    name: "万象 2.6 首帧",
+    name: "万相 2.6 首帧",
     type: "video",
     providerId: "qwen",
-    description: "阿里万象首帧图生视频标准版（DashScope 原生 API）",
+    description: "阿里万相首帧图生视频标准版（DashScope 原生 API）",
     isBuiltIn: true,
     isEnabled: true,
     params: {
@@ -745,10 +745,10 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
   },
   {
     id: "wan2.2-kf2v-flash",
-    name: "万象 2.2 首尾帧 Flash",
+    name: "万相 2.2 首尾帧 Flash",
     type: "video",
     providerId: "qwen",
-    description: "阿里万象首尾帧关键帧生视频闪电版（DashScope 原生 API）",
+    description: "阿里万相首尾帧关键帧生视频闪电版（DashScope 原生 API）",
     isBuiltIn: true,
     isEnabled: true,
     params: {
@@ -761,10 +761,10 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
   },
   {
     id: "wanx2.1-kf2v-plus",
-    name: "万象 2.1 首尾帧 Plus",
+    name: "万相 2.1 首尾帧 Plus",
     type: "video",
     providerId: "qwen",
-    description: "阿里万象首尾帧关键帧生视频增强版（DashScope 原生 API）",
+    description: "阿里万相首尾帧关键帧生视频增强版（DashScope 原生 API）",
     isBuiltIn: true,
     isEnabled: true,
     params: {

@@ -1,7 +1,7 @@
 /**
  * 视频生成服务
  * 包含 Veo（同步）和 Sora（异步）模式的视频生成
- * 支持原生 DashScope（万象）和 Volcengine（Seedance）适配器
+ * 支持原生 DashScope（万相）和 Volcengine（Seedance）适配器
  */
 
 import { AspectRatio, VideoDuration } from "../../types";
@@ -351,12 +351,12 @@ export const generateVideo = async (
   const provider = providerId ? getProviderById(providerId) : undefined;
   const providerBaseUrl = provider?.baseUrl || "";
 
-  // DashScope (阿里百炼 / 万象) → 使用原生 DashScope 适配器
+  // DashScope (阿里百炼 / 万相) → 使用原生 DashScope 适配器
   if (
     providerId === "qwen" ||
     providerBaseUrl.includes("dashscope.aliyuncs.com")
   ) {
-    console.log(`🔄 检测到 DashScope 提供商，使用万象原生适配器...`);
+    console.log(`🔄 检测到 DashScope 提供商，使用万相原生适配器...`);
     return generateDashScopeVideo({
       prompt,
       startImage: startImageBase64,

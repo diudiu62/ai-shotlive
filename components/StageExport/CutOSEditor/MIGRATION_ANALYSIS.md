@@ -28,7 +28,7 @@
 | POST /api/refine-transcription | 转录文本润色 | 未集成 |
 | POST /api/dub | 配音（ElevenLabs） | 未集成 |
 | POST /api/remove-noise | 语音分离（ElevenLabs） | 未集成 |
-| POST /api/kling | Morph 转场（Kling） | 使用万象/豆包 ✓ |
+| POST /api/kling | Morph 转场（Kling） | 使用万相/豆包 ✓ |
 | POST /api/twelvelabs/index | 视频索引 | 未集成 |
 | POST /api/twelvelabs/status | 索引状态 | 未集成 |
 | POST /api/twelvelabs/search | NLP 视频搜索 | **缺失** |

@@ -20,7 +20,7 @@ import PropCard from './PropCard';
 import WardrobeModal from './WardrobeModal';
 import TurnaroundModal from './TurnaroundModal';
 import { useAlert } from '../GlobalAlert';
-import { fetchAssetLibraryPaginated, saveAssetToLibrary, deleteAssetFromLibrary } from '../../services/storageService';
+import { fetchAssetLibraryPaginated, getAllAssetLibraryItems, saveAssetToLibrary, deleteAssetFromLibrary } from '../../services/storageService';
 import { applyLibraryItemToProject, createLibraryItemFromCharacter, createLibraryItemFromScene, createLibraryItemFromProp, cloneCharacterForProject, cloneSceneForProject, clonePropForProject } from '../../services/assetLibraryService';
 import * as PS from '../../services/projectPatchService';
 import { getToken } from '../../services/apiClient';
@@ -241,6 +241,18 @@ const StageAssets: React.FC<Props> = ({ project, updateProject, onApiKeyError, o
     fetchLibraryPage(libraryPage);
   }, [showLibraryModal, libraryPage, libraryFilter, libraryProjectFilter]);
 
+
+    const refreshLibrary = async () => {
+    try {
+      const items = await getAllAssetLibraryItems();
+      setLibraryItems(items);
+    } catch (e) {
+      console.error('Failed to load asset library', e);
+    } finally {
+      setLibraryLoading(false);
+    }
+  };
+  
   const openLibrary = (filter: 'all' | 'character' | 'scene' | 'prop', targetCharId: string | null = null) => {
     setLibraryFilter(filter);
     setLibraryProjectFilter('all');

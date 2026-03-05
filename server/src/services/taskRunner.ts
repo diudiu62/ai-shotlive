@@ -22,7 +22,7 @@ import {
   generateGeminiImage,
   generateOpenAIImage,
   serverChatCompletion,
-} from './aiProxy.js';
+} from "./aiProxy.js";
 import { parseScriptFull, ScriptParseResult } from './scriptParser.js';
 
 // ============================================

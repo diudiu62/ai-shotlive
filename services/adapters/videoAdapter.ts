@@ -546,13 +546,13 @@ export const callVideoApi = async (
   const providerBaseUrl = provider?.baseUrl || "";
 
   // ========================================
-  // DashScope (万象) → 原生适配器
+  // DashScope (万相) → 原生适配器
   // ========================================
   if (
     activeModel.providerId === "qwen" ||
     providerBaseUrl.includes("dashscope.aliyuncs.com")
   ) {
-    console.log(`🔄 检测到 DashScope 提供商，使用万象原生适配器...`);
+    console.log(`🔄 检测到 DashScope 提供商，使用万相原生适配器...`);
     const apiModel = activeModel.apiModel || activeModel.id;
     return generateDashScopeVideo({
       prompt: options.prompt,

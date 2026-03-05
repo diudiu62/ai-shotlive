@@ -1,5 +1,5 @@
 /**
- * DashScope (阿里百炼) 万象视频原生适配器
+ * DashScope (阿里百炼) 万相视频原生适配器
  *
  * 使用 DashScope 官方 API 格式，根据模型类型选择不同端点：
  *   - 文生视频 / 图生视频 (t2v / i2v):
@@ -58,7 +58,7 @@ const normalizeImageForDashScope = (imageData: string): string => {
 };
 
 // ============================================
-// DashScope 万象视频生成
+// DashScope 万相视频生成
 // ============================================
 
 export interface DashScopeVideoOptions {
@@ -72,7 +72,7 @@ export interface DashScopeVideoOptions {
 }
 
 /**
- * 创建万象视频生成任务
+ * 创建万相视频生成任务
  *
  * 根据模型类型使用不同的 API 端点和参数结构：
  * - kf2v (首尾帧): /api/v1/services/aigc/image2video/video-synthesis
@@ -133,7 +133,9 @@ const createTask = async (options: DashScopeVideoOptions): Promise<string> => {
     ? '/api/v1/services/aigc/image2video/video-synthesis'
     : '/api/v1/services/aigc/video-generation/video-synthesis';
 
-  console.log(`🎬 [DashScope] 创建万象视频任务 (${modelId})，端点: ${kf2v ? 'kf2v 首尾帧' : 't2v/i2v'}...`);
+  console.log(
+    `🎬 [DashScope] 创建万相视频任务 (${modelId})，端点: ${kf2v ? "kf2v 首尾帧" : "t2v/i2v"}...`,
+  );
 
   const response = await fetch(
     `${PROXY_PREFIX}${apiPath}`,
@@ -260,7 +262,7 @@ const downloadVideoAsBase64 = async (videoUrl: string): Promise<string> => {
 // ============================================
 
 /**
- * 使用 DashScope 原生 API 生成万象视频
+ * 使用 DashScope 原生 API 生成万相视频
  *
  * 优势：
  *  - img_url 支持直接传 URL，无需客户端下载转 base64
@@ -279,6 +281,6 @@ export const generateDashScopeVideo = async (
   // 3. 下载视频转 base64
   const videoBase64 = await downloadVideoAsBase64(videoUrl);
 
-  console.log(`✅ [DashScope] 万象视频生成完成`);
+  console.log(`✅ [DashScope] 万相视频生成完成`);
   return videoBase64;
 };

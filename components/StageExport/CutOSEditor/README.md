@@ -35,8 +35,8 @@
 - Agent API：`POST /api/cutos/agent`，支持 modelConfig（apiBase、apiKey、endpoint、model）
 
 ### Morph 转场（已支持）
-- 使用万象首尾帧或豆包 Seedance 模型
-- 需在模型配置中启用「万象 2.2 首尾帧 Flash」或豆包 Seedance
+- 使用万相首尾帧或豆包 Seedance 模型
+- 需在模型配置中启用「万相 2.2 首尾帧 Flash」或豆包 Seedance
 
 ### 语音转字幕（已支持）
 - 使用 qwen3-livetranslate-flash（通义音视频翻译）

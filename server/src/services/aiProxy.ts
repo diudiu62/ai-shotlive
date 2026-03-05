@@ -367,7 +367,7 @@ export const generateVeoSyncVideo = async (params: VeoSyncVideoParams): Promise<
 };
 
 // ============================================
-// 视频生成 - DashScope (阿里百炼 万象)
+// 视频生成 - DashScope (阿里百炼 万相)
 // ============================================
 
 export interface DashScopeVideoParams {
@@ -886,20 +886,20 @@ export const serverChatCompletion = async (params: ChatCompletionParams): Promis
  */
 function base64ToBlob(dataUrl: string): Blob {
   let base64: string;
-  let mimeType = 'image/png';
+  let mimeType = "image/png";
 
-  if (dataUrl.startsWith('data:')) {
+  if (dataUrl.startsWith("data:")) {
     const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
     if (match) {
       mimeType = match[1];
       base64 = match[2];
     } else {
-      base64 = dataUrl.replace(/^data:[^,]+,/, '');
+      base64 = dataUrl.replace(/^data:[^,]+,/, "");
     }
   } else {
     base64 = dataUrl;
   }
 
-  const buffer = Buffer.from(base64!, 'base64');
+  const buffer = Buffer.from(base64!, "base64");
   return new Blob([buffer], { type: mimeType });
 }

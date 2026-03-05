@@ -57,7 +57,7 @@
 
 - **先画后动**：先生成起始帧与结束帧，再在中间插值生成视频。
 - **资产约束**：画面生成受「角色定妆照」和「场景概念图」约束，保证人物与场景一致。
-- **多模型支持**：文本/图像/视频可分别选用不同厂商与模型（如 OpenAI、Google、豆包、通义、可灵、万象等）。
+- **多模型支持**：文本/图像/视频可分别选用不同厂商与模型（如 OpenAI、Google、豆包、通义、可灵、万相等）。
 
 ---
 
@@ -131,7 +131,7 @@
 |------|----------------|
 | **文本 (Chat)** | OpenAI、Anthropic、DeepSeek、豆包、通义千问、智谱、Google Gemini、xAI、AntSK、SiliconFlow、Moonshot、OpenRouter 等 |
 | **图像 (Image)** | Google Gemini、豆包 Seedream、通义万相、可灵 Image（AntSK）等 |
-| **视频 (Video)** | Veo 3.1 / Sora-2（AntSK/OpenAI）、豆包 Seedance、可灵、Vidu、万象（通义）等 |
+| **视频 (Video)** | Veo 3.1 / Sora-2（AntSK/OpenAI）、豆包 Seedance、可灵、Vidu、万相（通义）等 |
 | **音频 (Audio)** | 用于 AI 字幕整理与 TTS 配音，可配置对话模型或 TTS 专用模型 |
 
 - 在 **模型配置** 中为各提供商填写 API Key，并选择当前激活的文本/图像/视频/音频模型。

@@ -1,6 +1,6 @@
 /**
- * Morph 转场 - 使用万象首尾帧模型
- * 从两个相邻片段提取首尾帧，调用 DashScope 万象 kf2v API 生成转场视频
+ * Morph 转场 - 使用万相首尾帧模型
+ * 从两个相邻片段提取首尾帧，调用 DashScope 万相 kf2v API 生成转场视频
  */
 import type { TimelineClip, MediaFile } from "@/components/StageExport/CutOSEditor/editor-context";
 import { PIXELS_PER_SECOND, DEFAULT_CLIP_TRANSFORM, DEFAULT_CLIP_EFFECTS } from "@/components/StageExport/CutOSEditor/editor-context";
@@ -23,15 +23,18 @@ function formatDuration(seconds: number): string {
   return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
 
-/** 获取可用的首尾帧模型（万象 kf2v 或豆包 Seedance） */
+/** 获取可用的首尾帧模型（万相 kf2v 或豆包 Seedance） */
 function getMorphVideoModel() {
   const active = getActiveVideoModel();
-  // 万象首尾帧 或 豆包 Seedance（均支持 startImage + endImage）
+  // 万相首尾帧 或 豆包 Seedance（均支持 startImage + endImage）
   if (
     active &&
     active.isEnabled &&
-    ((active.providerId === "qwen" && (active.id.includes("kf2v") || (active.apiModel || "").includes("kf2v"))) ||
-      (active.providerId === "doubao" && (active.apiModel || active.id).includes("seedance")))
+    ((active.providerId === "qwen" &&
+      (active.id.includes("kf2v") ||
+        (active.apiModel || "").includes("kf2v"))) ||
+      (active.providerId === "doubao" &&
+        (active.apiModel || active.id).includes("seedance")))
   ) {
     return active;
   }
@@ -39,8 +42,10 @@ function getMorphVideoModel() {
   return videoModels.find(
     (m) =>
       m.isEnabled &&
-      ((m.providerId === "qwen" && (m.id.includes("kf2v") || (m.apiModel || "").includes("kf2v"))) ||
-        (m.providerId === "doubao" && (m.apiModel || m.id).includes("seedance")))
+      ((m.providerId === "qwen" &&
+        (m.id.includes("kf2v") || (m.apiModel || "").includes("kf2v"))) ||
+        (m.providerId === "doubao" &&
+          (m.apiModel || m.id).includes("seedance"))),
   );
 }
 
@@ -85,7 +90,7 @@ function getVideoDuration(blob: Blob): Promise<number> {
 }
 
 /**
- * 使用万象首尾帧模型创建 Morph 转场
+ * 使用万相首尾帧模型创建 Morph 转场
  */
 export async function createMorphTransition(
   fromClip: TimelineClip,
@@ -104,7 +109,7 @@ export async function createMorphTransition(
   const morphModel = getMorphVideoModel();
   if (!morphModel) {
     throw new Error(
-      "请先在模型配置中启用万象首尾帧模型（如「万象 2.2 首尾帧 Flash」）或豆包 Seedance，并配置对应 API Key"
+      "请先在模型配置中启用万相首尾帧模型（如「万相 2.2 首尾帧 Flash」）或豆包 Seedance，并配置对应 API Key",
     );
   }
 

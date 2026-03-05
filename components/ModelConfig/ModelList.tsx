@@ -75,7 +75,7 @@ function getModelVendorTag(model: ModelDefinition): string {
   if (id.startsWith('grok-')) return 'xAI';
   if (id.startsWith('kling-') || name.includes('可灵')) return '可灵';
   if (id.startsWith('vidu') || name.includes('vidu')) return 'Vidu';
-  if (id.startsWith('wan') || name.includes('万象')) return '万象';
+  if (id.startsWith('wan') || name.includes('万相')) return '万相';
   if (id.startsWith('sora')) return 'OpenAI';
 
   return '其他';
