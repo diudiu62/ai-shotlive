@@ -905,7 +905,8 @@ export const generateWanXiangImage = async (
     n: 1, // 生成图片数量
     size: resolution,
     negative_prompt: "",
-    enable_interleave: false,
+    enable_interleave:
+      referenceImages && referenceImages.length > 0 ? false : true,
     max_images: 1,
   };
 
@@ -919,6 +920,7 @@ export const generateWanXiangImage = async (
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
+        "X-DashScope-Sse": parameters.enable_interleave ? "enable" : "disable",
       },
       body: JSON.stringify({
         model: modelId,
