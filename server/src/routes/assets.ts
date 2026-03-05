@@ -71,7 +71,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     const total = Number((countRows as any)[0]?.total ?? 0);
     const [rows] = await getPool().execute<AssetRow[]>(
       `SELECT data FROM asset_library WHERE ${where} ORDER BY updated_at DESC LIMIT ? OFFSET ?`,
-      [String(...params), String(pageSize), String(offset)],
+      [...params, String(pageSize), String(offset)],
     );
     const items = rows.map(r => JSON.parse(r.data));
 
