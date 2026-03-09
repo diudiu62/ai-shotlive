@@ -335,21 +335,8 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
   const handleDeleteKeyframe = (shot: Shot, type: 'start' | 'end') => {
     const newKeyframes = shot.keyframes?.filter(k => k.type !== type) || [];
     
-    // 检查是否需要清理视频间隔数据
-    let newInterval: VideoInterval | undefined = shot.interval;
-    if (shot.interval) {
-      const deletedKeyframe = shot.keyframes?.find(k => k.type === type);
-      if (deletedKeyframe) {
-        // 如果删除的是起始帧且与视频间隔的起始帧ID匹配，则清理间隔
-        if (type === 'start' && shot.interval.startKeyframeId === deletedKeyframe.id) {
-          newInterval = undefined;
-        }
-        // 如果删除的是结束帧且与视频间隔的结束帧ID匹配，则清理间隔
-        if (type === 'end' && shot.interval.endKeyframeId === deletedKeyframe.id) {
-          newInterval = undefined;
-        }
-      }
-    }
+    // 只删除关键帧本身，保留已生成的视频间隔数据
+    // 视频可以继续使用，即使参考的关键帧被删除
     
     updateProject((prevProject: ProjectState) => ({
       ...prevProject,
@@ -357,8 +344,8 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
         s.id === shot.id 
           ? { 
               ...s, 
-              keyframes: newKeyframes,
-              interval: newInterval
+              keyframes: newKeyframes
+              // 保留原有的 interval 数据，不进行清理
             }
           : s
       )
@@ -366,12 +353,12 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
     
     if (project.id) {
       PS.patchShot(project.id, shot.id, { 
-        keyframes: newKeyframes,
-        interval: newInterval
+        keyframes: newKeyframes
+        // 保留原有的 interval 数据，不进行清理
       });
     }
     
-    showAlert(`${type === 'start' ? '起始帧' : '结束帧'}已删除${newInterval === undefined ? '，相关视频间隔已清理' : ''}`, { type: 'success' });
+    showAlert(`${type === 'start' ? '起始帧' : '结束帧'}已删除（已生成的视频保持不变）`, { type: 'success' });
   };
 
   /**
