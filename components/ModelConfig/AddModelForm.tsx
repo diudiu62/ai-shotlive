@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Check, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, X, ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import { 
   ModelType, 
   ModelDefinition,
@@ -58,10 +58,10 @@ const ModelForm: React.FC<ModelFormProps> = ({ type, model, onSave, onCancel }) 
   const [supportedAspectRatios, setSupportedAspectRatios] = useState<('16:9' | '9:16' | '1:1')[]>(
     (model?.type === 'video' ? (model as any).params?.supportedAspectRatios : undefined) || ['16:9', '9:16']
   );
-  const [defaultDuration, setDefaultDuration] = useState<4 | 8 | 12>(
+  const [defaultDuration, setDefaultDuration] = useState<number>(
     (model?.type === 'video' ? (model as any).params?.defaultDuration : undefined) || 8
   );
-  const [supportedDurations, setSupportedDurations] = useState<(4 | 8 | 12)[]>(
+  const [supportedDurations, setSupportedDurations] = useState<number[]>(
     (model?.type === 'video' ? (model as any).params?.supportedDurations : undefined) || [4, 8, 12]
   );
 
@@ -333,7 +333,7 @@ const ModelForm: React.FC<ModelFormProps> = ({ type, model, onSave, onCancel }) 
                 异步模式（Sora 类）
               </button>
             </div>
-            <p className="text-[9px] text-[var(--text-muted)] mt-1">
+            <p className="text-[10px] text-[var(--text-muted)] mt-1">
               同步模式：直接返回结果；异步模式：先创建任务，再轮询获取结果
             </p>
           </div>
@@ -378,47 +378,75 @@ const ModelForm: React.FC<ModelFormProps> = ({ type, model, onSave, onCancel }) 
             </div>
           </div>
 
-          {/* 时长配置（仅异步模式显示） */}
-          {videoMode === 'async' && (
-            <div>
-              <label className="text-[10px] text-[var(--text-tertiary)] block mb-2">支持的视频时长（秒）</label>
-              <div className="flex gap-2 mb-2">
-                {([4, 8, 12] as const).map((duration) => (
-                  <label key={duration} className="flex items-center gap-1 text-xs">
-                    <input
-                      type="checkbox"
-                      checked={supportedDurations.includes(duration)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSupportedDurations([...supportedDurations, duration]);
-                        } else {
-                          setSupportedDurations(supportedDurations.filter(d => d !== duration));
+          {/* 时长配置（简洁现代风格） */}
+          <div>
+            <label className="text-[10px] text-[var(--text-tertiary)] font-medium block mb-3">视频时长配置</label>
+            
+            {/* 支持的时长列表 */}
+            <div className="space-y-2">
+              <label className="text-[9px] text-[var(--text-muted)] block">支持的时长选项（点击设为默认）</label>
+              <div className="flex flex-wrap gap-2">
+                {supportedDurations.map((duration, index) => (
+                  <div key={index} className="relative group">
+                    <button
+                      onClick={() => setDefaultDuration(duration)}
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        defaultDuration === duration 
+                          ? 'bg-[var(--success-bg)] text-[var(--success-text)]' 
+                          : 'bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:bg-[var(--border-secondary)]'
+                      }`}
+                    >
+                      <span>{duration}秒</span>
+                      {defaultDuration === duration && (
+                        <Check className="w-3 h-3" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSupportedDurations(supportedDurations.filter((_, i) => i !== index));
+                        // 如果删除的是默认时长，自动选择第一个时长作为默认
+                        if (defaultDuration === duration && supportedDurations.length > 1) {
+                          setDefaultDuration(supportedDurations[0] === duration ? supportedDurations[1] : supportedDurations[0]);
                         }
                       }}
-                      className="w-3 h-3"
-                    />
-                    {duration}秒
-                  </label>
+                      className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--danger-bg)] text-[var(--danger-text)] rounded-full p-0.5 hover:bg-[var(--danger-hover)]"
+                      title="删除此时长选项"
+                    >
+                      <X className="w-2 h-2" />
+                    </button>
+                  </div>
                 ))}
-              </div>
-              <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">默认时长</label>
-              <div className="flex gap-2">
-                {supportedDurations.map((duration) => (
-                  <button
-                    key={duration}
-                    onClick={() => setDefaultDuration(duration)}
-                    className={`px-3 py-1.5 text-xs rounded transition-colors ${
-                      defaultDuration === duration
-                        ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-                        : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
-                    }`}
-                  >
-                    {duration}秒
-                  </button>
-                ))}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    placeholder="秒数"
+                    className="w-16 bg-[var(--bg-hover)] border border-[var(--border-secondary)] rounded px-2 py-1.5 text-xs text-[var(--text-primary)] focus:border-[var(--accent)] focus:outline-none"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const input = e.target as HTMLInputElement;
+                        const newDuration = Number(input.value);
+                        if (newDuration >= 1 && newDuration <= 60) {
+                          setSupportedDurations([...supportedDurations, newDuration]);
+                          // 如果是第一个时长，自动设为默认
+                          if (supportedDurations.length === 0) {
+                            setDefaultDuration(newDuration);
+                          }
+                          input.value = '';
+                        }
+                      }
+                    }}
+                  />
+
+                </div>
               </div>
             </div>
-          )}
+            
+            <p className="text-[10px] text-[var(--text-muted)] mt-3">
+              当前默认时长：<span className="font-medium text-[var(--success-text)]">{defaultDuration}秒</span> • 支持1-60秒的视频时长
+            </p>
+          </div>
         </div>
       )}
 
