@@ -43,6 +43,12 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
   const [endpoint, setEndpoint] = useState('');
   const [videoMode, setVideoMode] = useState<'sync' | 'async'>('sync');
   
+  // 视频模型特有参数
+  const [defaultAspectRatio, setDefaultAspectRatio] = useState<'16:9' | '9:16' | '1:1'>('16:9');
+  const [supportedAspectRatios, setSupportedAspectRatios] = useState<('16:9' | '9:16' | '1:1')[]>(['16:9', '9:16']);
+  const [defaultDuration, setDefaultDuration] = useState<4 | 8 | 12>(8);
+  const [supportedDurations, setSupportedDurations] = useState<(4 | 8 | 12)[]>([4, 8, 12]);
+  
   // 提供商配置
   const [providerMode, setProviderMode] = useState<'existing' | 'custom'>('existing');
   const [selectedProviderId, setSelectedProviderId] = useState(existingProviders[0]?.id || 'antsk');
@@ -86,9 +92,13 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
     } else if (type === 'image') {
       params = { ...DEFAULT_IMAGE_PARAMS, apiFormat };
     } else {
-      params = videoMode === 'async' 
-        ? { ...DEFAULT_VIDEO_PARAMS_SORA }
-        : { ...DEFAULT_VIDEO_PARAMS_VEO };
+      params = {
+        mode: videoMode,
+        defaultAspectRatio,
+        supportedAspectRatios,
+        defaultDuration,
+        supportedDurations,
+      };
     }
 
     const model: Omit<ModelDefinition, 'id' | 'isBuiltIn'> = {
@@ -252,33 +262,117 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
 
       {/* 视频模型特有选项 */}
       {type === 'video' && (
-        <div>
-          <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">API 模式</label>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setVideoMode('sync')}
-              className={`flex-1 py-2 text-xs rounded transition-colors ${
-                videoMode === 'sync'
-                  ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-                  : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
-              }`}
-            >
-              同步模式（Chat Completion 类）
-            </button>
-            <button
-              onClick={() => setVideoMode('async')}
-              className={`flex-1 py-2 text-xs rounded transition-colors ${
-                videoMode === 'async'
-                  ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-                  : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
-              }`}
-            >
-              异步模式（Sora 类）
-            </button>
+        <div className="space-y-4">
+          <div>
+            <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">API 模式</label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setVideoMode('sync')}
+                className={`flex-1 py-2 text-xs rounded transition-colors ${
+                  videoMode === 'sync'
+                    ? 'bg-[var(--accent)] text-[var(--text-primary)]'
+                    : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
+                }`}
+              >
+                同步模式（Chat Completion 类）
+              </button>
+              <button
+                onClick={() => setVideoMode('async')}
+                className={`flex-1 py-2 text-xs rounded transition-colors ${
+                  videoMode === 'async'
+                    ? 'bg-[var(--accent)] text-[var(--text-primary)]'
+                    : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
+                }`}
+              >
+                异步模式（Sora 类）
+              </button>
+            </div>
+            <p className="text-[9px] text-[var(--text-muted)] mt-1">
+              同步模式：直接返回结果；异步模式：先创建任务，再轮询获取结果
+            </p>
           </div>
-          <p className="text-[9px] text-[var(--text-muted)] mt-1">
-            同步模式：直接返回结果；异步模式：先创建任务，再轮询获取结果
-          </p>
+
+          {/* 横竖屏比例配置 */}
+          <div>
+            <label className="text-[10px] text-[var(--text-tertiary)] block mb-2">支持的横竖屏比例</label>
+            <div className="flex gap-2 mb-2">
+              {(['16:9', '9:16', '1:1'] as const).map((ratio) => (
+                <label key={ratio} className="flex items-center gap-1 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={supportedAspectRatios.includes(ratio)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSupportedAspectRatios([...supportedAspectRatios, ratio]);
+                      } else {
+                        setSupportedAspectRatios(supportedAspectRatios.filter(r => r !== ratio));
+                      }
+                    }}
+                    className="w-3 h-3"
+                  />
+                  {ratio === '16:9' ? '横屏' : ratio === '9:16' ? '竖屏' : '方形'}
+                </label>
+              ))}
+            </div>
+            <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">默认比例</label>
+            <div className="flex gap-2">
+              {supportedAspectRatios.map((ratio) => (
+                <button
+                  key={ratio}
+                  onClick={() => setDefaultAspectRatio(ratio)}
+                  className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                    defaultAspectRatio === ratio
+                      ? 'bg-[var(--accent)] text-[var(--text-primary)]'
+                      : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
+                  }`}
+                >
+                  {ratio === '16:9' ? '横屏' : ratio === '9:16' ? '竖屏' : '方形'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 时长配置（仅异步模式显示） */}
+          {videoMode === 'async' && (
+            <div>
+              <label className="text-[10px] text-[var(--text-tertiary)] block mb-2">支持的视频时长（秒）</label>
+              <div className="flex gap-2 mb-2">
+                {([4, 8, 12] as const).map((duration) => (
+                  <label key={duration} className="flex items-center gap-1 text-xs">
+                    <input
+                      type="checkbox"
+                      checked={supportedDurations.includes(duration)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSupportedDurations([...supportedDurations, duration]);
+                        } else {
+                          setSupportedDurations(supportedDurations.filter(d => d !== duration));
+                        }
+                      }}
+                      className="w-3 h-3"
+                    />
+                    {duration}秒
+                  </label>
+                ))}
+              </div>
+              <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">默认时长</label>
+              <div className="flex gap-2">
+                {supportedDurations.map((duration) => (
+                  <button
+                    key={duration}
+                    onClick={() => setDefaultDuration(duration)}
+                    className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                      defaultDuration === duration
+                        ? 'bg-[var(--accent)] text-[var(--text-primary)]'
+                        : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
+                    }`}
+                  >
+                    {duration}秒
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
