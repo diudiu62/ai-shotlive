@@ -42,3 +42,4 @@ data/
 /docs
 Toonflow-app/
 .env
+pnpm-lock.yaml
