@@ -494,23 +494,40 @@ export const registerModel = (model: Omit<ModelDefinition, 'isBuiltIn'> & { id?:
  */
 export const updateModel = (id: string, updates: Partial<ModelDefinition>): boolean => {
   const state = loadRegistry();
-  const index = state.models.findIndex(m => m.id === id);
+  const index = state.models.findIndex((m) => m.id === id);
   if (index === -1) return false;
 
-  // 内置模型只能修改 isEnabled、params 和 providerId
+  // 内置模型可以修改用户可配置的字段
   if (state.models[index].isBuiltIn) {
     const allowedUpdates: Partial<ModelDefinition> = {};
-    if (updates.isEnabled !== undefined) allowedUpdates.isEnabled = updates.isEnabled;
+    // 基本信息
+    if (updates.name !== undefined) allowedUpdates.name = updates.name;
+    if (updates.apiModel !== undefined)
+      allowedUpdates.apiModel = updates.apiModel;
+    if (updates.description !== undefined)
+      allowedUpdates.description = updates.description;
+    if (updates.endpoint !== undefined)
+      allowedUpdates.endpoint = updates.endpoint;
+    // 核心配置
+    if (updates.isEnabled !== undefined)
+      allowedUpdates.isEnabled = updates.isEnabled;
     if (updates.params) allowedUpdates.params = updates.params as any;
-    if (updates.providerId !== undefined) allowedUpdates.providerId = updates.providerId;
-    state.models[index] = { ...state.models[index], ...allowedUpdates } as ModelDefinition;
+    if (updates.providerId !== undefined)
+      allowedUpdates.providerId = updates.providerId;
+    state.models[index] = {
+      ...state.models[index],
+      ...allowedUpdates,
+    } as ModelDefinition;
   } else {
-    state.models[index] = { ...state.models[index], ...updates } as ModelDefinition;
+    state.models[index] = {
+      ...state.models[index],
+      ...updates,
+    } as ModelDefinition;
   }
 
   saveRegistry(state);
   return true;
-};
+};;
 
 /**
  * 删除模型
@@ -703,10 +720,10 @@ export const getDefaultVideoDuration = (): VideoDuration => {
 /**
  * 获取视频模型类型
  */
-export const getVideoModelType = (): 'sora' | 'veo' => {
+export const getVideoModelType = (): "sora" | "veo" => {
   const videoModel = getActiveVideoModel();
   if (videoModel) {
-    return videoModel.params.mode === 'async' ? 'sora' : 'veo';
+    return videoModel.params.mode === "async" ? "sora" : "veo";
   }
-  return 'sora';
+  return "sora";
 };

@@ -1,9 +1,9 @@
 /**
- * 添加模型表单组件
- * 支持自定义提供商和 endpoint
+ * 通用模型表单组件
+ * 支持添加新模型和编辑现有模型
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { 
   ModelType, 
@@ -20,8 +20,9 @@ import {
 import { getProviders, addProvider } from '../../services/modelRegistry';
 import { useAlert } from '../GlobalAlert';
 
-interface AddModelFormProps {
+interface ModelFormProps {
   type: ModelType;
+  model?: ModelDefinition; // 编辑模式时传入现有模型
   onSave: (model: Omit<ModelDefinition, 'id' | 'isBuiltIn'>) => void;
   onCancel: () => void;
 }
@@ -32,32 +33,72 @@ const IMAGE_API_FORMAT_OPTIONS = [
   { value: 'dashscope-image' as ImageApiFormat, label: '阿里云百炼/通义' },
 ];
 
-const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) => {
+const ModelForm: React.FC<ModelFormProps> = ({ type, model, onSave, onCancel }) => {
   const existingProviders = getProviders();
   const { showAlert } = useAlert();
   
-  const [name, setName] = useState('');
-  const [apiModel, setApiModel] = useState('');
-  const [apiFormat, setApiFormat] = useState<ImageApiFormat>('openai-image');
-  const [description, setDescription] = useState('');
-  const [endpoint, setEndpoint] = useState('');
-  const [videoMode, setVideoMode] = useState<'sync' | 'async'>('sync');
+  const isEditMode = !!model;
+  
+  // 初始化表单状态
+  const [name, setName] = useState(model?.name || '');
+  const [apiModel, setApiModel] = useState(model?.apiModel || '');
+  const [apiFormat, setApiFormat] = useState<ImageApiFormat>(
+    (model?.type === 'image' ? (model as any).params?.apiFormat : undefined) || 'openai-image'
+  );
+  const [description, setDescription] = useState(model?.description || '');
+  const [endpoint, setEndpoint] = useState(model?.endpoint || '');
+  const [videoMode, setVideoMode] = useState<'sync' | 'async'>(
+    (model?.type === 'video' ? (model as any).params?.mode : undefined) || 'sync'
+  );
   
   // 视频模型特有参数
-  const [defaultAspectRatio, setDefaultAspectRatio] = useState<'16:9' | '9:16' | '1:1'>('16:9');
-  const [supportedAspectRatios, setSupportedAspectRatios] = useState<('16:9' | '9:16' | '1:1')[]>(['16:9', '9:16']);
-  const [defaultDuration, setDefaultDuration] = useState<4 | 8 | 12>(8);
-  const [supportedDurations, setSupportedDurations] = useState<(4 | 8 | 12)[]>([4, 8, 12]);
-  
+  const [defaultAspectRatio, setDefaultAspectRatio] = useState<'16:9' | '9:16' | '1:1'>(
+    (model?.type === 'video' ? (model as any).params?.defaultAspectRatio : undefined) || '16:9'
+  );
+  const [supportedAspectRatios, setSupportedAspectRatios] = useState<('16:9' | '9:16' | '1:1')[]>(
+    (model?.type === 'video' ? (model as any).params?.supportedAspectRatios : undefined) || ['16:9', '9:16']
+  );
+  const [defaultDuration, setDefaultDuration] = useState<4 | 8 | 12>(
+    (model?.type === 'video' ? (model as any).params?.defaultDuration : undefined) || 8
+  );
+  const [supportedDurations, setSupportedDurations] = useState<(4 | 8 | 12)[]>(
+    (model?.type === 'video' ? (model as any).params?.supportedDurations : undefined) || [4, 8, 12]
+  );
+
   // 提供商配置
-  const [providerMode, setProviderMode] = useState<'existing' | 'custom'>('existing');
-  const [selectedProviderId, setSelectedProviderId] = useState(existingProviders[0]?.id || 'antsk');
+  const [providerMode, setProviderMode] = useState<'existing' | 'custom'>(model ? 'existing' : 'existing');
+  const [selectedProviderId, setSelectedProviderId] = useState(model?.providerId || existingProviders[0]?.id || 'antsk');
   const [customProviderName, setCustomProviderName] = useState('');
   const [customProviderBaseUrl, setCustomProviderBaseUrl] = useState('');
   const [customProviderApiKey, setCustomProviderApiKey] = useState('');
   
   // 展开高级选项
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // 编辑模式时，初始化表单数据
+  useEffect(() => {
+    if (model && isEditMode) {
+      setName(model.name);
+      setApiModel(model.apiModel || '');
+      setDescription(model.description || '');
+      setEndpoint(model.endpoint || '');
+      setSelectedProviderId(model.providerId);
+      
+      // 初始化模型特定参数
+      if (model.type === 'image') {
+        setApiFormat((model as any).params?.apiFormat || 'openai-image');
+      } else if (model.type === 'video') {
+        const videoParams = (model as any).params;
+        setVideoMode(videoParams?.mode || 'sync');
+        setDefaultAspectRatio(videoParams?.defaultAspectRatio || '16:9');
+        setSupportedAspectRatios(videoParams?.supportedAspectRatios || ['16:9', '9:16']);
+        setDefaultDuration(videoParams?.defaultDuration || 8);
+        setSupportedDurations(videoParams?.supportedDurations || [4, 8, 12]);
+      }
+    }
+  }, [model, isEditMode]);
+  
+
 
   const handleSave = () => {
     if (!name.trim() || !apiModel.trim()) {
@@ -84,14 +125,17 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
       providerId = newProvider.id;
     }
 
-    // 根据模型类型设置默认参数
+    // 根据模型类型设置参数（统一使用表单中的当前值）
     let params: ChatModelParams | ImageModelParams | VideoModelParams;
     
     if (type === 'chat') {
+      // 对话模型：使用默认参数结构
       params = { ...DEFAULT_CHAT_PARAMS };
     } else if (type === 'image') {
+      // 图片模型：使用表单中的参数
       params = { ...DEFAULT_IMAGE_PARAMS, apiFormat };
     } else {
+      // 视频模型：使用表单中的参数
       params = {
         mode: videoMode,
         defaultAspectRatio,
@@ -101,23 +145,25 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
       };
     }
 
-    const model: Omit<ModelDefinition, 'id' | 'isBuiltIn'> = {
+    const modelData: Omit<ModelDefinition, 'id' | 'isBuiltIn'> = {
       name: name.trim(),
       apiModel: apiModel.trim(),
       type,
       providerId,
       endpoint: endpoint.trim() || undefined,
       description: description.trim() || undefined,
-      isEnabled: true,
+      isEnabled: isEditMode ? (model?.isEnabled ?? true) : true,
       params,
     } as any;
 
-    onSave(model);
+    onSave(modelData);
   };
 
   return (
     <div className="bg-[var(--bg-elevated)]/50 border border-[var(--border-secondary)] rounded-lg p-4 space-y-4">
-      <h4 className="text-sm font-bold text-[var(--text-primary)]">添加自定义模型</h4>
+      <h4 className="text-sm font-bold text-[var(--text-primary)]">
+        {isEditMode ? '编辑模型' : '添加自定义模型'}
+      </h4>
       
       {/* 基础信息 */}
       <div className="grid grid-cols-2 gap-4">
@@ -193,7 +239,7 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
             onClick={() => setProviderMode('existing')}
             className={`flex-1 py-2 text-xs rounded transition-colors ${
               providerMode === 'existing'
-                ? 'bg-[var(--accent)] text-[var(--text-primary)]'
+                ? 'bg-[var(--success-bg)] text-[var(--success-text)]'
                 : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
             }`}
           >
@@ -203,7 +249,7 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
             onClick={() => setProviderMode('custom')}
             className={`flex-1 py-2 text-xs rounded transition-colors ${
               providerMode === 'custom'
-                ? 'bg-[var(--accent)] text-[var(--text-primary)]'
+                ? 'bg-[var(--success-bg)] text-[var(--success-text)]'
                 : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
             }`}
           >
@@ -270,7 +316,7 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
                 onClick={() => setVideoMode('sync')}
                 className={`flex-1 py-2 text-xs rounded transition-colors ${
                   videoMode === 'sync'
-                    ? 'bg-[var(--accent)] text-[var(--text-primary)]'
+                    ? 'bg-[var(--success-bg)] text-[var(--success-text)]'
                     : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
                 }`}
               >
@@ -280,7 +326,7 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
                 onClick={() => setVideoMode('async')}
                 className={`flex-1 py-2 text-xs rounded transition-colors ${
                   videoMode === 'async'
-                    ? 'bg-[var(--accent)] text-[var(--text-primary)]'
+                    ? 'bg-[var(--success-bg)] text-[var(--success-text)]'
                     : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
                 }`}
               >
@@ -322,7 +368,7 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
                   onClick={() => setDefaultAspectRatio(ratio)}
                   className={`px-3 py-1.5 text-xs rounded transition-colors ${
                     defaultAspectRatio === ratio
-                      ? 'bg-[var(--accent)] text-[var(--text-primary)]'
+                      ? 'bg-[var(--success-bg)] text-[var(--success-text)]'
                       : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
                   }`}
                 >
@@ -383,7 +429,7 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
           className="flex-1 py-2.5 bg-[var(--accent)] text-[var(--text-primary)] text-xs font-bold rounded hover:bg-[var(--accent-hover)] transition-colors flex items-center justify-center gap-1"
         >
           <Check className="w-3 h-3" />
-          添加模型
+          {isEditMode ? '保存修改' : '添加模型'}
         </button>
         <button
           onClick={onCancel}
@@ -396,4 +442,4 @@ const AddModelForm: React.FC<AddModelFormProps> = ({ type, onSave, onCancel }) =
   );
 };
 
-export default AddModelForm;
+export default ModelForm;

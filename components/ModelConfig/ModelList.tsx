@@ -22,7 +22,7 @@ import {
 import { ModelProvider } from '../../types/model';
 import { useAlert } from '../GlobalAlert';
 import ModelCard from './ModelCard';
-import AddModelForm from './AddModelForm';
+import ModelForm from './AddModelForm';
 
 interface ModelListProps {
   type: ModelType;
@@ -85,6 +85,7 @@ const ModelList: React.FC<ModelListProps> = ({ type, onRefresh }) => {
   const [models, setModels] = useState<ModelDefinition[]>([]);
   const [allProviders, setAllProviders] = useState<ModelProvider[]>([]);
   const [isAddingModel, setIsAddingModel] = useState(false);
+  const [editingModel, setEditingModel] = useState<ModelDefinition | null>(null);
   const [expandedModelId, setExpandedModelId] = useState<string | null>(null);
   const [activeModelId, setActiveModelId] = useState<string>('');
   const [selectedVendor, setSelectedVendor] = useState<string>('all');
@@ -140,9 +141,43 @@ const ModelList: React.FC<ModelListProps> = ({ type, onRefresh }) => {
   const handleUpdateModel = (modelId: string, updates: Partial<ModelDefinition>) => {
     if (updateModel(modelId, updates)) {
       loadModels();
-      // 注意：不调用 onRefresh()，因为 loadModels() 已经更新了本地状态。
-      // onRefresh() 会导致父组件 refreshKey++ → key 改变 → 整个内容区域卸载重建，
-      // 从而使输入框失焦，造成"每打一个字就刷新弹窗"的问题。
+    }
+  };
+
+  const handleEditModel = (model: ModelDefinition) => {
+    setEditingModel(model);
+    setExpandedModelId(null); // 关闭展开的卡片
+  };
+
+  const handleSaveModel = (modelData: Omit<ModelDefinition, 'id' | 'isBuiltIn'>) => {
+    if (editingModel) {
+      // 编辑模式：更新现有模型
+      // 使用类型断言解决 TypeScript 类型兼容性问题
+      if (updateModel(editingModel.id, modelData as Partial<ModelDefinition>)) {
+        showAlert('模型更新成功', { type: 'success' });
+        setEditingModel(null);
+        loadModels();
+      } else {
+        showAlert('模型更新失败', { type: 'error' });
+      }
+    } else {
+      // 添加模式：创建新模型
+      // 使用类型断言解决 TypeScript 类型兼容性问题
+      if (registerModel(modelData as Omit<ModelDefinition, 'isBuiltIn'> & { id?: string })) {
+        showAlert('模型添加成功', { type: 'success' });
+        setIsAddingModel(false);
+        loadModels();
+      } else {
+        showAlert('模型添加失败', { type: 'error' });
+      }
+    }
+  };
+
+  const handleCancelForm = () => {
+    if (editingModel) {
+      setEditingModel(null);
+    } else {
+      setIsAddingModel(false);
     }
   };
 
@@ -160,17 +195,6 @@ const ModelList: React.FC<ModelListProps> = ({ type, onRefresh }) => {
     });
   };
 
-  const handleAddModel = (model: Omit<ModelDefinition, 'id' | 'isBuiltIn'>) => {
-    try {
-      registerModel(model);
-      setIsAddingModel(false);
-      loadModels();
-      onRefresh();
-      showAlert('模型添加成功', { type: 'success' });
-    } catch (error) {
-      showAlert(error instanceof Error ? error.message : '添加模型失败', { type: 'error' });
-    }
-  };
 
   const handleToggleExpand = (modelId: string) => {
     setExpandedModelId(expandedModelId === modelId ? null : modelId);
@@ -249,33 +273,53 @@ const ModelList: React.FC<ModelListProps> = ({ type, onRefresh }) => {
       {/* 模型列表 */}
       <div className="space-y-2">
         {filteredModels.map((model) => (
-          <ModelCard
-            key={model.id}
-            model={model}
-            isExpanded={expandedModelId === model.id}
-            isActive={activeModelId === model.id}
-            providers={allProviders}
-            onToggleExpand={() => handleToggleExpand(model.id)}
-            onUpdate={(updates) => handleUpdateModel(model.id, updates)}
-            onDelete={() => handleDeleteModel(model.id)}
-            onSetActive={() => handleSetActiveModel(model.id)}
-          />
+          editingModel && editingModel.id === model.id ? (
+            /* 编辑模式：显示编辑表单 */
+            <div key={model.id} className="bg-[var(--bg-elevated)]/50 border border-[var(--accent-border)] rounded-lg overflow-hidden">
+              <ModelForm
+                type={type}
+                model={editingModel}
+                onSave={handleSaveModel}
+                onCancel={handleCancelForm}
+              />
+            </div>
+          ) : (
+            /* 正常模式：显示模型卡片 */
+            <ModelCard
+              key={model.id}
+              model={model}
+              isExpanded={expandedModelId === model.id}
+              isActive={activeModelId === model.id}
+              providers={allProviders}
+              onToggleExpand={() => handleToggleExpand(model.id)}
+              onUpdate={(updates) => handleUpdateModel(model.id, updates)}
+              onDelete={() => handleDeleteModel(model.id)}
+              onSetActive={() => handleSetActiveModel(model.id)}
+              onEdit={() => handleEditModel(model)}
+            />
+          )
         ))}
-        {filteredModels.length === 0 && (
+        
+        {/* 添加模型表单 */}
+        {isAddingModel && (
+          <div className="bg-[var(--bg-elevated)]/50 border border-[var(--accent-border)] rounded-lg overflow-hidden">
+            <ModelForm
+              type={type}
+              onSave={handleSaveModel}
+              onCancel={handleCancelForm}
+            />
+          </div>
+        )}
+        
+        {filteredModels.length === 0 && !isAddingModel && (
           <p className="text-xs text-[var(--text-muted)] text-center py-4">
             当前筛选条件下无模型
           </p>
         )}
       </div>
 
-      {/* 添加模型 */}
-      {isAddingModel ? (
-        <AddModelForm
-          type={type}
-          onSave={handleAddModel}
-          onCancel={() => setIsAddingModel(false)}
-        />
-      ) : (
+      {/* 添加模型按钮 */}
+      {!isAddingModel && !editingModel && (
         <button
           onClick={() => setIsAddingModel(true)}
           className="w-full py-3 border border-dashed border-[var(--border-secondary)] rounded-lg text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:border-[var(--border-secondary)] transition-colors flex items-center justify-center gap-2"

@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Trash2, ToggleLeft, ToggleRight, CheckCircle, Circle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Trash2, ToggleLeft, ToggleRight, CheckCircle, Circle, Edit } from 'lucide-react';
 import { 
   ModelDefinition, 
   ModelProvider,
@@ -24,6 +24,7 @@ interface ModelCardProps {
   onUpdate: (updates: Partial<ModelDefinition>) => void;
   onDelete: () => void;
   onSetActive: () => void;
+  onEdit: () => void;
 }
 
 const ModelCard: React.FC<ModelCardProps> = ({
@@ -35,16 +36,9 @@ const ModelCard: React.FC<ModelCardProps> = ({
   onUpdate,
   onDelete,
   onSetActive,
+  onEdit,
 }) => {
-  const [editParams, setEditParams] = useState<any>(model.params);
-
   const currentProvider = providers.find(p => p.id === model.providerId);
-
-  const handleParamChange = (key: string, value: any) => {
-    const newParams = { ...editParams, [key]: value };
-    setEditParams(newParams);
-    onUpdate({ params: newParams } as any);
-  };
 
   const handleToggleEnabled = () => {
     onUpdate({ isEnabled: !model.isEnabled });
@@ -55,102 +49,34 @@ const ModelCard: React.FC<ModelCardProps> = ({
   };
 
   const renderChatParams = (params: ChatModelParams) => (
-    <div className="grid grid-cols-2 gap-4">
-      <div>
-        <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">温度</label>
-        <input
-          type="number"
-          min="0"
-          max="2"
-          step="0.1"
-          value={editParams.temperature}
-          onChange={(e) => handleParamChange('temperature', parseFloat(e.target.value))}
-          className="w-full bg-[var(--bg-hover)] border border-[var(--border-secondary)] rounded px-3 py-2 text-xs text-[var(--text-primary)]"
-        />
-      </div>
-      <div>
-        <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">最大 Token</label>
-        <input
-          type="number"
-          min="1"
-          max="128000"
-          value={editParams.maxTokens ?? ''}
-          onChange={(e) => {
-            const value = e.target.value;
-            handleParamChange('maxTokens', value === '' ? undefined : parseInt(value));
-          }}
-          placeholder="留空不限制"
-          className="w-full bg-[var(--bg-hover)] border border-[var(--border-secondary)] rounded px-3 py-2 text-xs text-[var(--text-primary)]"
-        />
-        <p className="text-[9px] text-[var(--text-muted)] mt-1">留空则不限制最大 Token</p>
-      </div>
+    <div className="space-y-2 text-[10px] text-[var(--text-tertiary)]">
+      <div>温度: {params.temperature}</div>
+      <div>最大 Token: {params.maxTokens || '不限制'}</div>
     </div>
   );
 
   const renderImageParams = (params: ImageModelParams) => (
-    <div>
-      <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">默认比例</label>
-      <div className="flex gap-2">
-        {(params.supportedAspectRatios || ['16:9', '9:16']).map((ratio) => (
-          <button
-            key={ratio}
-            onClick={() => handleParamChange('defaultAspectRatio', ratio)}
-            className={`px-3 py-1.5 text-xs rounded transition-colors ${
-              editParams.defaultAspectRatio === ratio
-                ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-                : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
-            }`}
-          >
-            {ratio === '16:9' ? '横屏' : ratio === '9:16' ? '竖屏' : '方形'}
-          </button>
-        ))}
-      </div>
+    <div className="space-y-2 text-[10px] text-[var(--text-tertiary)]">
+      <div>支持比例: {params.supportedAspectRatios.map(ratio => 
+        ratio === '16:9' ? '横屏' : ratio === '9:16' ? '竖屏' : '方形'
+      ).join('、')}</div>
+      <div>默认比例: {params.defaultAspectRatio === '16:9' ? '横屏' : params.defaultAspectRatio === '9:16' ? '竖屏' : '方形'}</div>
     </div>
   );
 
   const renderVideoParams = (params: VideoModelParams) => (
-    <div className="space-y-4">
-      <div>
-        <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">默认比例</label>
-        <div className="flex gap-2">
-          {editParams.supportedAspectRatios.map((ratio: AspectRatio) => (
-            <button
-              key={ratio}
-              onClick={() => handleParamChange('defaultAspectRatio', ratio)}
-              className={`px-3 py-1.5 text-xs rounded transition-colors ${
-                editParams.defaultAspectRatio === ratio
-                  ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-                  : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
-              }`}
-            >
-              {ratio === '16:9' ? '横屏' : ratio === '9:16' ? '竖屏' : '方形'}
-            </button>
-          ))}
-        </div>
-      </div>
-      {editParams.supportedDurations.length > 1 && (
-        <div>
-          <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">默认时长</label>
-          <div className="flex gap-2">
-            {editParams.supportedDurations.map((duration: VideoDuration) => (
-              <button
-                key={duration}
-                onClick={() => handleParamChange('defaultDuration', duration)}
-                className={`px-3 py-1.5 text-xs rounded transition-colors ${
-                  editParams.defaultDuration === duration
-                    ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-                    : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)]'
-                }`}
-              >
-                {duration}秒
-              </button>
-            ))}
-          </div>
-        </div>
+    <div className="space-y-2 text-[10px] text-[var(--text-tertiary)]">
+      <div>模式：{params.mode === 'sync' ? '同步（Veo）' : '异步（Sora）'}</div>
+      <div>支持比例：{params.supportedAspectRatios.map(ratio => 
+        ratio === '16:9' ? '横屏' : ratio === '9:16' ? '竖屏' : '方形'
+      ).join('、')}</div>
+      <div>默认比例：{params.defaultAspectRatio === '16:9' ? '横屏' : params.defaultAspectRatio === '9:16' ? '竖屏' : '方形'}</div>
+      {params.mode === 'async' && (
+        <>
+          <div>支持时长：{params.supportedDurations.join('、')}秒</div>
+          <div>默认时长：{params.defaultDuration}秒</div>
+        </>
       )}
-      <div className="text-[10px] text-[var(--text-muted)]">
-        模式：{editParams.mode === 'sync' ? '同步（Veo）' : '异步（Sora）'}
-      </div>
     </div>
   );
 
@@ -199,7 +125,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
               className={`px-2.5 py-1 text-[10px] font-bold rounded transition-colors flex items-center gap-1 ${
                 currentProvider?.apiKey
                   ? 'bg-[var(--accent)] text-[var(--text-primary)] hover:bg-[var(--accent-hover)]'
-                  : 'bg-[var(--bg-hover)] text-[var(--text-muted)] cursor-not-allowed opacity-60'
+                  : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] cursor-not-allowed opacity-60'
               }`}
               title={currentProvider?.apiKey ? '使用此模型' : '请先为提供商配置 API Key'}
             >
@@ -237,50 +163,22 @@ const ModelCard: React.FC<ModelCardProps> = ({
             </button>
           )}
 
+
+          
           <button
-            onClick={onToggleExpand}
+            onClick={() => {
+              // 点击下拉按钮时直接进入编辑模式
+              onEdit();
+            }}
             className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+            title="编辑模型"
           >
-            {isExpanded ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
+            <Edit className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* 展开的参数配置 */}
-      {isExpanded && (
-        <div className="px-4 pb-4 pt-0 border-t border-[var(--border-primary)]">
-          <div className="pt-4 space-y-4">
-            {/* 提供商选择 */}
-            <div>
-              <label className="text-[10px] text-[var(--text-tertiary)] block mb-1">
-                所属提供商
-              </label>
-              <select
-                value={model.providerId}
-                onChange={(e) => handleProviderChange(e.target.value)}
-                className="w-full bg-[var(--bg-hover)] border border-[var(--border-secondary)] rounded px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:border-[var(--accent)] focus:ring-[var(--accent)]/30"
-              >
-                {providers.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({p.baseUrl}){p.apiKey ? ' ✓' : ''}
-                  </option>
-                ))}
-              </select>
-              <p className="text-[9px] text-[var(--text-muted)] mt-1">
-                模型将使用所选提供商的 API Key 和地址进行调用
-              </p>
-            </div>
-            
-            {model.type === 'chat' && renderChatParams(model.params)}
-            {model.type === 'image' && renderImageParams(model.params)}
-            {model.type === 'video' && renderVideoParams(model.params)}
-          </div>
-        </div>
-      )}
+      {/* 展开的内容 - 已移除，点击下拉直接进入编辑模式 */}
     </div>
   );
 };
