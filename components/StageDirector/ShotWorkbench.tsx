@@ -33,6 +33,7 @@ interface ShotWorkbenchProps {
   onOptimizeBothKeyframes: () => void;
   onCopyPreviousEndFrame: () => void;
   onCopyNextStartFrame: () => void;
+  onDeleteKeyframe: (type: 'start' | 'end') => void; // 删除关键帧
   useAIEnhancement: boolean;
   onToggleAIEnhancement: () => void;
   onGenerateVideo: (aspectRatio: AspectRatio, duration: VideoDuration, modelId: string) => void;
@@ -74,6 +75,7 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
   onOptimizeBothKeyframes,
   onCopyPreviousEndFrame,
   onCopyNextStartFrame,
+  onDeleteKeyframe,
   useAIEnhancement,
   onToggleAIEnhancement,
   onGenerateVideo,
@@ -270,6 +272,7 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
           onOptimizeBothWithAI={onOptimizeBothKeyframes}
           onCopyPrevious={onCopyPreviousEndFrame}
           onCopyNext={onCopyNextStartFrame}
+          onDeleteKeyframe={onDeleteKeyframe}
           onImageClick={onImageClick}
         />
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, Edit2, Upload, ArrowRight, ArrowLeft, Sparkles, Wand2 } from 'lucide-react';
+import { Loader2, Edit2, Upload, ArrowRight, ArrowLeft, Sparkles, Wand2, Trash2 } from 'lucide-react';
 import { Keyframe } from '../../types';
 
 interface KeyframeEditorProps {
@@ -18,6 +18,7 @@ interface KeyframeEditorProps {
   onOptimizeBothWithAI: () => void;
   onCopyPrevious: () => void;
   onCopyNext: () => void; // 复制下一镜头首帧到当前尾帧
+  onDeleteKeyframe: (type: 'start' | 'end') => void; // 删除关键帧
   onImageClick: (url: string, title: string) => void;
 }
 
@@ -37,6 +38,7 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
   onOptimizeBothWithAI,
   onCopyPrevious,
   onCopyNext,
+  onDeleteKeyframe,
   onImageClick
 }) => {
   const renderKeyframePanel = (
@@ -133,6 +135,16 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
                 <Upload className="w-3 h-3" />
                 上传
               </button>
+              {keyframe?.imageUrl && (
+                <button
+                  onClick={() => onDeleteKeyframe(type)}
+                  className="flex-1 py-1.5 bg-[var(--error-bg)] hover:bg-[var(--error-hover-bg-strong)] text-[var(--error-text)] rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 border border-[var(--error-border)]"
+                  title="删除关键帧"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  删除
+                </button>
+              )}
             </>
           )}
         </div>

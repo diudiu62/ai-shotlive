@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutGrid, Sparkles, Loader2, AlertCircle, Edit2, Film, Video as VideoIcon } from 'lucide-react';
-import { ProjectState, Shot, Keyframe, AspectRatio, VideoDuration, NineGridPanel, NineGridData } from '../../types';
+import { ProjectState, Shot, Keyframe, VideoInterval, AspectRatio, VideoDuration, NineGridPanel, NineGridData } from '../../types';
 import { generateImage, generateVideo, generateActionSuggestion, optimizeKeyframePrompt, optimizeBothKeyframes, enhanceKeyframePrompt, splitShotIntoSubShots, generateNineGridPanels, generateNineGridImage, buildNineGridImagePrompt } from '../../services/aiService';
 import { generateVideoServerSide, generateImageServerSide, recoverProjectTasks, TaskStatus } from '../../services/taskService';
 import { 
@@ -327,6 +327,51 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
       if (onApiKeyError && onApiKeyError(e)) return;
       showAlert(`生成失败: ${e.message}`, { type: 'error' });
     }
+  };
+
+  /**
+   * 删除关键帧
+   */
+  const handleDeleteKeyframe = (shot: Shot, type: 'start' | 'end') => {
+    const newKeyframes = shot.keyframes?.filter(k => k.type !== type) || [];
+    
+    // 检查是否需要清理视频间隔数据
+    let newInterval: VideoInterval | undefined = shot.interval;
+    if (shot.interval) {
+      const deletedKeyframe = shot.keyframes?.find(k => k.type === type);
+      if (deletedKeyframe) {
+        // 如果删除的是起始帧且与视频间隔的起始帧ID匹配，则清理间隔
+        if (type === 'start' && shot.interval.startKeyframeId === deletedKeyframe.id) {
+          newInterval = undefined;
+        }
+        // 如果删除的是结束帧且与视频间隔的结束帧ID匹配，则清理间隔
+        if (type === 'end' && shot.interval.endKeyframeId === deletedKeyframe.id) {
+          newInterval = undefined;
+        }
+      }
+    }
+    
+    updateProject((prevProject: ProjectState) => ({
+      ...prevProject,
+      shots: prevProject.shots.map(s => 
+        s.id === shot.id 
+          ? { 
+              ...s, 
+              keyframes: newKeyframes,
+              interval: newInterval
+            }
+          : s
+      )
+    }));
+    
+    if (project.id) {
+      PS.patchShot(project.id, shot.id, { 
+        keyframes: newKeyframes,
+        interval: newInterval
+      });
+    }
+    
+    showAlert(`${type === 'start' ? '起始帧' : '结束帧'}已删除${newInterval === undefined ? '，相关视频间隔已清理' : ''}`, { type: 'success' });
   };
 
   /**
@@ -1307,6 +1352,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
             onOptimizeBothKeyframes={handleOptimizeBothKeyframes}
             onCopyPreviousEndFrame={handleCopyPreviousEndFrame}
             onCopyNextStartFrame={handleCopyNextStartFrame}
+            onDeleteKeyframe={(type) => handleDeleteKeyframe(activeShot, type)}
             useAIEnhancement={useAIEnhancement}
             onToggleAIEnhancement={() => setUseAIEnhancement(!useAIEnhancement)}
             onGenerateVideo={(aspectRatio, duration, modelId) => handleGenerateVideo(activeShot, aspectRatio, duration, modelId)}
