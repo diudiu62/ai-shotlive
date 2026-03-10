@@ -20,7 +20,12 @@ interface VisualStyleRow extends RowDataPacket {
   sort_order: number;
   is_default: number;
 }
-
+/**
+ * prompt: 英文视觉风格提示词（用于 AI 图像生成 prompt）
+ * prompt_cn: 中文视觉风格描述（用于中文 prompt 和 UI 显示）
+ * negative_prompt: 角色负面提示词（排除不想要的视觉元素）
+ * scene_negative_prompt: 场景专用负面提示词（额外排除人物/人形元素）
+ */
 const DEFAULT_STYLES = [
   {
     value: 'anime', label: '🌟 日式动漫', desc: '日本动漫风格，线条感强', sort_order: 0,
