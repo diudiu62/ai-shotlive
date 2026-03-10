@@ -38,17 +38,21 @@ router.get('/', async (req: AuthRequest, res: Response) => {
  * 规范化后：从 12 张表并行查询，组装为 ProjectState 返回。
  * 每张表的单行数据量合理（单张图片 / 单个章节），无超大包问题。
  */
-router.get('/:id', async (req: AuthRequest, res: Response) => {
+router.get("/:id", async (req: AuthRequest, res: Response) => {
   try {
-    const project = await loadProjectNormalized(getPool(), req.userId!, req.params.id as string);
+    const project = await loadProjectNormalized(
+      getPool(),
+      req.userId!,
+      req.params.id as string,
+    );
     if (!project) {
-      res.status(404).json({ error: '项目不存在' });
+      res.status(404).json({ error: "项目不存在" });
       return;
     }
     res.json(project);
   } catch (err) {
-    console.error('获取项目失败:', err);
-    res.status(500).json({ error: '获取项目失败' });
+    console.error("获取项目失败:", err);
+    res.status(500).json({ error: "获取项目失败" });
   }
 });
 
@@ -348,7 +352,7 @@ router.post('/export', async (req: AuthRequest, res: Response) => {
       schemaVersion: 1,
       exportedAt: Date.now(),
       scope: "all",
-      dbName: "AiDramaDB",
+      dbName: "AiShotliveDB",
       dbVersion: 2,
       stores: {
         projects,

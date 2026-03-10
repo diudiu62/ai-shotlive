@@ -193,7 +193,6 @@ export async function saveProjectNormalized(
       pid,
       userId,
       project.title || "未命名项目",
-      null,
       project.stage || "script",
       project.novelGenre || "",
       project.novelSynopsis || "",
@@ -211,7 +210,6 @@ export async function saveProjectNormalized(
       sd?.artDirection ? JSON.stringify(sd.artDirection) : null,
       project.createdAt || Date.now(),
       project.lastModified || Date.now(),
-      1,
     ],
   );
 
@@ -928,7 +926,7 @@ export async function exportAllProjects(
 
 function safeJsonParse(val: any, fallback: any): any {
   if (val == null) return fallback;
-  if (typeof val === 'object') return val; // 已经是对象（MySQL JSON 列自动解析）
+  if (typeof val === "object") return val; // 已经是对象（MySQL JSON 列自动解析）
   try {
     return JSON.parse(val);
   } catch {
