@@ -3,7 +3,7 @@ import { getPool } from '../config/database.js';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
-const router = Router();
+const router: Router = Router();
 
 router.use(authMiddleware);
 
@@ -102,8 +102,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     await seedDefaultStyles(req.userId!);
 
     const [rows] = await getPool().execute<VisualStyleRow[]>(
-      'SELECT * FROM visual_styles WHERE user_id = ? ORDER BY sort_order ASC, id ASC',
-      [req.userId]
+      "SELECT * FROM visual_styles WHERE user_id = ? ORDER BY sort_order ASC, id ASC",
+      [req.userId!],
     );
 
     const styles = rows.map(r => ({
@@ -141,7 +141,17 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     const [result] = await getPool().execute<ResultSetHeader>(
       `INSERT INTO visual_styles (user_id, value, label, \`desc\`, prompt, prompt_cn, negative_prompt, scene_negative_prompt, sort_order, is_default)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
-      [req.userId, value, label, desc || '', prompt || '', promptCn || '', negativePrompt || '', sceneNegativePrompt || '', sortOrder ?? 99]
+      [
+        req.userId!,
+        value,
+        label,
+        desc || "",
+        prompt || "",
+        promptCn || "",
+        negativePrompt || "",
+        sceneNegativePrompt || "",
+        sortOrder ?? 99,
+      ],
     );
 
     console.log(`🎨 [VisualStyles] 创建视觉风格: ${value} (${label}), id=${result.insertId}`);
@@ -220,8 +230,8 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     const styleId = parseInt(String(req.params.id), 10);
 
     const [result] = await getPool().execute<ResultSetHeader>(
-      'DELETE FROM visual_styles WHERE id = ? AND user_id = ?',
-      [styleId, req.userId]
+      "DELETE FROM visual_styles WHERE id = ? AND user_id = ?",
+      [styleId, req.userId!],
     );
 
     if (result.affectedRows === 0) {

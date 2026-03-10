@@ -8,7 +8,7 @@ import { Readable } from 'stream';
 import { videoEditingTools } from '../lib/cutos/agent/tools.js';
 import { buildSystemPrompt, type TimelineState } from '../lib/cutos/agent/system-prompt.js';
 
-const router = Router();
+const router: Router = Router();
 
 // 从 UIMessage parts 提取文本
 function getTextFromParts(parts: Array<{ type: string; text?: string }> | undefined): string {

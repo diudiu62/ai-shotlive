@@ -5,7 +5,7 @@
 import { Router, Response } from 'express';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 
-const router = Router();
+const router: Router = Router();
 router.use(authMiddleware);
 
 /**

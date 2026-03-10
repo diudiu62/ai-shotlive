@@ -3,7 +3,7 @@ import { getPool } from '../config/database.js';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { RowDataPacket } from 'mysql2';
 
-const router = Router();
+const router: Router = Router();
 
 router.use(authMiddleware);
 
@@ -34,9 +34,9 @@ router.get('/', async (req: AuthRequest, res: Response) => {
   try {
     const [rows] = await executeWithRetry(() =>
       getPool().execute<PreferencesRow[]>(
-        'SELECT theme, onboarding_completed FROM user_preferences WHERE user_id = ?',
-        [req.userId]
-      )
+        "SELECT theme, onboarding_completed FROM user_preferences WHERE user_id = ?",
+        [req.userId!],
+      ),
     );
 
     if (rows.length === 0) {

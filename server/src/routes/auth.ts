@@ -4,7 +4,7 @@ import { getPool } from '../config/database.js';
 import { generateToken, authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { RowDataPacket } from 'mysql2';
 
-const router = Router();
+const router: Router = Router();
 
 interface UserRow extends RowDataPacket {
   id: number;

@@ -19,7 +19,7 @@ import {
   saveProjectNormalized,
 } from '../services/projectStorage.js';
 
-const router = Router();
+const router: Router = Router();
 router.use(authMiddleware);
 
 const DATA_ROOT = process.env.DATA_DIR || path.resolve(process.cwd(), 'data');

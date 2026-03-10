@@ -12,7 +12,7 @@ import {
 import { withProjectLock } from '../utils/projectMutex.js';
 import { isFilePath, readFileAsBuffer, isBase64DataUri } from '../services/fileStorage.js';
 
-const router = Router();
+const router: Router = Router();
 
 router.use(authMiddleware);
 
@@ -131,8 +131,8 @@ async function saveProjectWithRetry(
 router.delete('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const [result] = await getPool().execute(
-      'DELETE FROM projects WHERE id = ? AND user_id = ?',
-      [req.params.id, req.userId]
+      "DELETE FROM projects WHERE id = ? AND user_id = ?",
+      [req.params.id, req.userId!],
     );
 
     if ((result as any).affectedRows === 0) {
@@ -337,8 +337,8 @@ router.post('/export', async (req: AuthRequest, res: Response) => {
     const projects = await exportAllProjects(getPool(), req.userId!);
 
     const [assetRows] = await getPool().execute<RowDataPacket[]>(
-      'SELECT data FROM asset_library WHERE user_id = ?',
-      [req.userId]
+      "SELECT data FROM asset_library WHERE user_id = ?",
+      [req.userId!],
     );
     const assets = assetRows.map(r => {
       try { return JSON.parse(r.data); } catch { return null; }
@@ -383,8 +383,12 @@ router.post('/import', async (req: AuthRequest, res: Response) => {
 
       // replace 模式：先删除所有现有数据
       if (mode === 'replace') {
-        await conn.execute('DELETE FROM projects WHERE user_id = ?', [req.userId]);
-        await conn.execute('DELETE FROM asset_library WHERE user_id = ?', [req.userId]);
+        await conn.execute("DELETE FROM projects WHERE user_id = ?", [
+          req.userId!,
+        ]);
+        await conn.execute("DELETE FROM asset_library WHERE user_id = ?", [
+          req.userId!,
+        ]);
       }
 
       // 逐个项目写入（规范化）
