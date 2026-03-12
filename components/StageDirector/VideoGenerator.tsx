@@ -95,24 +95,21 @@ const VideoGenerator: React.FC<VideoGeneratorProps> = ({
   const canGenerate = hasStartFrame;
 
   return (
-    <div className="bg-[var(--bg-surface)] rounded-xl p-5 border border-[var(--border-primary)] space-y-4">
-      <div className="flex items-center justify-between">
-        <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-widest flex items-center gap-2">
-          <Video className="w-3 h-3 text-[var(--accent)]" />
-          视频生成
-          <button 
-            onClick={onEditPrompt}
-            className="p-1 text-[var(--warning-text)] hover:text-[var(--text-primary)] transition-colors"
-            title="预览/编辑视频提示词"
-          >
-            <Edit2 className="w-3 h-3" />
-          </button>
-        </h4>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 justify-end">
         {shot.interval?.status === 'completed' && (
           <span className="text-[10px] text-[var(--success)] font-mono flex items-center gap-1">
             ● READY
           </span>
         )}
+        <button 
+          onClick={onEditPrompt}
+          className="px-2 py-1 text-[var(--warning-text)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-1 rounded-md hover:bg-[var(--warning-bg)]"
+          title="预览/编辑视频提示词"
+        >
+          <Edit2 className="w-3 h-3" />
+          <span className="text-[10px] font-bold uppercase tracking-wider">编辑提示词</span>
+        </button>
       </div>
       
       {/* Model Selector */}

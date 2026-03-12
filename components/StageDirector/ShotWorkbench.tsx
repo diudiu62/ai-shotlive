@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, X, Film, Edit2, MessageSquare, Sparkles, Loader2, Scissors, Grid3x3, CircleHelp, CheckCircle2, Circle, ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Film, Edit2, MessageSquare, Sparkles, Loader2, Scissors, Grid3x3, CircleHelp, CheckCircle2, Circle, ChevronUp, ChevronDown, MapPin, Video } from 'lucide-react';
 import { Shot, Character, Scene, Prop, ProjectState, AspectRatio, VideoDuration, NineGridData, NineGridPanel } from '../../types';
 import SceneContext from './SceneContext';
 import KeyframeEditor from './KeyframeEditor';
@@ -177,6 +177,28 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
     }
   };
   
+  const getSectionIcon = (sectionKey: string) => {
+    const iconMap: Record<string, React.ReactNode> = {
+      'quality': <CheckCircle2 className="w-4 h-4 text-[var(--text-secondary)] shrink-0" />,
+      'context': <MapPin className="w-4 h-4 text-[var(--text-secondary)] shrink-0" />,
+      'narrative': <Film className="w-4 h-4 text-[var(--text-secondary)] shrink-0" />,
+      'visual': <Sparkles className="w-4 h-4 text-[var(--text-secondary)] shrink-0" />,
+      'video': <Video className="w-4 h-4 text-[var(--text-secondary)] shrink-0" />
+    };
+    return iconMap[sectionKey] || null;
+  };
+
+  const getSectionColor = (sectionKey: string) => {
+    const colorMap: Record<string, string> = {
+      'quality': 'bg-gradient-to-r from-[var(--accent-bg)] to-[var(--accent-bg)/80]',
+      'context': 'bg-gradient-to-r from-[var(--success-bg)] to-[var(--success-bg)/80]',
+      'narrative': 'bg-gradient-to-r from-[var(--warning-bg)] to-[var(--warning-bg)/80]',
+      'visual': 'bg-gradient-to-r from-[var(--info-bg,var(--accent-bg))] to-[var(--info-bg,var(--accent-bg))/80]',
+      'video': 'bg-gradient-to-r from-[var(--error-bg)] to-[var(--error-bg)/80]'
+    };
+    return colorMap[sectionKey] || 'bg-[var(--bg-surface)]';
+  };
+
   const renderSectionHeader = (
     sectionKey: string,
     title: string,
@@ -184,13 +206,16 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
     done?: boolean
   ) => {
     const isOpen = isSectionOpen(sectionKey);
+    const sectionColor = getSectionColor(sectionKey);
+    const sectionIcon = getSectionIcon(sectionKey);
     return (
       <button
         type="button"
-        className="w-full px-4 py-3 flex items-center justify-between text-left"
+        className={`w-full px-4 py-3 flex items-center justify-between text-left ${sectionColor}`}
         onClick={() => toggleSection(sectionKey)}
       >
         <div className="flex items-center gap-2 min-w-0">
+          {sectionIcon}
           {done === undefined ? null : done ? (
             <CheckCircle2 className="w-4 h-4 text-[var(--success-text)] shrink-0" />
           ) : (
@@ -261,122 +286,10 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-8">
-        {/* Scene Context */}
-        {scriptData && (
-          <SceneContext
-            shot={shot}
-            scene={scene}
-            scenes={scriptData.scenes}
-            characters={activeCharacters}
-            availableCharacters={availableCharacters}
-            props={activeProps}
-            availableProps={availablePropsForShot}
-            onAddCharacter={onAddCharacter}
-            onRemoveCharacter={onRemoveCharacter}
-            onVariationChange={onVariationChange}
-            onSceneChange={onSceneChange}
-            onAddProp={onAddProp}
-            onRemoveProp={onRemoveProp}
-          />
-        )}
-
-        {/* Nine Grid Storyboard Preview - Advanced Feature (不在 veo 首尾帧模式下显示) */}
-        {localVideoModelId !== 'veo' && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={
-                nineGrid?.status === 'completed' || nineGrid?.status === 'panels_ready' || nineGrid?.status === 'generating_image'
-                  ? onShowNineGrid 
-                  : onGenerateNineGrid
-              }
-              disabled={nineGrid?.status === 'generating_panels' || nineGrid?.status === 'generating_image'}
-              className={`flex-1 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border ${
-                nineGrid?.status === 'generating_panels' || nineGrid?.status === 'generating_image'
-                  ? 'bg-[var(--bg-surface)] text-[var(--text-muted)] border-[var(--border-primary)] cursor-wait'
-                  : nineGrid?.status === 'completed'
-                    ? 'bg-[var(--success-bg)] text-[var(--success-text)] border-[var(--success-border)] hover:bg-[var(--success-hover-bg)]'
-                    : nineGrid?.status === 'panels_ready'
-                      ? 'bg-[var(--warning-bg)] text-[var(--warning-text)] border-[var(--warning-border)] hover:bg-[var(--warning-hover-bg)]'
-                      : 'bg-[var(--bg-surface)] text-[var(--text-tertiary)] border-[var(--border-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-hover)]'
-              }`}
-              title="九宫格分镜预览 - 使用AI将镜头拆分为9个不同视角的预览图"
-            >
-              {nineGrid?.status === 'generating_panels' ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>镜头描述生成中...</span>
-                </>
-              ) : nineGrid?.status === 'generating_image' ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>九宫格图片生成中...</span>
-                </>
-              ) : nineGrid?.status === 'panels_ready' ? (
-                <>
-                  <Grid3x3 className="w-3.5 h-3.5" />
-                  <span>查看/确认镜头描述</span>
-                  <span className="ml-1 px-1.5 py-0.5 bg-[var(--warning-text)]/10 rounded text-[8px]">待确认</span>
-                </>
-              ) : nineGrid?.status === 'completed' ? (
-                <>
-                  <Grid3x3 className="w-3.5 h-3.5" />
-                  <span>查看九宫格分镜</span>
-                  <span className="ml-1 px-1.5 py-0.5 bg-[var(--success-text)]/10 rounded text-[8px]">Advanced</span>
-                </>
-              ) : (
-                <>
-                  <Grid3x3 className="w-3.5 h-3.5" />
-                  <span>九宫格分镜预览</span>
-                  <span className="ml-1 px-1.5 py-0.5 bg-[var(--accent)]/10 text-[var(--accent-text)] rounded text-[8px]">Advanced</span>
-                </>
-              )}
-            </button>
-          </div>
-          
-          {/* Nine Grid thumbnail preview (if generated) */}
-          {nineGrid?.status === 'completed' && nineGrid.imageUrl && (
-            <div 
-              className="relative bg-[var(--bg-base)] rounded-lg border border-[var(--border-primary)] overflow-hidden cursor-pointer group"
-              onClick={onShowNineGrid}
-            >
-              <img
-                src={nineGrid.imageUrl}
-                className="w-full h-auto block transition-transform duration-300 group-hover:scale-105"
-                alt="九宫格分镜预览"
-              />
-              <div className="absolute inset-0 bg-[var(--bg-base)]/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                <span className="text-[var(--text-primary)] text-xs font-mono">点击选择视角作为首帧</span>
-              </div>
-            </div>
-          )}
-        </div>
-        )}
-
-        {/* Visual Production */}
-        <KeyframeEditor
-          startKeyframe={startKf}
-          endKeyframe={endKf}
-          showEndFrame={showEndFrame}
-          canCopyPrevious={shotIndex > 0}
-          canCopyNext={shotIndex < totalShots - 1 && nextShotHasStartFrame}
-          isAIOptimizing={isAIOptimizing}
-          useAIEnhancement={useAIEnhancement}
-          onToggleAIEnhancement={onToggleAIEnhancement}
-          onGenerateKeyframe={onGenerateKeyframe}
-          onUploadKeyframe={onUploadKeyframe}
-          onEditPrompt={onEditKeyframePrompt}
-          onOptimizeWithAI={onOptimizeKeyframeWithAI}
-          onOptimizeBothWithAI={onOptimizeBothKeyframes}
-          onCopyPrevious={onCopyPreviousEndFrame}
-          onCopyNext={onCopyNextStartFrame}
-          onDeleteKeyframe={onDeleteKeyframe}
-          onImageClick={onImageClick}
-        />
-
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* 质量评估概览 */}
         <section className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-surface)] overflow-hidden">
-          {renderSectionHeader('quality', '质量评估', '查看当前镜头可交付性')}
+          {renderSectionHeader('quality', '质量评估 (Quality Assessment)', '查看当前镜头可交付性')}
           {isSectionOpen('quality') && quality && (
             <div className="px-4 pb-4 border-t border-[var(--border-primary)] space-y-2">
               <div className="pt-3 flex items-center justify-between gap-2">
@@ -439,78 +352,216 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
           )}
         </section>
 
-        {/* Narrative Section - 叙事动作作为视频提示词，放在视觉制作之后、视频生成之前 */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 border-b border-[var(--border-primary)] pb-2">
-            <Film className="w-4 h-4 text-[var(--text-tertiary)]" />
-            <h4 className="text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest">
-              叙事动作 (Action & Dialogue)
-            </h4>
-            <div className="ml-auto flex items-center gap-1">
-              <button 
-                onClick={onSplitShot}
-                disabled={isSplittingShot}
-                className="p-1 text-[var(--success-text)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="AI拆分镜头"
-              >
-                {isSplittingShot ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                ) : (
-                  <Scissors className="w-3 h-3" />
-                )}
-              </button>
-              <button 
-                onClick={onGenerateAIAction}
-                disabled={isAIOptimizing}
-                className="p-1 text-[var(--accent-text)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="AI生成动作建议"
-              >
-                {isAIOptimizing ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                ) : (
-                  <Sparkles className="w-3 h-3" />
-                )}
-              </button>
-              <button 
-                onClick={onEditActionSummary}
-                className="p-1 text-[var(--warning-text)] hover:text-[var(--text-primary)] transition-colors"
-                title="编辑叙事动作"
-              >
-                <Edit2 className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-          
-          <div className="space-y-3 max-h-[200px] overflow-y-auto custom-scrollbar">
-            <div className="bg-[var(--bg-surface)] p-4 rounded-lg border border-[var(--border-primary)]">
-              <p className="text-[var(--text-secondary)] text-sm leading-relaxed">{shot.actionSummary}</p>
-            </div>
-            
-            {shot.dialogue && (
-              <div className="bg-[var(--bg-surface)] p-4 rounded-lg border border-[var(--border-primary)] flex gap-3">
-                <MessageSquare className="w-4 h-4 text-[var(--text-muted)] mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-[var(--text-tertiary)] text-xs italic leading-relaxed">
-                    "{shot.dialogue}"
-                  </p>
-                </div>
+        {/* 场景环境 - 资产覆盖度 */}
+        {scriptData && (
+          <section className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-surface)] overflow-hidden">
+            {renderSectionHeader('context', '场景环境(Scene Context)', '资产覆盖度：场景、角色、道具')}
+            {isSectionOpen('context') && (
+              <div className="p-5 border-t border-[var(--border-primary)]">
+                <SceneContext
+                  shot={shot}
+                  scene={scene}
+                  scenes={scriptData.scenes}
+                  characters={activeCharacters}
+                  availableCharacters={availableCharacters}
+                  props={activeProps}
+                  availableProps={availablePropsForShot}
+                  onAddCharacter={onAddCharacter}
+                  onRemoveCharacter={onRemoveCharacter}
+                  onVariationChange={onVariationChange}
+                  onSceneChange={onSceneChange}
+                  onAddProp={onAddProp}
+                  onRemoveProp={onRemoveProp}
+                />
               </div>
             )}
-          </div>
-        </div>
+          </section>
+        )}
 
-        {/* Video Generation */}
-        <VideoGenerator
-          shot={shot}
-          hasStartFrame={!!startKf?.imageUrl}
-          hasEndFrame={!!endKf?.imageUrl}
-          onGenerate={onGenerateVideo}
-          onEditPrompt={onEditVideoPrompt}
-          onModelChange={(modelId) => {
-            setLocalVideoModelId(modelId);
-            onVideoModelChange(modelId);
-          }}
-        />
+        {/* 叙事动作 - 提示词完整度 */}
+        <section className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-surface)] overflow-hidden">
+          {renderSectionHeader('narrative', '叙事动作 (Narrative Action)', '提示词完整度：动作描述与对话')}
+          {isSectionOpen('narrative') && (
+            <div className="p-5 border-t border-[var(--border-primary)] space-y-4">
+              <div className="flex items-center gap-2 justify-end">
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={onSplitShot}
+                    disabled={isSplittingShot}
+                    className="px-2 py-1 text-[var(--success-text)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 rounded-md hover:bg-[var(--success-bg)]"
+                    title="AI拆分镜头"
+                  >
+                    {isSplittingShot ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Scissors className="w-3 h-3" />
+                    )}
+                    <span className="text-[10px] font-bold uppercase tracking-wider">拆分镜头</span>
+                  </button>
+                  <button 
+                    onClick={onGenerateAIAction}
+                    disabled={isAIOptimizing}
+                    className="px-2 py-1 text-[var(--accent-text)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 rounded-md hover:bg-[var(--accent-bg)]"
+                    title="AI生成动作建议"
+                  >
+                    {isAIOptimizing ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3 h-3" />
+                    )}
+                    <span className="text-[10px] font-bold uppercase tracking-wider">AI建议</span>
+                  </button>
+                  <button 
+                    onClick={onEditActionSummary}
+                    className="px-2 py-1 text-[var(--warning-text)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-1 rounded-md hover:bg-[var(--warning-bg)]"
+                    title="编辑叙事动作"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">编辑动作</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div className="space-y-3 max-h-[200px] overflow-y-auto custom-scrollbar">
+                <div className="bg-[var(--bg-base)] p-4 rounded-lg border border-[var(--border-primary)]">
+                  <p className="text-[var(--text-secondary)] text-sm leading-relaxed">{shot.actionSummary}</p>
+                </div>
+                
+                {shot.dialogue && (
+                  <div className="bg-[var(--bg-base)] p-4 rounded-lg border border-[var(--border-primary)] flex gap-3">
+                    <MessageSquare className="w-4 h-4 text-[var(--text-muted)] mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-[var(--text-tertiary)] text-xs italic leading-relaxed">
+                        "{shot.dialogue}"
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* 视觉制作 - 关键帧就绪度 */}
+        <section className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-surface)] overflow-hidden">
+          {renderSectionHeader('visual', '视觉制作 (Visual Production)', '关键帧就绪度：起始帧与结束帧')}
+          {isSectionOpen('visual') && (
+            <div className="p-5 border-t border-[var(--border-primary)] space-y-6">
+              <KeyframeEditor
+                startKeyframe={startKf}
+                endKeyframe={endKf}
+                showEndFrame={showEndFrame}
+                canCopyPrevious={shotIndex > 0}
+                canCopyNext={shotIndex < totalShots - 1 && nextShotHasStartFrame}
+                isAIOptimizing={isAIOptimizing}
+                useAIEnhancement={useAIEnhancement}
+                onToggleAIEnhancement={onToggleAIEnhancement}
+                onGenerateKeyframe={onGenerateKeyframe}
+                onUploadKeyframe={onUploadKeyframe}
+                onEditPrompt={onEditKeyframePrompt}
+                onOptimizeWithAI={onOptimizeKeyframeWithAI}
+                onOptimizeBothWithAI={onOptimizeBothKeyframes}
+                onCopyPrevious={onCopyPreviousEndFrame}
+                onCopyNext={onCopyNextStartFrame}
+                onDeleteKeyframe={onDeleteKeyframe}
+                onImageClick={onImageClick}
+              />
+              
+              {/* 九宫格分镜预览 - 高级功能 */}
+              {localVideoModelId !== 'veo' && (
+                <div className="space-y-3 pt-4 border-t border-[var(--border-secondary)]">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={
+                        nineGrid?.status === 'completed' || nineGrid?.status === 'panels_ready' || nineGrid?.status === 'generating_image'
+                          ? onShowNineGrid 
+                          : onGenerateNineGrid
+                      }
+                      disabled={nineGrid?.status === 'generating_panels' || nineGrid?.status === 'generating_image'}
+                      className={`flex-1 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border ${
+                        nineGrid?.status === 'generating_panels' || nineGrid?.status === 'generating_image'
+                          ? 'bg-[var(--bg-surface)] text-[var(--text-muted)] border-[var(--border-primary)] cursor-wait'
+                          : nineGrid?.status === 'completed'
+                            ? 'bg-[var(--success-bg)] text-[var(--success-text)] border-[var(--success-border)] hover:bg-[var(--success-hover-bg)]'
+                            : nineGrid?.status === 'panels_ready'
+                              ? 'bg-[var(--warning-bg)] text-[var(--warning-text)] border-[var(--warning-border)] hover:bg-[var(--warning-hover-bg)]'
+                              : 'bg-[var(--bg-surface)] text-[var(--text-tertiary)] border-[var(--border-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-hover)]'
+                      }`}
+                      title="九宫格分镜预览 - 使用AI将镜头拆分为9个不同视角的预览图"
+                    >
+                      {nineGrid?.status === 'generating_panels' ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>镜头描述生成中...</span>
+                        </>
+                      ) : nineGrid?.status === 'generating_image' ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>九宫格图片生成中...</span>
+                        </>
+                      ) : nineGrid?.status === 'panels_ready' ? (
+                        <>
+                          <Grid3x3 className="w-3.5 h-3.5" />
+                          <span>查看/确认镜头描述</span>
+                          <span className="ml-1 px-1.5 py-0.5 bg-[var(--warning-text)]/10 rounded text-[8px]">待确认</span>
+                        </>
+                      ) : nineGrid?.status === 'completed' ? (
+                        <>
+                          <Grid3x3 className="w-3.5 h-3.5" />
+                          <span>查看九宫格分镜</span>
+                          <span className="ml-1 px-1.5 py-0.5 bg-[var(--success-text)]/10 rounded text-[8px]">Advanced</span>
+                        </>
+                      ) : (
+                        <>
+                          <Grid3x3 className="w-3.5 h-3.5" />
+                          <span>九宫格分镜预览</span>
+                          <span className="ml-1 px-1.5 py-0.5 bg-[var(--accent)]/10 text-[var(--accent-text)] rounded text-[8px]">Advanced</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  
+                  {/* Nine Grid thumbnail preview (if generated) */}
+                  {nineGrid?.status === 'completed' && nineGrid.imageUrl && (
+                    <div 
+                      className="relative bg-[var(--bg-base)] rounded-lg border border-[var(--border-primary)] overflow-hidden cursor-pointer group"
+                      onClick={onShowNineGrid}
+                    >
+                      <img
+                        src={nineGrid.imageUrl}
+                        className="w-full h-auto block transition-transform duration-300 group-hover:scale-105"
+                        alt="九宫格分镜预览"
+                      />
+                      <div className="absolute inset-0 bg-[var(--bg-base)]/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                        <span className="text-[var(--text-primary)] text-xs font-mono">点击选择视角作为首帧</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* 视频生成 - 视频执行状态 */}
+        <section className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-surface)] overflow-hidden">
+          {renderSectionHeader('video', '视频生成 (Video Generation)', '视频执行状态：模型选择与设置')}
+          {isSectionOpen('video') && (
+            <div className="p-5 border-t border-[var(--border-primary)]">
+              <VideoGenerator
+                shot={shot}
+                hasStartFrame={!!startKf?.imageUrl}
+                hasEndFrame={!!endKf?.imageUrl}
+                onGenerate={onGenerateVideo}
+                onEditPrompt={onEditVideoPrompt}
+                onModelChange={(modelId) => {
+                  setLocalVideoModelId(modelId);
+                  onVideoModelChange(modelId);
+                }}
+              />
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

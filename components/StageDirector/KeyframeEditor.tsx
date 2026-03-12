@@ -55,11 +55,11 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
           <label className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">
             {label}
           </label>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => onOptimizeWithAI(type)}
               disabled={isAIOptimizing}
-              className="p-1 text-[var(--accent-text)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-2 py-1 text-[var(--accent-text)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 rounded-md hover:bg-[var(--accent-bg)]"
               title="AI优化提示词"
             >
               {isAIOptimizing ? (
@@ -67,16 +67,36 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
               ) : (
                 <Sparkles className="w-3 h-3" />
               )}
+              <span className="text-[10px] font-bold uppercase tracking-wider">AI优化</span>
             </button>
             {keyframe?.visualPrompt && (
               <button
                 onClick={() => onEditPrompt(type, keyframe.visualPrompt!)}
-                className="p-1 text-[var(--warning-text)] hover:text-[var(--text-primary)] transition-colors"
+                className="px-2 py-1 text-[var(--warning-text)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-1 rounded-md hover:bg-[var(--warning-bg)]"
                 title="编辑提示词"
               >
                 <Edit2 className="w-3 h-3" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">编辑提示词</span>
               </button>
             )}
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-[var(--text-tertiary)]">
+                AI增强提示词
+              </span>
+              <button
+                onClick={onToggleAIEnhancement}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                  useAIEnhancement ? 'bg-[var(--accent)]' : 'bg-[var(--border-secondary)]'
+                }`}
+                title={useAIEnhancement ? '关闭AI增强：使用基础提示词快速生成' : '开启AI增强：自动扩展为专业电影级描述'}
+              >
+                <span
+                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-[var(--btn-primary-bg)] transition-transform ${
+                    useAIEnhancement ? 'translate-x-5' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
           </div>
         </div>
         
@@ -176,31 +196,8 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 border-b border-[var(--border-primary)] pb-2">
-        <span className="text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest flex-1">
-          视觉制作 (Visual Production)
-        </span>
-        
-        {/* AI 增强开关 */}
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] text-[var(--text-tertiary)]">
-            AI增强提示词
-          </span>
-          <button
-            onClick={onToggleAIEnhancement}
-            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-              useAIEnhancement ? 'bg-[var(--accent)]' : 'bg-[var(--border-secondary)]'
-            }`}
-            title={useAIEnhancement ? '关闭AI增强：使用基础提示词快速生成' : '开启AI增强：自动扩展为专业电影级描述'}
-          >
-            <span
-              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-[var(--btn-primary-bg)] transition-transform ${
-                useAIEnhancement ? 'translate-x-5' : 'translate-x-1'
-              }`}
-            />
-          </button>
-        </div>
-        
+      {/* 控制按钮区 */}
+      <div className="flex items-center gap-4 justify-end">
         {/* 一次性优化两帧按钮 */}
         {showEndFrame && (
           <button
