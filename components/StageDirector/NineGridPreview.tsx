@@ -197,12 +197,27 @@ const NineGridPreview: React.FC<NineGridPreviewProps> = ({
               <h4 className="text-lg font-bold text-[var(--text-primary)] mb-2">
                 生成失败
               </h4>
-              <p className="text-sm text-[var(--text-tertiary)] mb-6">
+              <p className="text-sm text-[var(--text-tertiary)] mb-2">
                 {nineGrid?.panels && nineGrid.panels.length > 0 
                   ? '九宫格图片生成失败，您可以重新确认生成或修改描述后重试'
                   : '镜头描述生成失败，请重试'
                 }
               </p>
+              {nineGrid?.error && (
+                <p className="text-xs text-[var(--error)] mb-4 max-w-md text-center">
+                  错误信息: {nineGrid.error}
+                </p>
+              )}
+              {nineGrid?.prompt && (
+                <div className="w-full max-w-2xl mb-6">
+                  <p className="text-xs text-[var(--text-tertiary)] mb-2 text-center">
+                    执行的提示词:
+                  </p>
+                  <div className="text-xs text-[var(--text-secondary)] bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-lg p-3 max-h-40 overflow-y-auto whitespace-pre-wrap">
+                    {nineGrid.prompt}
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-3">
                 <button
                   onClick={onRegenerate}

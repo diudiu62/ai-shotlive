@@ -1172,7 +1172,8 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
         ...s,
         nineGrid: {
           panels: confirmedPanels,
-          status: 'failed' as const
+          status: 'failed' as const,
+          error: e.message
         }
       }));
       
