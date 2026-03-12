@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ProjectState, Shot } from '../../types';
 import { useAlert } from '../GlobalAlert';
-import { continueScript, continueScriptStream, rewriteScript, rewriteScriptStream, setScriptLogCallback, clearScriptLogCallback, logScriptProgress } from '../../services/aiService';
+import { continueScript, continueScriptStream, rewriteScript, rewriteScriptStream, setScriptLogCallback, clearScriptLogCallback, logScriptProgress, generateShotListWithQualityCheck } from '../../services/aiService';
 import { parseScriptServerSide, getActiveTasksForProject, waitForTask } from '../../services/taskService';
 import { Clapperboard } from 'lucide-react';
 import { getFinalValue, validateConfig } from './utils';
@@ -43,6 +43,7 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
   const [customModelInput, setCustomModelInput] = useState('');
   const [customStyleInput, setCustomStyleInput] = useState('');
   const [customGenreInput, setCustomGenreInput] = useState('');
+  const [enableQualityCheck, setEnableQualityCheck] = useState(project.enableQualityCheck !== false);
   
   // 数据库视觉风格
   const [dbVisualStyles, setDbVisualStyles] = useState<VisualStyle[]>([]);
@@ -84,6 +85,7 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
     setLocalLanguage(project.language || DEFAULTS.language);
     setLocalModel(project.shotGenerationModel || DEFAULTS.model);
     setLocalVisualStyle(project.visualStyle || DEFAULTS.visualStyle);
+    setEnableQualityCheck(project.enableQualityCheck !== false);
   }, [project.id]);
 
   // 上报生成状态给父组件，用于导航锁定
@@ -193,6 +195,20 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
     recoverScriptParseTask();
   }, [project.id]);
 
+  const handleQualityCheckToggle = async (enabled: boolean) => {
+    setEnableQualityCheck(enabled);
+    updateProject({ enableQualityCheck: enabled });
+    
+    try {
+      await PS.patchProject(project.id, {
+        enable_quality_check: enabled
+      });
+    } catch (error) {
+      console.error('保存质量校验设置失败:', error);
+      showAlert('保存设置失败，请重试', 'error');
+    }
+  };
+
   const handleAnalyze = async () => {
     const finalDuration = getFinalValue(localDuration, customDurationInput);
     const finalModel = getFinalValue(localModel, customModelInput);
@@ -264,7 +280,7 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
         }
       );
 
-      const { scriptData, shots } = result;
+      let { scriptData, shots } = result;
 
       scriptData.targetDuration = finalDuration;
       scriptData.language = localLanguage;
@@ -274,12 +290,49 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
       if (localTitle && localTitle !== "未命名项目") {
         scriptData.title = localTitle;
       }
+      // 应用分镜质量校验与自动修复
+    if (enableQualityCheck) {
+      logScriptProgress('已启用分镜质量校验与自动修复。');
+      console.log('🔍 启用质量检查，开始生成质量评估数据');
+      const validCharacterIds = new Set(scriptData.characters.map(c => String(c.id)));
+      const validPropIds = new Set(scriptData.props?.map(p => String(p.id)) || []);
+      const visualStyle = scriptData.visualStyle || 'live-action';
+      
+      // 调用前端质量校验函数
+      console.log('🔧 调用 generateShotListWithQualityCheck 函数');
+      const qualityCheckedShots = await generateShotListWithQualityCheck(scriptData, finalModel, {
+        enableQualityCheck: true
+      });
+      console.log('✅ 质量检查完成，生成的镜头数量:', qualityCheckedShots.length);
+      // 检查第一个镜头是否有质量评估数据
+      if (qualityCheckedShots.length > 0) {
+        console.log('📊 第一个镜头的质量评估数据:', qualityCheckedShots[0].qualityAssessment);
+      }
+      shots = qualityCheckedShots;
+    } else {
+      logScriptProgress('分镜质量校验已关闭，跳过自动打分与修复。');
+      console.log('⚠️  质量检查已关闭，跳过质量评估生成');
+    }
 
+      console.log('🚀 更新项目前，检查镜头质量评估数据');
+      shots.forEach((shot, index) => {
+        console.log(`📊 镜头 ${index + 1} 质量评估数据:`, shot.qualityAssessment);
+      });
+      
       updateProject({ 
         scriptData, 
         shots, 
         isParsingScript: false,
         title: scriptData.title 
+      });
+      
+      console.log('✅ 项目更新完成');
+      console.log('📋 项目质量检查设置:', enableQualityCheck);
+      
+      // 保存解析结果到数据库，包含质量评估数据
+      console.log('💾 保存解析结果到数据库');
+      PS.saveParseResult(project.id, scriptData, shots, {
+        enable_quality_check: enableQualityCheck
       });
 
       setActiveTab('script');
@@ -839,6 +892,8 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
               onModelChange={setLocalModel}
               onCustomDurationChange={setCustomDurationInput}
               onCustomModelChange={setCustomModelInput}
+              enableQualityCheck={enableQualityCheck}
+              onToggleQualityCheck={handleQualityCheckToggle}
               onAnalyze={handleAnalyze}
             />
             <ScriptEditor

@@ -233,7 +233,7 @@ const migrateEpisodeIdIntoPrimaryKeys = async (conn: mysql.PoolConnection): Prom
       }
     } catch (err: any) {
       console.warn(`  ⚠️ 更新 ${table} 主键失败: ${err.message}`);
-      try { await conn.execute('SET FOREIGN_KEY_CHECKS = 1'); } catch {}
+      try { await conn.execute('SET FOREIGN_KEY_CHECKS = 1'); } catch { }
     }
   }
 };
@@ -301,7 +301,14 @@ export const initDatabase = async (): Promise<void> => {
     await addColumnIfNotExists(conn, 'projects', 'novel_genre', "VARCHAR(100) DEFAULT '' COMMENT '小说类型'");
     await addColumnIfNotExists(conn, 'projects', 'novel_synopsis', "TEXT COMMENT '小说简介'");
     await addColumnIfNotExists(conn, 'projects', 'is_normalized', "TINYINT(1) DEFAULT 0");
-
+    await addColumnIfNotExists(
+      conn,
+      "projects",
+      "enable_quality_check",
+      "TINYINT(1) DEFAULT 1 COMMENT '启用分镜质量校验与自动修复'",
+    );
+    // ========== 迁移：为分镜表添加质量评估字段 ==========
+    await addColumnIfNotExists(conn, 'shots', 'quality_assessment_json', 'JSON COMMENT "分镜质量评估数据"');
     // ========== 小说章节表 ==========
     await conn.execute(`
       CREATE TABLE IF NOT EXISTS novel_chapters (
@@ -451,6 +458,7 @@ export const initDatabase = async (): Promise<void> => {
         character_variations_json JSON,
         props_json JSON,
         video_model VARCHAR(100),
+        quality_assessment_json JSON,
         nine_grid_panels JSON,
         nine_grid_image LONGTEXT,
         nine_grid_prompt TEXT,
@@ -622,8 +630,9 @@ export const initDatabase = async (): Promise<void> => {
     // ========== 迁移：为任务表添加 episode_id ==========
     await addColumnIfNotExists(conn, 'generation_tasks', 'target_episode_id', "VARCHAR(255) NOT NULL DEFAULT '' COMMENT '任务关联的剧本ID'");
 
-    // ========== 迁移：为任务表添加 status_message（详细进度描述） ==========
-    await addColumnIfNotExists(conn, 'generation_tasks', 'status_message', "VARCHAR(500) DEFAULT '' COMMENT '详细进度描述，如：生成场景视觉提示词：xxx'");
+    // ========== 迁移：为任务表添加 status_message（详细进度描述） ==========    await addColumnIfNotExists(conn, 'generation_tasks', 'status_message', "VARCHAR(500) DEFAULT '' COMMENT '详细进度描述，如：生成场景视觉提示词：xxx'");
+
+    // ========== 迁移：为分镜表添加质量评估字段 ==========    await addColumnIfNotExists(conn, 'shots', 'quality_assessment_json', 'JSON COMMENT "分镜质量评估数据"');
 
     // ========== 迁移：为下游数据表添加 episode_id 列，实现剧本级数据隔离 ==========
     const episodeScopedTables = [

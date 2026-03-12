@@ -408,6 +408,7 @@ export const createNewProjectState = (): ProjectState => {
     scriptData: null,
     shots: [],
     isParsingScript: false,
+    enableQualityCheck: true,
     renderLogs: [],
   };
 };

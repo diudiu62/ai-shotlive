@@ -44,6 +44,7 @@ export {
 export {
   parseScriptToData,
   generateShotList,
+  generateShotListWithQualityCheck,
   continueScript,
   continueScriptStream,
   rewriteScript,

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, X, Film, Edit2, MessageSquare, Sparkles, Loader2, Scissors, Grid3x3 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Film, Edit2, MessageSquare, Sparkles, Loader2, Scissors, Grid3x3, CircleHelp, CheckCircle2, Circle, ChevronUp, ChevronDown } from 'lucide-react';
 import { Shot, Character, Scene, Prop, ProjectState, AspectRatio, VideoDuration, NineGridData, NineGridPanel } from '../../types';
 import SceneContext from './SceneContext';
 import KeyframeEditor from './KeyframeEditor';
@@ -45,6 +45,7 @@ interface ShotWorkbenchProps {
   nineGrid?: NineGridData;
   onSelectNineGridPanel: (panel: NineGridPanel) => void;
   onShowNineGrid: () => void;
+  onReassessQuality: () => void;
 }
 
 const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
@@ -85,7 +86,8 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
   onGenerateNineGrid,
   nineGrid,
   onSelectNineGridPanel,
-  onShowNineGrid
+  onShowNineGrid,
+  onReassessQuality
 }) => {
   const scene = scriptData?.scenes.find(s => String(s.id) === String(shot.sceneId));
   const shotChars = Array.isArray(shot.characters) ? shot.characters : [];
@@ -96,7 +98,11 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
   
   const startKf = shot.keyframes?.find(k => k.type === 'start');
   const endKf = shot.keyframes?.find(k => k.type === 'end');
+  const quality = shot.qualityAssessment;
   const [localVideoModelId, setLocalVideoModelId] = useState(currentVideoModelId);
+  const [expandedCheckKey, setExpandedCheckKey] = useState<string | null>(null);
+  const [isAdvancedMode, setIsAdvancedMode] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<string[]>(['context']);
 
   useEffect(() => {
     setLocalVideoModelId(currentVideoModelId);
@@ -104,6 +110,57 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
 
   const normalizedModelId = localVideoModelId.trim().toLowerCase();
   const showEndFrame = normalizedModelId.startsWith('veo') || normalizedModelId.includes('kf2v');
+  
+  const qualityGradeLabel = quality?.grade === 'pass' ? '通过' : quality?.grade === 'warning' ? '需优化' : '高风险';
+  const qualityBadgeClass =
+    quality?.grade === 'pass'
+      ? 'bg-[var(--success-bg)] text-[var(--success-text)] border-[var(--success-border)]'
+      : quality?.grade === 'warning'
+        ? 'bg-[var(--warning-bg)] text-[var(--warning-text)] border-[var(--warning-border)]'
+        : 'bg-[var(--error-hover-bg)] text-[var(--error-text)] border-[var(--error-border)]';
+  const qualitySourceLabel = quality ? (quality.version >= 2 ? 'AI评估 V2' : '规则评分 V1') : '';
+
+  const checkLabelMap: Record<string, string> = {
+    'prompt-readiness': '提示词完整度',
+    'asset-coverage': '资产覆盖度',
+    'keyframe-execution': '关键帧就绪度',
+    'video-execution': '视频执行状态',
+    'continuity-risk': '连贯性风险',
+  };
+
+  const adviceMap: Record<string, string> = {
+    'prompt-readiness': '建议先补全首帧/尾帧/视频提示词，避免执行歧义。',
+    'asset-coverage': '建议补角色/场景/道具参考图，提高风格一致性。',
+    'keyframe-execution': '建议先完成关键帧出图，再进入视频生成。',
+    'video-execution': '建议优先完成视频生成并确认可播放结果。',
+    'continuity-risk': '建议补齐首尾锚点，确保跨镜头连贯。',
+  };
+
+  const getCheckLabel = (checkKey: string, fallback: string) => checkLabelMap[checkKey] || fallback;
+
+  const qualitySummary = (() => {
+    if (!quality) return '';
+    const failedLabels = quality.checks.filter((check) => !check.passed).map((check) => getCheckLabel(check.key, check.label));
+    if (failedLabels.length === 0) return '可进入生产，核心检查项已通过。';
+    if (quality.grade === 'fail') return `风险较高：${failedLabels.join('、')}`;
+    if (quality.grade === 'warning') return `需要优化：${failedLabels.join('、')}`;
+    return `轻微问题：${failedLabels.join('、')}`;
+  })();
+
+  const weakestCheck = quality?.checks?.length
+    ? [...quality.checks].sort((a, b) => a.score - b.score)[0]
+    : undefined;
+  const qualityActionHint = weakestCheck ? adviceMap[weakestCheck.key] || '' : '';
+  
+  const isSectionOpen = (sectionKey: string) => expandedSections.includes(sectionKey);
+  const openSection = (sectionKey: string) => {
+    setExpandedSections((prev) => (prev.includes(sectionKey) ? prev : [...prev, sectionKey]));
+  };
+  const toggleSection = (sectionKey: string) => {
+    setExpandedSections((prev) =>
+      prev.includes(sectionKey) ? prev.filter((item) => item !== sectionKey) : [...prev, sectionKey]
+    );
+  };
   
   // 从shot.id中提取显示编号
   const getShotDisplayNumber = () => {
@@ -119,6 +176,48 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
       return String(shotIndex + 1).padStart(2, '0');
     }
   };
+  
+  const renderSectionHeader = (
+    sectionKey: string,
+    title: string,
+    subtitle: string,
+    done?: boolean
+  ) => {
+    const isOpen = isSectionOpen(sectionKey);
+    return (
+      <button
+        type="button"
+        className="w-full px-4 py-3 flex items-center justify-between text-left"
+        onClick={() => toggleSection(sectionKey)}
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          {done === undefined ? null : done ? (
+            <CheckCircle2 className="w-4 h-4 text-[var(--success-text)] shrink-0" />
+          ) : (
+            <Circle className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
+          )}
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest">{title}</p>
+            <p className="text-[10px] text-[var(--text-muted)] truncate">{subtitle}</p>
+          </div>
+        </div>
+        {isOpen ? (
+          <ChevronUp className="w-4 h-4 text-[var(--text-muted)]" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" />
+        )}
+      </button>
+    );
+  };
+  
+  // 日志：检查当前镜头的质量评估数据
+  useEffect(() => {
+    console.log('🔍 检查镜头质量评估数据:', {
+      shotId: shot.id,
+      hasQualityAssessment: !!shot.qualityAssessment,
+      qualityAssessment: shot.qualityAssessment
+    });
+  }, [shot]);
   
   return (
     <div className="w-[480px] bg-[var(--bg-deep)] flex flex-col h-full shadow-2xl animate-in slide-in-from-right-10 duration-300 relative z-20">
@@ -275,6 +374,70 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
           onDeleteKeyframe={onDeleteKeyframe}
           onImageClick={onImageClick}
         />
+
+        <section className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-surface)] overflow-hidden">
+          {renderSectionHeader('quality', '质量评估', '查看当前镜头可交付性')}
+          {isSectionOpen('quality') && quality && (
+            <div className="px-4 pb-4 border-t border-[var(--border-primary)] space-y-2">
+              <div className="pt-3 flex items-center justify-between gap-2">
+                <span className={`px-2 py-1 rounded-md text-[10px] font-mono border ${qualityBadgeClass}`}>
+                  评分 {quality.score} · {qualityGradeLabel}
+                </span>
+                <button
+                  type="button"
+                  onClick={onReassessQuality}
+                  className="px-2 py-1 rounded-md text-[10px] font-semibold border border-[var(--accent-border)] text-[var(--accent-text)] hover:bg-[var(--accent-bg)] flex items-center gap-1"
+                  title="使用大模型重新评估当前镜头质量"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  重新评估
+                </button>
+              </div>
+              <p className="text-xs text-[var(--text-secondary)]">{qualitySummary}</p>
+              {qualityActionHint && (
+                <p className="text-[10px] text-[var(--accent-text)] bg-[var(--accent-bg)] border border-[var(--accent-border)] rounded px-2 py-1.5">
+                  下一步建议：{qualityActionHint}
+                </p>
+              )}
+              <p className="text-[10px] text-[var(--text-muted)]">
+                来源：{qualitySourceLabel} · 评分时间：{new Date(quality.generatedAt).toLocaleString()}
+              </p>
+              <p className="text-[10px] text-[var(--text-muted)]">注：这里显示的是总分和等级，不是“warning条数”。点击每项右侧 ? 可查看评分依据。</p>
+              <div className="space-y-1.5">
+                {quality.checks.map((check) => (
+                  <div key={check.key} className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-16 text-[10px] font-mono ${check.passed ? 'text-[var(--success-text)]' : 'text-[var(--warning-text)]'}`}>
+                        {check.score}/100
+                      </span>
+                      <span className="flex-1 text-[11px] text-[var(--text-tertiary)] truncate" title={check.details || check.label}>
+                        {getCheckLabel(check.key, check.label)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedCheckKey((prev) => (prev === check.key ? null : check.key))}
+                        className="p-1 rounded border border-[var(--border-primary)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--accent-border)]"
+                        title="查看评分依据"
+                      >
+                        <CircleHelp className="w-3 h-3" />
+                      </button>
+                    </div>
+                    {expandedCheckKey === check.key && (
+                      <div className="ml-16 rounded border border-[var(--border-primary)] bg-[var(--bg-base)]/60 px-2 py-1.5 text-[10px] leading-relaxed text-[var(--text-secondary)] whitespace-pre-line">
+                        {check.details || '暂无评分依据。'}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {isSectionOpen('quality') && !quality && (
+            <div className="px-4 pb-4 border-t border-[var(--border-primary)]">
+              <p className="pt-3 text-xs text-[var(--text-muted)]">当前镜头还没有质量评估结果。</p>
+            </div>
+          )}
+        </section>
 
         {/* Narrative Section - 叙事动作作为视频提示词，放在视觉制作之后、视频生成之前 */}
         <div className="space-y-4">

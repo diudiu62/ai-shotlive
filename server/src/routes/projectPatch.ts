@@ -589,6 +589,7 @@ const SHOT_FIELDS: FieldMap = {
   characterVariations: { column: 'character_variations_json', transform: (v: any) => JSON.stringify(v) },
   props: { column: 'props_json', transform: (v: any) => JSON.stringify(v) },
   videoModel: 'video_model',
+  qualityAssessment: { column: 'quality_assessment_json', transform: (v: any) => JSON.stringify(v) },
 };
 
 router.post('/:id/shots', async (req: AuthRequest, res: Response) => {
@@ -1277,13 +1278,14 @@ router.post('/:id/parse-result', async (req: AuthRequest, res: Response) => {
           `INSERT INTO shots
            (id, project_id, user_id, episode_id, scene_id, action_summary, dialogue,
             camera_movement, shot_size, characters_json, character_variations_json, props_json,
-            video_model, nine_grid_panels, nine_grid_image, nine_grid_prompt, nine_grid_status, sort_order)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            video_model, quality_assessment_json, nine_grid_panels, nine_grid_image, nine_grid_prompt, nine_grid_status, sort_order)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             shot.id, projectId, userId, episodeId, shot.sceneId || '', shot.actionSummary || '', shot.dialogue || null,
             shot.cameraMovement || '', shot.shotSize || null,
             JSON.stringify(shot.characters || []), JSON.stringify(shot.characterVariations || {}),
-            JSON.stringify(shot.props || []),             shot.videoModel || null,
+            JSON.stringify(shot.props || []), shot.videoModel || null,
+            shot.qualityAssessment ? JSON.stringify(shot.qualityAssessment) : null,
             ng?.panels ? JSON.stringify(ng.panels) : null,
             resolveToFilePath(projectId, 'ninegrid', shot.id, ng?.imageUrl, episodeId) || null,
             ng?.prompt || null, ng?.status || null,
