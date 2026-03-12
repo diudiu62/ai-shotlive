@@ -1,6 +1,6 @@
 import React from 'react';
 import { Loader2, Edit2, Upload, ArrowRight, ArrowLeft, Sparkles, Wand2, Trash2 } from 'lucide-react';
-import { Keyframe } from '../../types';
+import { Keyframe, AspectRatio } from '../../types';
 
 interface KeyframeEditorProps {
   startKeyframe?: Keyframe;
@@ -41,6 +41,7 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
   onDeleteKeyframe,
   onImageClick
 }) => {
+
   const renderKeyframePanel = (
     type: 'start' | 'end',
     label: string,
