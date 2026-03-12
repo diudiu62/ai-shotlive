@@ -1355,7 +1355,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
           <div className="w-px h-6 bg-[var(--bg-hover)]" />
           {/* 横竖屏选择 */}
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-[var(--text-tertiary)] uppercase">比例</span>
+            <span className="text-xs text-[var(--text-tertiary)] uppercase">关键帧比例</span>
             <AspectRatioSelector
               value={keyframeAspectRatio}
               onChange={setKeyframeAspectRatio}
@@ -1428,6 +1428,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
             scriptData={project.scriptData}
             currentVideoModelId={activeShot.videoModel || DEFAULTS.videoModel}
             nextShotHasStartFrame={!!project.shots[activeShotIndex + 1]?.keyframes?.find(k => k.type === 'start')?.imageUrl}
+            previousShotHasEndFrame={!!project.shots[activeShotIndex - 1]?.keyframes?.find(k => k.type === 'end')?.imageUrl}
             isAIOptimizing={isAIGenerating}
             isSplittingShot={isSplittingShot}
             onClose={() => setActiveShotId(null)}
@@ -1494,6 +1495,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
                 ...s,
                 videoModel: modelId as any
               }));
+              if (project.id) PS.patchShot(project.id, activeShot.id, { videoModel: modelId });
             }}
             onEditVideoPrompt={() => {
               // 如果videoPrompt不存在，动态生成一个

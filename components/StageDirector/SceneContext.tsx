@@ -34,13 +34,7 @@ const SceneContext: React.FC<SceneContextProps> = ({
   onRemoveProp
 }) => {
   return (
-    <div className="bg-[var(--bg-surface)] p-5 rounded-xl border border-[var(--border-primary)] mb-6 space-y-4">
-      <div className="flex items-center gap-2 mb-2">
-        <MapPin className="w-4 h-4 text-[var(--text-tertiary)]" />
-        <h4 className="text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest">
-          场景环境 (Scene Context)
-        </h4>
-      </div>
+    <div className="space-y-4">
       
       <div className="flex gap-4 min-w-0">
         <div className="w-28 h-20 bg-[var(--bg-elevated)] rounded-lg overflow-hidden flex-shrink-0 border border-[var(--border-secondary)] relative">
