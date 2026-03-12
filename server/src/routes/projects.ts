@@ -127,6 +127,50 @@ async function saveProjectWithRetry(
 }
 
 /**
+ * PATCH /api/projects/:id - 部分更新项目
+ *
+ * 用于更新项目的单个字段，如 enable_quality_check 等
+ */
+// 驼峰命名转蛇形命名
+function camelToSnake(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
+router.patch('/:id', async (req: AuthRequest, res: Response) => {
+  try {
+    const projectId = req.params.id as string;
+    const userId = req.userId!;
+    const updates = req.body;
+
+    // 构建更新语句
+    const fields = Object.keys(updates);
+    if (fields.length === 0) {
+      res.status(400).json({ error: '没有要更新的字段' });
+      return;
+    }
+
+    // 转换字段名为蛇形命名
+    const snakeFields = fields.map(field => camelToSnake(field));
+    const placeholders = snakeFields.map((field, index) => `${field} = ?`).join(', ');
+    const values = fields.map(field => updates[field]);
+    values.push(projectId, userId);
+
+    const query = `UPDATE projects SET ${placeholders} WHERE id = ? AND user_id = ?`;
+    const [result] = await getPool().execute(query, values);
+
+    if ((result as any).affectedRows === 0) {
+      res.status(404).json({ error: '项目不存在' });
+      return;
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('更新项目失败:', err);
+    res.status(500).json({ error: '更新项目失败' });
+  }
+});
+
+/**
  * DELETE /api/projects/:id - 删除项目
  *
  * 所有子表都设置了 ON DELETE CASCADE，

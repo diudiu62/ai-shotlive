@@ -91,6 +91,7 @@ interface ProjectState {
   scriptData: any | null;
   shots: any[];
   isParsingScript: boolean;
+  enableQualityCheck: boolean;
   renderLogs: any[];
 }
 
@@ -165,8 +166,8 @@ export async function saveProjectNormalized(
        target_duration, language, visual_style, shot_generation_model,
        raw_script, selected_episode_id, is_parsing_script,
        has_script_data, script_title, script_genre, script_logline, art_direction,
-       created_at_ms, last_modified_ms, is_normalized
-     ) VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+       created_at_ms, last_modified_ms, is_normalized, enable_quality_check
+     ) VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
      ON DUPLICATE KEY UPDATE
        title = VALUES(title),
        data = VALUES(data),
@@ -188,6 +189,7 @@ export async function saveProjectNormalized(
        created_at_ms = VALUES(created_at_ms),
        last_modified_ms = VALUES(last_modified_ms),
        is_normalized = VALUES(is_normalized),
+       enable_quality_check = VALUES(enable_quality_check),
        updated_at = CURRENT_TIMESTAMP`,
     [
       pid,
@@ -210,6 +212,7 @@ export async function saveProjectNormalized(
       sd?.artDirection ? JSON.stringify(sd.artDirection) : null,
       project.createdAt || Date.now(),
       project.lastModified || Date.now(),
+      project.enableQualityCheck !== false ? 1 : 0,
     ],
   );
 
@@ -407,22 +410,30 @@ export async function saveProjectNormalized(
       `INSERT INTO shots
        (id, project_id, user_id, episode_id, scene_id, action_summary, dialogue,
         camera_movement, shot_size, characters_json, character_variations_json, props_json,
-        video_model, nine_grid_panels, nine_grid_image, nine_grid_prompt, nine_grid_status, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        video_model, quality_assessment_json, nine_grid_panels, nine_grid_image, nine_grid_prompt, nine_grid_status, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        shot.id, pid, userId, episodeId,
-        shot.sceneId || '', shot.actionSummary || '', shot.dialogue || null,
-        shot.cameraMovement || '', shot.shotSize || null,
+        shot.id,
+        pid,
+        userId,
+        episodeId,
+        shot.sceneId || "",
+        shot.actionSummary || "",
+        shot.dialogue || null,
+        shot.cameraMovement || "",
+        shot.shotSize || null,
         JSON.stringify(shot.characters || []),
         JSON.stringify(shot.characterVariations || {}),
         JSON.stringify(shot.props || []),
         shot.videoModel || null,
+        shot.qualityAssessment ? JSON.stringify(shot.qualityAssessment) : null,
         ng?.panels ? JSON.stringify(ng.panels) : null,
-        resolveToFilePath(pid, 'ninegrid', shot.id, ng?.imageUrl, episodeId) || null,
+        resolveToFilePath(pid, "ninegrid", shot.id, ng?.imageUrl, episodeId) ||
+          null,
         ng?.prompt || null,
         ng?.status || null,
         i,
-      ]
+      ],
     );
 
     // 关键帧
@@ -498,6 +509,7 @@ interface ProjectMetaRow extends RowDataPacket {
   created_at_ms: number | null;
   last_modified_ms: number | null;
   is_normalized: number;
+  enable_quality_check: number;
   created_at: Date;
   updated_at: Date;
 }
@@ -766,10 +778,10 @@ export async function loadProjectNormalized(
 
     return {
       id: r.id,
-      sceneId: r.scene_id || '',
-      actionSummary: r.action_summary || '',
+      sceneId: r.scene_id || "",
+      actionSummary: r.action_summary || "",
       dialogue: r.dialogue || undefined,
-      cameraMovement: r.camera_movement || '',
+      cameraMovement: r.camera_movement || "",
       shotSize: r.shot_size || undefined,
       characters: safeJsonParse(r.characters_json, []),
       characterVariations: safeJsonParse(r.character_variations_json, {}),
@@ -777,6 +789,7 @@ export async function loadProjectNormalized(
       keyframes: keyframesByShot.get(r.id) || [],
       interval: intervalsByShot.get(r.id) || undefined,
       videoModel: r.video_model || undefined,
+      qualityAssessment: safeJsonParse(r.quality_assessment_json, undefined),
       nineGrid,
     };
   });
@@ -820,23 +833,24 @@ export async function loadProjectNormalized(
   // ── 组装最终 ProjectState ──
   return {
     id: meta.id,
-    title: meta.title || '未命名项目',
+    title: meta.title || "未命名项目",
     createdAt: meta.created_at_ms || new Date(meta.created_at).getTime(),
     lastModified: meta.last_modified_ms || new Date(meta.updated_at).getTime(),
-    stage: (meta.stage || 'script') as any,
-    novelGenre: meta.novel_genre || '',
-    novelSynopsis: meta.novel_synopsis || '',
+    stage: (meta.stage || "script") as any,
+    novelGenre: meta.novel_genre || "",
+    novelSynopsis: meta.novel_synopsis || "",
     novelChapters,
     novelEpisodes,
     selectedEpisodeId: meta.selected_episode_id || null,
-    rawScript: meta.raw_script || '',
-    targetDuration: meta.target_duration || '60s',
-    language: meta.language || '中文',
-    visualStyle: meta.visual_style || 'live-action',
-    shotGenerationModel: meta.shot_generation_model || '',
+    rawScript: meta.raw_script || "",
+    targetDuration: meta.target_duration || "60s",
+    language: meta.language || "中文",
+    visualStyle: meta.visual_style || "live-action",
+    shotGenerationModel: meta.shot_generation_model || "",
     scriptData,
     shots,
     isParsingScript: !!meta.is_parsing_script,
+    enableQualityCheck: meta.enable_quality_check !== 0,
     renderLogs,
   };
 }

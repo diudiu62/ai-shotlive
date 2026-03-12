@@ -595,11 +595,11 @@ ${originalScript}
  */
 export const rewriteScriptStream = async (
   originalScript: string,
-  language: string = '中文',
+  language: string = "中文",
   model?: string,
-  onDelta?: (delta: string) => void
+  onDelta?: (delta: string) => void,
 ): Promise<string> => {
-  console.log('🔄 rewriteScriptStream 调用 - 使用模型:', model || '(active)');
+  console.log("🔄 rewriteScriptStream 调用 - 使用模型:", model || "(active)");
   const startTime = Date.now();
 
   const prompt = `
@@ -625,22 +625,726 @@ ${originalScript}
 `;
 
   try {
-    const result = await retryOperation(() => chatCompletionStream(prompt, model, 0.7, undefined, 600000, onDelta));
+    const result = await retryOperation(() =>
+      chatCompletionStream(prompt, model, 0.7, undefined, 600000, onDelta),
+    );
     const duration = Date.now() - startTime;
 
     await addRenderLogWithTokens({
-      type: 'script-parsing',
-      resourceId: 'rewrite-script',
-      resourceName: 'AI改写剧本（流式）',
-      status: 'success',
+      type: "script-parsing",
+      resourceId: "rewrite-script",
+      resourceName: "AI改写剧本（流式）",
+      status: "success",
       model,
       duration,
-      prompt: originalScript.substring(0, 200) + '...'
+      prompt: originalScript.substring(0, 200) + "...",
     });
 
     return result;
   } catch (error) {
-    console.error('❌ 改写失败（流式）:', error);
+    console.error("❌ 改写失败（流式）:", error);
     throw error;
   }
 };
+
+// ============================================
+// 分镜质量校验与自动修复
+// ============================================
+
+import { QualityCheck, ShotQualityAssessment } from "../../types";
+
+interface GenerateShotListOptions {
+  abortSignal?: AbortSignal;
+  previousScriptData?: ScriptData | null;
+  previousShots?: Shot[];
+  reuseUnchangedScenes?: boolean;
+  enableQualityCheck?: boolean;
+}
+
+const SCRIPT_STAGE_QUALITY_SCHEMA_VERSION = 1;
+
+const normalizeMatchText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
+    .trim();
+};
+
+const pickQualityCheck = (
+  key: string,
+  label: string,
+  score: number,
+  weight: number,
+  details?: string,
+): QualityCheck => ({
+  key,
+  label,
+  score: Math.max(0, Math.min(100, Math.round(score))),
+  weight,
+  passed: score >= 70,
+  details,
+});
+
+const getWeightedScore = (checks: QualityCheck[]): number => {
+  const weightedSum = checks.reduce(
+    (sum, check) => sum + check.score * check.weight,
+    0,
+  );
+  const totalWeight = checks.reduce((sum, check) => sum + check.weight, 0) || 1;
+  return Math.round(weightedSum / totalWeight);
+};
+
+const getGrade = (score: number): ShotQualityAssessment["grade"] => {
+  if (score >= 80) return "pass";
+  if (score >= 60) return "warning";
+  return "fail";
+};
+
+const resolveSupportsEndFrame = (modelId?: string): boolean => {
+  const id = (modelId || '').toLowerCase();
+  if (!id) return false;
+  if (id.startsWith('sora') || id.startsWith('doubao-seedance')) return false;
+  return true;
+};
+
+const evaluatePromptReadiness = (shot: Shot): QualityCheck => {
+  const startPrompt = shot.keyframes?.find((frame) => frame.type === 'start')?.visualPrompt?.trim() || '';
+  const endPrompt = shot.keyframes?.find((frame) => frame.type === 'end')?.visualPrompt?.trim() || '';
+  const videoPrompt = shot.interval?.videoPrompt?.trim() || '';
+  const actionSummaryLen = shot.actionSummary.trim().length;
+
+  let startScore = 0;
+  if (startPrompt.length >= 40) startScore = 45;
+  else if (startPrompt.length >= 16) startScore = 30;
+  else if (startPrompt.length > 0) startScore = 15;
+
+  let endScore = 0;
+  if (endPrompt.length >= 30) endScore = 25;
+  else if (endPrompt.length > 0) endScore = 10;
+
+  let videoScore = 0;
+  if (videoPrompt.length >= 30) videoScore = 20;
+  else if (videoPrompt.length > 0) videoScore = 10;
+
+  const actionScore = actionSummaryLen >= 12 ? 10 : 0;
+  const score = startScore + endScore + videoScore + actionScore;
+
+  const details = [
+    '规则：起始提示词45分 + 结束提示词25分 + 视频提示词20分 + 动作摘要10分',
+    `起始提示词长度 ${startPrompt.length} 字符 -> ${startScore} 分（>=40 得45；16-39 得30；1-15 得15）`,
+    `结束提示词长度 ${endPrompt.length} 字符 -> ${endScore} 分（>=30 得25；1-29 得10）`,
+    `视频提示词长度 ${videoPrompt.length} 字符 -> ${videoScore} 分（>=30 得20；1-29 得10）`,
+    `动作摘要长度 ${actionSummaryLen} 字符 -> ${actionScore} 分（>=12 得10）`,
+  ].join('\n');
+
+  return pickQualityCheck(
+    'prompt-readiness',
+    '提示词准备度',
+    score,
+    30,
+    details
+  );
+};
+
+const evaluateAssetCoverage = (shot: Shot, scriptData?: ScriptData | null): QualityCheck => {
+  if (!scriptData) {
+    return pickQualityCheck(
+      'asset-coverage',
+      '资产覆盖',
+      35,
+      20,
+      '未检测到剧本资产数据，无法核验场景/角色/道具参考图，按保守分 35 计算。'
+    );
+  }
+
+  const scene = scriptData.scenes.find((s) => String(s.id) === String(shot.sceneId));
+  const sceneScore = scene?.referenceImage ? 35 : 10;
+
+  const charIds = shot.characters || [];
+  const charDetails: string[] = [];
+  const charScoreParts = charIds.map((charId) => {
+    const char = scriptData.characters.find((entry) => String(entry.id) === String(charId));
+    if (!char) {
+      charDetails.push(`角色 ${charId}：未找到角色数据（0分）`);
+      return 0;
+    }
+    const variationId = shot.characterVariations?.[charId];
+    if (variationId) {
+      const variation = char.variations?.find((entry) => entry.id === variationId);
+      if (variation?.referenceImage) {
+        charDetails.push(`${char.name}(${variation.name})：有变体参考图（25分）`);
+        return 25;
+      }
+    }
+    if (char.referenceImage) {
+      charDetails.push(`${char.name}：有角色参考图（25分）`);
+      return 25;
+    }
+    charDetails.push(`${char.name}：缺少角色参考图（5分）`);
+    return 5;
+  });
+  const characterScore = charScoreParts.length
+    ? charScoreParts.reduce((sum, value) => sum + value, 0) / charScoreParts.length
+    : 20;
+
+  const props = shot.props || [];
+  const propDetails: string[] = [];
+  const propScoreParts = props.map((propId) => {
+    const prop = scriptData.props?.find((entry) => String(entry.id) === String(propId));
+    if (!prop) {
+      propDetails.push(`道具 ${propId}：未找到道具数据（0分）`);
+      return 0;
+    }
+    if (prop.referenceImage) {
+      propDetails.push(`${prop.name}：有参考图（10分）`);
+      return 10;
+    }
+    propDetails.push(`${prop.name}：缺少参考图（4分）`);
+    return 4;
+  });
+  const propScore = propScoreParts.length
+    ? propScoreParts.reduce((sum, value) => sum + value, 0) / propScoreParts.length
+    : 10;
+
+  const totalScore = sceneScore + characterScore + propScore;
+  const details = [
+    '规则：场景参考图最高35分 + 角色参考图平均最高25分 + 道具参考图平均最高10分',
+    `场景「${scene?.location || shot.sceneId}」：${scene?.referenceImage ? '有参考图（35分）' : '无参考图（10分）'}`,
+    charIds.length
+      ? `角色(${charIds.length})：${charDetails.join('；')} -> 平均 ${Math.round(characterScore)} 分`
+      : '角色：本镜头未绑定角色，按默认 20 分',
+    props.length
+      ? `道具(${props.length})：${propDetails.join('；')} -> 平均 ${Math.round(propScore)} 分`
+      : '道具：本镜头未绑定道具，按默认 10 分',
+    `总分：${Math.round(totalScore)}/100`,
+  ].join('\n');
+
+  return pickQualityCheck(
+    'asset-coverage',
+    '资产覆盖',
+    totalScore,
+    20,
+    details
+  );
+};
+
+const evaluateKeyframeExecution = (shot: Shot): QualityCheck => {
+  const startFrame = shot.keyframes?.find((frame) => frame.type === 'start');
+  const endFrame = shot.keyframes?.find((frame) => frame.type === 'end');
+  const supportsEndFrame = resolveSupportsEndFrame(shot.videoModel);
+
+  const describeFrame = (label: string, frame?: Shot['keyframes'][number]) => {
+    const status = frame?.status || 'pending';
+    const hasImage = !!frame?.imageUrl;
+    const hasPrompt = !!frame?.visualPrompt;
+    return `${label}：状态 ${status}，${hasImage ? '已出图' : '未出图'}，${hasPrompt ? '有提示词' : '无提示词'}`;
+  };
+
+  let startScore = 0;
+  if (startFrame?.imageUrl) startScore = 55;
+  else if (startFrame?.status === 'generating') startScore = 25;
+  else if (startFrame?.visualPrompt) startScore = 15;
+
+  let endScore = 0;
+  if (supportsEndFrame) {
+    if (endFrame?.imageUrl) endScore = 35;
+    else if (endFrame?.status === 'generating') endScore = 15;
+    else if (endFrame?.visualPrompt) endScore = 10;
+  } else {
+    endScore = 30;
+  }
+
+  let penalty = 0;
+  if (startFrame?.status === 'failed' || endFrame?.status === 'failed') {
+    penalty = -20;
+  }
+
+  const score = startScore + endScore + penalty;
+  const details = [
+    '规则：首帧最高55分 + 尾帧最高35分（若模型不支持尾帧则固定30分）+ 失败惩罚20分',
+    describeFrame('首帧', startFrame),
+    supportsEndFrame
+      ? describeFrame('尾帧', endFrame)
+      : `尾帧：当前模型 ${shot.videoModel || '未设置'} 不支持尾帧插值，按固定 30 分处理`,
+    penalty < 0 ? '检测到关键帧失败状态：额外扣 20 分' : '未检测到关键帧失败状态：不扣分',
+    `总分：${Math.round(score)}/100`,
+  ].join('\n');
+
+  return pickQualityCheck(
+    'keyframe-execution',
+    '关键帧执行',
+    score,
+    30,
+    details
+  );
+};
+
+const evaluateVideoExecution = (shot: Shot): QualityCheck => {
+  const interval = shot.interval;
+  if (!interval) {
+    return pickQualityCheck(
+      'video-execution',
+      '视频执行',
+      30,
+      20,
+      '未检测到视频生成记录：当前镜头还未发起视频生成，因此按基础分 30 计算。'
+    );
+  }
+
+  let score = 0;
+  let reason = '';
+  if (interval.videoUrl && interval.status === 'completed') score = 100;
+  else if (interval.status === 'generating') score = 55;
+  else if (interval.status === 'pending') score = 35;
+  else if (interval.status === 'failed') score = 10;
+
+  if (interval.videoUrl && interval.status === 'completed') {
+    reason = '视频已成功生成并回填URL（100分）。';
+  } else if (interval.status === 'generating') {
+    reason = '视频仍在生成中（55分）。';
+  } else if (interval.status === 'pending') {
+    reason = '视频任务处于待生成状态（35分）。';
+  } else if (interval.status === 'failed') {
+    reason = '视频生成失败（10分）。';
+  } else {
+    reason = `视频状态为 ${interval.status}，按保守分 ${score} 处理。`;
+  }
+
+  const details = [
+    '规则：completed=100，generating=55，pending=35，failed=10',
+    `当前状态：${interval.status}，${interval.videoUrl ? '已存在视频URL' : '无视频URL'}`,
+    reason,
+  ].join('\n');
+
+  return pickQualityCheck(
+    'video-execution',
+    '视频执行',
+    score,
+    20,
+    details
+  );
+};
+
+const evaluateContinuity = (shot: Shot): QualityCheck => {
+  const startFrame = shot.keyframes?.find((frame) => frame.type === 'start');
+  const endFrame = shot.keyframes?.find((frame) => frame.type === 'end');
+  const supportsEndFrame = resolveSupportsEndFrame(shot.videoModel);
+  const hasCharacters = (shot.characters?.length || 0) > 0;
+
+  let baseScore = 40;
+  let startBonus = 0;
+  let endBonus = 0;
+  let modelCompensation = 0;
+  let charPenalty = 0;
+  let charEndPenalty = 0;
+
+  if (startFrame?.imageUrl) startBonus = 25;
+  if (supportsEndFrame && endFrame?.imageUrl) endBonus = 25;
+  if (!supportsEndFrame) modelCompensation = 20;
+
+  if (hasCharacters && !startFrame?.imageUrl) charPenalty = -20;
+  if (supportsEndFrame && hasCharacters && !endFrame?.imageUrl) charEndPenalty = -10;
+
+  const score = baseScore + startBonus + endBonus + modelCompensation + charPenalty + charEndPenalty;
+  const details = [
+    '规则：基础40分 + 首帧锚点25分 + 尾帧锚点25分（模型不支持尾帧时补偿20分）+ 角色缺锚点惩罚',
+    `模型：${shot.videoModel || '未设置'}，${supportsEndFrame ? '支持尾帧插值' : '不支持尾帧插值'}`,
+    `首帧锚点：${startFrame?.imageUrl ? '已提供（+25）' : '未提供（+0）'}`,
+    supportsEndFrame
+      ? `尾帧锚点：${endFrame?.imageUrl ? '已提供（+25）' : '未提供（+0）'}`
+      : '尾帧锚点：模型不支持，使用补偿分（+20）',
+    hasCharacters
+      ? `角色镜头惩罚：${!startFrame?.imageUrl ? '缺少首帧锚点（-20）' : '首帧锚点完整（0）'}${supportsEndFrame && !endFrame?.imageUrl ? '；缺少尾帧锚点（-10）' : ''}`
+      : '非角色镜头：不触发角色锚点惩罚',
+    `总分：${Math.round(score)}/100`,
+  ].join('\n');
+
+  return pickQualityCheck(
+    'continuity-risk',
+    '连续性风险',
+    score,
+    10,
+    details
+  );
+};
+
+const buildSummary = (checks: QualityCheck[], grade: ShotQualityAssessment['grade']): string => {
+  const failedChecks = checks.filter((check) => !check.passed).map((check) => check.label);
+  if (!failedChecks.length) {
+    return '可进入生产，核心检查项已通过。';
+  }
+
+  const prefix =
+    grade === 'fail'
+      ? '风险较高：'
+      : grade === 'warning'
+        ? '需要优化：'
+        : '轻微问题：';
+  return `${prefix}${failedChecks.join('、')}`;
+};
+
+const assessScriptStageShotQuality = (input: {
+  shot: Shot;
+  scriptData?: ScriptData | null;
+}): ShotQualityAssessment => {
+  const { shot, scriptData } = input;
+
+  const checks: QualityCheck[] = [
+    evaluatePromptReadiness(shot),
+    evaluateAssetCoverage(shot, scriptData),
+    evaluateKeyframeExecution(shot),
+    evaluateVideoExecution(shot),
+    evaluateContinuity(shot),
+  ];
+
+  const score = getWeightedScore(checks);
+  const grade = getGrade(score);
+
+  return {
+    version: SCRIPT_STAGE_QUALITY_SCHEMA_VERSION,
+    score,
+    grade,
+    generatedAt: Date.now(),
+    checks,
+    summary: buildSummary(checks, grade),
+  };
+};
+
+const normalizeShotKeyframes = (
+  shot: Shot,
+  shotIndex: number,
+  visualStyle: string,
+): any[] => {
+  const startFrame = shot.keyframes?.find((f) => f.type === "start") || {
+    id: `keyframe-${shot.id}-start`,
+    type: "start",
+    visualPrompt: `${shot.actionSummary}，起始构图，${visualStyle}风格`,
+    status: "pending",
+  };
+  const endFrame = shot.keyframes?.find((f) => f.type === "end") || {
+    id: `keyframe-${shot.id}-end`,
+    type: "end",
+    visualPrompt: `${shot.actionSummary}，结束构图，${visualStyle}风格`,
+    status: "pending",
+  };
+  return [startFrame, endFrame];
+};
+
+const repairShotForScriptStage = (input: {
+  shot: Shot;
+  shotIndex: number;
+  visualStyle: string;
+  usedActionKeys: Set<string>;
+  validCharacterIds: Set<string>;
+  validPropIds: Set<string>;
+  forcePromptRewrite?: boolean;
+}): Shot => {
+  const {
+    shot,
+    shotIndex,
+    visualStyle,
+    usedActionKeys,
+    validCharacterIds,
+    validPropIds,
+    forcePromptRewrite = false,
+  } = input;
+  const actionFallback = `镜头 ${shotIndex + 1} 推进`;
+  let actionSummary = String(shot.actionSummary || "").trim() || actionFallback;
+  const normalizedAction = normalizeMatchText(actionSummary);
+  if (normalizedAction && usedActionKeys.has(normalizedAction)) {
+    actionSummary = `${actionSummary}（镜头${shotIndex + 1}）`;
+  }
+  usedActionKeys.add(normalizeMatchText(actionSummary));
+
+  const cameraMovement =
+    String(shot.cameraMovement || "").trim() || "Static Shot";
+  const shotSize = String(shot.shotSize || "").trim() || "Medium Shot";
+
+  const characters = Array.from(
+    new Set(
+      (shot.characters || [])
+        .map((id) => String(id))
+        .filter((id) => validCharacterIds.has(id)),
+    ),
+  );
+  const props = Array.from(
+    new Set(
+      (shot.props || [])
+        .map((id) => String(id))
+        .filter((id) => validPropIds.has(id)),
+    ),
+  );
+
+  const keyframes = normalizeShotKeyframes(
+    { ...shot, actionSummary },
+    shotIndex,
+    visualStyle,
+  );
+  if (
+    forcePromptRewrite ||
+    String(keyframes[0]?.visualPrompt || "").trim().length < 12
+  ) {
+    keyframes[0].visualPrompt = `${actionSummary}，起始构图，主体清晰，${visualStyle}风格，光影明确`;
+  }
+  if (
+    forcePromptRewrite ||
+    String(keyframes[1]?.visualPrompt || "").trim().length < 12
+  ) {
+    keyframes[1].visualPrompt = `${actionSummary}，结束构图，动作收束，${visualStyle}风格，镜头节奏完整`;
+  }
+
+  return {
+    ...shot,
+    actionSummary,
+    cameraMovement,
+    shotSize,
+    characters,
+    props,
+    keyframes,
+  };
+};
+
+const applyScriptStageQualityPipeline = (
+  shots: Shot[],
+  scriptData: ScriptData,
+  validCharacterIds: Set<string>,
+  validPropIds: Set<string>,
+  visualStyle: string,
+): Shot[] => {
+  const usedActionKeysByScene = new Map<string, Set<string>>();
+  const repairedShots = shots.map((shot, index) => {
+    const sceneId = String(shot.sceneId || "");
+    const usedActionKeys =
+      usedActionKeysByScene.get(sceneId) || new Set<string>();
+    if (!usedActionKeysByScene.has(sceneId)) {
+      usedActionKeysByScene.set(sceneId, usedActionKeys);
+    }
+
+    let candidate = repairShotForScriptStage({
+      shot,
+      shotIndex: index,
+      visualStyle,
+      usedActionKeys,
+      validCharacterIds,
+      validPropIds,
+      forcePromptRewrite: false,
+    });
+
+    let assessment = assessScriptStageShotQuality({
+      shot: candidate,
+      scriptData,
+    });
+
+    const requiredFieldsPassed = assessment.checks.find(
+      (item) => item.key === "prompt-readiness",
+    )?.passed;
+    const keyframePassed = assessment.checks.find(
+      (item) => item.key === "keyframe-execution",
+    )?.passed;
+    if (
+      assessment.grade === "fail" ||
+      !requiredFieldsPassed ||
+      !keyframePassed
+    ) {
+      candidate = repairShotForScriptStage({
+        shot: candidate,
+        shotIndex: index,
+        visualStyle,
+        usedActionKeys,
+        validCharacterIds,
+        validPropIds,
+        forcePromptRewrite: true,
+      });
+      assessment = assessScriptStageShotQuality({
+        shot: candidate,
+        scriptData,
+      });
+    }
+
+    const withAssessment: Shot = {
+      ...candidate,
+      qualityAssessment: assessment,
+    };
+    return withAssessment;
+  });
+
+  const warnings = repairedShots.filter(
+    (shot) => shot.qualityAssessment?.grade === "warning",
+  ).length;
+  const fails = repairedShots.filter(
+    (shot) => shot.qualityAssessment?.grade === "fail",
+  ).length;
+  logScriptProgress(
+    `分镜质量校验完成：${repairedShots.length}条（warning ${warnings}，fail ${fails}）`,
+  );
+
+  return repairedShots;
+};
+
+// 重写generateShotList函数以支持质量校验
+export const generateShotListWithQualityCheck = async (
+  scriptData: ScriptData,
+  model: string = 'gpt-5.2',
+  options?: GenerateShotListOptions
+): Promise<Shot[]> => {
+  const abortSignal = options?.abortSignal;
+  const enableQualityCheck = options?.enableQualityCheck !== false;
+  
+  console.log('🎬 generateShotListWithQualityCheck 调用 - 使用模型:', model, '视觉风格:', scriptData.visualStyle);
+  logScriptProgress('正在生成分镜列表...');
+  const overallStartTime = Date.now();
+
+  const ensureNotAborted = () => {
+    if (abortSignal?.aborted) {
+      throw new Error('请求已取消');
+    }
+  };
+
+  const processScene = async (scene: Scene, index: number): Promise<Shot[]> => {
+    ensureNotAborted();
+    const sceneStartTime = Date.now();
+    const sceneProgressLabel = `场景 ${index + 1}/${scriptData.scenes.length}：${scene.location}`;
+    logScriptProgress(`正在处理 ${sceneProgressLabel}`);
+
+    const prompt = `
+你是专业的分镜导演，负责将剧本场景转换为详细的分镜列表。
+
+请基于以下场景信息，生成分镜列表：
+
+场景ID: ${scene.id}
+场景地点: ${scene.location}
+场景时间: ${scene.time}
+场景氛围: ${scene.atmosphere}
+
+剧本内容参考:
+${scriptData.storyParagraphs
+  .filter(p => p.sceneRefId === scene.id)
+  .map(p => p.text)
+  .join('\n')}
+
+分镜要求：
+1. 每个分镜必须包含：actionSummary（动作摘要）、cameraMovement（镜头运动）、shotSize（景别）、characters（角色ID数组）
+2. 每个分镜必须包含keyframes数组，包含start和end两个关键帧，每个关键帧包含visualPrompt（视觉提示词）
+3. 分镜数量要合理，能够完整表现场景内容
+4. 保持镜头之间的连贯性和节奏感
+
+请输出JSON格式，包含一个shots数组：
+{
+  "shots": [
+    {
+      "actionSummary": "...",
+      "cameraMovement": "...",
+      "shotSize": "...",
+      "characters": ["character1", "character2"],
+      "props": ["prop1"],
+      "keyframes": [
+        {
+          "type": "start",
+          "visualPrompt": "..."
+        },
+        {
+          "type": "end",
+          "visualPrompt": "..."
+        }
+      ]
+    }
+  ]
+}
+`;
+
+    try {
+      const result = await retryOperation(() => chatCompletion(prompt, model, 0.7, 4096, 'json_object'), 2, 2000);
+      const parsed = typeof result === 'string' ? JSON.parse(result) : result;
+      const shots = Array.isArray(parsed?.shots) ? parsed.shots : [];
+      
+      await addRenderLogWithTokens({
+        type: 'script-parsing',
+        resourceId: `shot-gen-scene-${scene.id}-${Date.now()}`,
+        resourceName: `分镜生成 - 场景${index + 1}: ${scene.location}`,
+        status: 'success',
+        model: model,
+        prompt: prompt.substring(0, 200) + '...',
+        duration: Date.now() - sceneStartTime
+      });
+
+      return shots;
+    } catch (e) {
+      console.error(`❌ 场景 ${index + 1} 分镜生成失败:`, e);
+      
+      await addRenderLogWithTokens({
+        type: 'script-parsing',
+        resourceId: `shot-gen-scene-${scene.id}-${Date.now()}`,
+        resourceName: `分镜生成 - 场景${index + 1}: ${scene.location}`,
+        status: 'failed',
+        model: model,
+        prompt: prompt.substring(0, 200) + '...',
+        error: (e as Error).message || String(e),
+        duration: Date.now() - sceneStartTime
+      });
+
+      return [];
+    }
+  };
+
+  // Process scenes sequentially
+  const BATCH_SIZE = 1;
+  const allShots: Shot[] = [];
+
+  for (let i = 0; i < scriptData.scenes.length; i += BATCH_SIZE) {
+    if (i > 0) await new Promise(resolve => setTimeout(resolve, 1500));
+
+    const batch = scriptData.scenes.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(
+      batch.map((scene, idx) => processScene(scene, i + idx))
+    );
+    batchResults.forEach(shots => allShots.push(...shots));
+  }
+
+  if (allShots.length === 0) {
+    throw new Error('分镜生成失败：AI返回为空（可能是 JSON 结构不匹配或场景内容未被识别）。请打开控制台查看分镜生成日志。');
+  }
+
+  const normalizedShots = allShots.map((s, idx) => ({
+    ...s,
+    id: `shot-${idx + 1}`,
+    keyframes: Array.isArray(s.keyframes) ? s.keyframes.map((k: any) => ({
+      ...k,
+      id: `kf-${idx + 1}-${k.type}`,
+      status: 'pending'
+    })) : []
+  }));
+
+  // 应用质量校验和自动修复
+  if (enableQualityCheck) {
+    logScriptProgress('已启用分镜质量校验与自动修复。');
+    console.log('🔍 开始应用质量校验，镜头数量:', normalizedShots.length);
+    const validCharacterIds = new Set(scriptData.characters.map(c => String(c.id)));
+    const validPropIds = new Set(scriptData.props?.map(p => String(p.id)) || []);
+    const visualStyle = scriptData.visualStyle || 'live-action';
+    
+    console.log('🔧 调用 applyScriptStageQualityPipeline 函数');
+    const qualityCheckedShots = applyScriptStageQualityPipeline(
+      normalizedShots,
+      scriptData,
+      validCharacterIds,
+      validPropIds,
+      visualStyle
+    );
+    console.log('✅ 质量校验完成，返回的镜头数量:', qualityCheckedShots.length);
+    // 检查第一个镜头是否有质量评估数据
+    if (qualityCheckedShots.length > 0) {
+      console.log('📊 第一个镜头的质量评估数据:', qualityCheckedShots[0].qualityAssessment);
+    }
+    return qualityCheckedShots;
+  } else {
+    logScriptProgress('分镜质量校验已关闭，跳过自动打分与修复。');
+    console.log('⚠️  质量检查已关闭，跳过质量评估生成');
+    return normalizedShots.map(shot => {
+      if (!('qualityAssessment' in shot)) return shot;
+      const { qualityAssessment, ...rest } = shot as Shot & { qualityAssessment?: ShotQualityAssessment };
+      return rest as Shot;
+    });
+  }
+};
+
+export { assessScriptStageShotQuality };

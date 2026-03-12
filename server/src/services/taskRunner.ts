@@ -904,11 +904,13 @@ const applyScriptParseToProject = async (
       await conn.execute(
         `INSERT INTO shots
          (id, project_id, user_id, episode_id, scene_id, action_summary, dialogue,
-          camera_movement, shot_size, characters_json, sort_order)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          camera_movement, shot_size, characters_json, quality_assessment_json, sort_order)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [shot.id, projectId, userId, episodeId, shot.sceneId || '', shot.actionSummary || '', shot.dialogue || null,
          shot.cameraMovement || '', shot.shotSize || null,
-         JSON.stringify(shot.characters || []), i]
+         JSON.stringify(shot.characters || []),
+         shot.qualityAssessment ? JSON.stringify(shot.qualityAssessment) : null,
+         i]
       );
 
       for (const kf of shot.keyframes || []) {

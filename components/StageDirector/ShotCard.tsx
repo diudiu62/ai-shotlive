@@ -1,19 +1,32 @@
 import React from 'react';
-import { Image as ImageIcon, Video, Trash2 } from 'lucide-react';
+import { Image as ImageIcon, Video, Trash2, CheckSquare, Square } from 'lucide-react';
 import { Shot } from '../../types';
 
 interface ShotCardProps {
   shot: Shot;
   index: number;
   isActive: boolean;
+  isSelected?: boolean;
   onClick: () => void;
+  onSelect?: (e: React.MouseEvent) => void;
   onDelete?: (shotId: string) => void;
 }
 
-const ShotCard: React.FC<ShotCardProps> = ({ shot, index, isActive, onClick, onDelete }) => {
+const ShotCard: React.FC<ShotCardProps> = ({ shot, index, isActive, isSelected = false, onClick, onSelect, onDelete }) => {
   const sKf = shot.keyframes?.find(k => k.type === 'start');
   const hasImage = !!sKf?.imageUrl;
   const hasVideo = !!shot.interval?.videoUrl;
+  const quality = shot.qualityAssessment;
+  const qualityGradeLabel = quality?.grade === 'pass'
+    ? '通过'
+    : quality?.grade === 'warning'
+      ? '需优化'
+      : '高风险';
+  const qualityBadgeClass = quality?.grade === 'pass'
+    ? 'bg-[var(--success-bg)] text-[var(--success-text)] border-[var(--success-border)]'
+    : quality?.grade === 'warning'
+      ? 'bg-[var(--warning-bg)] text-[var(--warning-text)] border-[var(--warning-border)]'
+      : 'bg-[var(--error-hover-bg)] text-[var(--error-text)] border-[var(--error-border)]';
 
   // 从shot.id中提取显示编号
   // 例如：shot-1 → "SHOT 001", shot-1-1 → "SHOT 001-1", shot-1-2 → "SHOT 001-2"
@@ -41,9 +54,24 @@ const ShotCard: React.FC<ShotCardProps> = ({ shot, index, isActive, onClick, onD
     >
       {/* Header */}
       <div className="px-3 py-2 bg-[var(--bg-surface)] border-b border-[var(--border-primary)] flex justify-between items-center">
-        <span className={`font-mono text-[10px] font-bold ${isActive ? 'text-[var(--accent-text)]' : 'text-[var(--text-tertiary)]'}`}>
-          {getShotDisplayNumber()}
-        </span>
+        <div className="flex items-center gap-2">
+          {onSelect && (
+            <button
+              onClick={onSelect}
+              className="p-1 rounded-md text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-all"
+              title={isSelected ? '取消选择' : '选择'}
+            >
+              {isSelected ? (
+                <CheckSquare className="w-3.5 h-3.5 text-[var(--accent-text)]" />
+              ) : (
+                <Square className="w-3.5 h-3.5" />
+              )}
+            </button>
+          )}
+          <span className={`font-mono text-[10px] font-bold ${isActive ? 'text-[var(--accent-text)]' : 'text-[var(--text-tertiary)]'}`}>
+            {getShotDisplayNumber()}
+          </span>
+        </div>
         <div className="flex items-center gap-1.5">
           <span className="text-[9px] px-1.5 py-0.5 bg-[var(--bg-hover)] text-[var(--text-tertiary)] rounded uppercase">
             {shot.cameraMovement}
@@ -83,6 +111,11 @@ const ShotCard: React.FC<ShotCardProps> = ({ shot, index, isActive, onClick, onD
             <div className="px-2 py-1 bg-[var(--success)] text-[var(--text-primary)] rounded-full text-[9px] font-bold uppercase flex items-center gap-1 shadow-lg">
               <Video className="w-2.5 h-2.5" />
               VIDEO
+            </div>
+          )}
+          {quality && (
+            <div className={`px-2 py-1 rounded-full text-[9px] font-bold border ${qualityBadgeClass}`}>
+              评分 {quality.score} · {qualityGradeLabel}
             </div>
           )}
         </div>

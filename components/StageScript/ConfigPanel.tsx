@@ -11,11 +11,13 @@ interface Props {
   customModelInput: string;
   isProcessing: boolean;
   error: string | null;
+  enableQualityCheck: boolean;
   onShowModelConfig?: () => void;
   onDurationChange: (value: string) => void;
   onModelChange: (value: string) => void;
   onCustomDurationChange: (value: string) => void;
   onCustomModelChange: (value: string) => void;
+  onToggleQualityCheck: (enabled: boolean) => void;
   onAnalyze: () => void;
 }
 
@@ -26,11 +28,13 @@ const ConfigPanel: React.FC<Props> = ({
   customModelInput,
   isProcessing,
   error,
+  enableQualityCheck,
   onShowModelConfig,
   onDurationChange,
   onModelChange,
   onCustomDurationChange,
   onCustomModelChange,
+  onToggleQualityCheck,
   onAnalyze
 }) => {
   return (
@@ -76,6 +80,25 @@ const ConfigPanel: React.FC<Props> = ({
               模型配置
             </button>{' '}
             中可添加更多模型
+          </p>
+        </div>
+
+        {/* Quality Check */}
+        <div className="pt-6 border-t border-[var(--border-primary)]">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={enableQualityCheck}
+              onChange={(e) => onToggleQualityCheck(e.target.checked)}
+              disabled={isProcessing}
+              className="mt-0.5 h-4 w-4 rounded border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--accent-text)]"
+            />
+            <span className="text-xs text-[var(--text-secondary)]">
+              启用分镜质量校验与自动修复（推荐）
+            </span>
+          </label>
+          <p className="text-[10px] text-[var(--text-muted)] mt-2">
+            开启后会在分镜生成完成时自动打分并修复坏点（字段缺失、关键帧结构问题、资产ID非法等）。
           </p>
         </div>
       </div>

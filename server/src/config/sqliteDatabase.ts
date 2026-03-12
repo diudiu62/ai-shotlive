@@ -317,8 +317,10 @@ export async function initDatabaseSqlite(): Promise<void> {
       created_at_ms INTEGER,
       last_modified_ms INTEGER,
       is_normalized INTEGER DEFAULT 0,
+      enable_quality_check INTEGER DEFAULT 1,
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now')),
+
       PRIMARY KEY (id, user_id),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
@@ -489,12 +491,13 @@ export async function initDatabaseSqlite(): Promise<void> {
       characters_json TEXT,
       character_variations_json TEXT,
       props_json TEXT,
-      video_model TEXT,
-      nine_grid_panels TEXT,
-      nine_grid_image TEXT,
-      nine_grid_prompt TEXT,
-      nine_grid_status TEXT,
-      sort_order INTEGER DEFAULT 0,
+        video_model TEXT,
+        quality_assessment_json TEXT,
+        nine_grid_panels TEXT,
+        nine_grid_image TEXT,
+        nine_grid_prompt TEXT,
+        nine_grid_status TEXT,
+        sort_order INTEGER DEFAULT 0,
       PRIMARY KEY (id, project_id, user_id, episode_id),
       FOREIGN KEY (project_id, user_id) REFERENCES projects(id, user_id) ON DELETE CASCADE
     )

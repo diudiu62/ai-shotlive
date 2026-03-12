@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutGrid, Sparkles, Loader2, AlertCircle, Edit2, Film, Video as VideoIcon } from 'lucide-react';
+import { LayoutGrid, Sparkles, Loader2, AlertCircle, Edit2, Film, Video as VideoIcon, CheckSquare, Square, Trash2 } from 'lucide-react';
 import { ProjectState, Shot, Keyframe, VideoInterval, AspectRatio, VideoDuration, NineGridPanel, NineGridData } from '../../types';
 import { generateImage, generateVideo, generateActionSuggestion, optimizeKeyframePrompt, optimizeBothKeyframes, enhanceKeyframePrompt, splitShotIntoSubShots, generateNineGridPanels, generateNineGridImage, buildNineGridImagePrompt } from '../../services/aiService';
+import { assessScriptStageShotQuality } from '../../services/ai/scriptService';
 import { generateVideoServerSide, generateImageServerSide, recoverProjectTasks, TaskStatus } from '../../services/taskService';
 import { 
   getRefImagesForShot, 
@@ -50,6 +51,9 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
   const [showNineGrid, setShowNineGrid] = useState(false); // 是否显示九宫格预览弹窗
   const [toastMessage, setToastMessage] = useState('');
   
+  // 批量操作相关状态
+  const [selectedShotIds, setSelectedShotIds] = useState<Set<string>>(new Set());
+  
   // 关键帧生成使用的横竖屏比例（从持久化配置读取）
   const [keyframeAspectRatio, setKeyframeAspectRatioState] = useState<AspectRatio>(() => getUserAspectRatio());
   
@@ -69,6 +73,16 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
 
   const activeShotIndex = project.shots.findIndex(s => s.id === activeShotId);
   const activeShot = project.shots[activeShotIndex];
+  
+  // 日志：检查当前项目的质量检查设置和镜头数据
+  useEffect(() => {
+    console.log('📋 项目质量检查设置:', project.enableQualityCheck);
+    console.log('🎬 项目镜头数量:', project.shots.length);
+    // 检查前3个镜头是否有质量评估数据
+    project.shots.slice(0, 3).forEach((shot, index) => {
+      console.log(`📊 镜头 ${index + 1} 质量评估数据:`, shot.qualityAssessment);
+    });
+  }, [project.shots, project.enableQualityCheck]);
   
   const allStartFramesGenerated = project.shots.length > 0 && 
     project.shots.every(s => s.keyframes?.find(k => k.type === 'start')?.imageUrl);
@@ -217,6 +231,12 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
         if (activeShotId === shotId) {
           setActiveShotId(null);
         }
+        // 从选中列表中移除
+        setSelectedShotIds(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(shotId);
+          return newSet;
+        });
         updateProject((prevProject: ProjectState) => ({
           ...prevProject,
           shots: prevProject.shots.filter(s => s.id !== shotId)
@@ -225,6 +245,102 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
         showAlert(`${displayName} 已删除`, { type: 'success' });
       }
     });
+  };
+
+  /**
+   * 选择/取消选择分镜
+   */
+  const handleShotSelect = (shotId: string) => {
+    setSelectedShotIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(shotId)) {
+        newSet.delete(shotId);
+      } else {
+        newSet.add(shotId);
+      }
+      return newSet;
+    });
+  };
+
+  /**
+   * 批量删除分镜
+   */
+  const handleBatchDeleteShots = () => {
+    if (selectedShotIds.size === 0) return;
+
+    showAlert(`确定要删除选中的 ${selectedShotIds.size} 个分镜吗？此操作不可撤销。`, {
+      type: 'warning',
+      showCancel: true,
+      onConfirm: () => {
+        const selectedShots = project.shots.filter(s => selectedShotIds.has(s.id));
+        
+        // 关闭工作台如果当前选中的分镜在删除列表中
+        if (selectedShotIds.has(activeShotId)) {
+          setActiveShotId(null);
+        }
+        
+        // 从项目中删除分镜
+        updateProject((prevProject: ProjectState) => ({
+          ...prevProject,
+          shots: prevProject.shots.filter(s => !selectedShotIds.has(s.id))
+        }));
+        
+        // 从数据库中删除分镜
+        if (project.id) {
+          selectedShotIds.forEach(shotId => {
+            PS.removeShot(project.id!, shotId);
+          });
+        }
+        
+        // 清空选择列表
+        setSelectedShotIds(new Set());
+        
+        showAlert(`已删除 ${selectedShots.length} 个分镜`, { type: 'success' });
+      }
+    });
+  };
+
+  /**
+   * 全选/取消全选分镜
+   */
+  const handleSelectAllShots = () => {
+    if (selectedShotIds.size === project.shots.length) {
+      // 取消全选
+      setSelectedShotIds(new Set());
+    } else {
+      // 全选
+      const allShotIds = new Set(project.shots.map(shot => shot.id));
+      setSelectedShotIds(allShotIds);
+    }
+  };
+
+  /**
+   * 重新评估镜头质量
+   */
+  const handleReassessQuality = (shot: Shot) => {
+    if (!project.scriptData) return;
+
+    // 重新评估质量
+    const newAssessment = assessScriptStageShotQuality({
+      shot,
+      scriptData: project.scriptData
+    });
+
+    // 更新项目状态
+    updateShot(shot.id, s => ({
+      ...s,
+      qualityAssessment: newAssessment
+    }));
+
+    // 更新数据库
+    if (project.id) {
+      PS.patchShot(project.id, shot.id, {
+        qualityAssessment: newAssessment
+      });
+    }
+
+    // 显示成功提示
+    showAlert('质量评估已更新', { type: 'success' });
   };
 
   /**
@@ -1218,6 +1334,25 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
         </div>
 
         <div className="flex items-center gap-3">
+          {/* 全选按钮 */}
+          <button 
+            onClick={handleSelectAllShots}
+            className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-2 bg-[var(--bg-surface)] text-[var(--text-tertiary)] border border-[var(--border-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-primary)]"
+          >
+            <CheckSquare className="w-3 h-3" />
+            {selectedShotIds.size === project.shots.length ? '取消全选' : '全选'}
+          </button>
+          {/* 批量删除按钮 */}
+          {selectedShotIds.size > 0 && (
+            <button 
+              onClick={handleBatchDeleteShots}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-2 bg-[var(--error-bg)] text-[var(--error-text)] hover:bg-[var(--error-hover-bg)] border border-[var(--error-border)]"
+            >
+              <Trash2 className="w-3 h-3" />
+              批量删除 ({selectedShotIds.size})
+            </button>
+          )}
+          <div className="w-px h-6 bg-[var(--bg-hover)]" />
           {/* 横竖屏选择 */}
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-[var(--text-tertiary)] uppercase">比例</span>
@@ -1272,7 +1407,12 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
                 shot={shot}
                 index={idx}
                 isActive={activeShotId === shot.id}
+                isSelected={selectedShotIds.has(shot.id)}
                 onClick={() => setActiveShotId(shot.id)}
+                onSelect={(e) => {
+                  e.stopPropagation();
+                  handleShotSelect(shot.id);
+                }}
                 onDelete={handleDeleteShot}
               />
             ))}
@@ -1384,6 +1524,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
             nineGrid={activeShot.nineGrid}
             onSelectNineGridPanel={handleSelectNineGridPanel}
             onShowNineGrid={() => setShowNineGrid(true)}
+            onReassessQuality={() => handleReassessQuality(activeShot)}
           />
         )}
       </div>
