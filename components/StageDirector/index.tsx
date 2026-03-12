@@ -1494,6 +1494,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
                 ...s,
                 videoModel: modelId as any
               }));
+              if (project.id) PS.patchShot(project.id, activeShot.id, { videoModel: modelId });
             }}
             onEditVideoPrompt={() => {
               // 如果videoPrompt不存在，动态生成一个

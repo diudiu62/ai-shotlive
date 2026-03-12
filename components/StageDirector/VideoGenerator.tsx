@@ -14,6 +14,7 @@ interface VideoGeneratorProps {
   shot: Shot;
   hasStartFrame: boolean;
   hasEndFrame: boolean;
+  currentVideoModelId: string;
   onGenerate: (aspectRatio: AspectRatio, duration: VideoDuration, modelId: string) => void;
   onEditPrompt: () => void;
   onModelChange?: (modelId: string) => void;
@@ -23,6 +24,7 @@ const VideoGenerator: React.FC<VideoGeneratorProps> = ({
   shot,
   hasStartFrame,
   hasEndFrame,
+  currentVideoModelId,
   onGenerate,
   onEditPrompt,
   onModelChange
@@ -42,10 +44,10 @@ const VideoGenerator: React.FC<VideoGeneratorProps> = ({
   
   // 状态（废弃模型已在数据加载层迁移，此处无需额外处理）
   const [selectedModelId, setSelectedModelId] = useState<string>(
-    normalizeModelId(shot.videoModel) || defaultModel?.id || videoModels[0]?.id || 'sora-2'
+    normalizeModelId(currentVideoModelId) || defaultModel?.id || videoModels[0]?.id || 'sora-2'
   );
   const [veoFastQuality, setVeoFastQuality] = useState<'standard' | '4k'>(
-    resolveVeoFastQuality(shot.videoModel)
+    resolveVeoFastQuality(currentVideoModelId)
   );
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(() => getDefaultAspectRatio());
   const [duration, setDuration] = useState<VideoDuration>(() => getDefaultVideoDuration());
@@ -75,10 +77,10 @@ const VideoGenerator: React.FC<VideoGeneratorProps> = ({
   }, [selectedModelId]);
 
   useEffect(() => {
-    if (!shot.videoModel) return;
-    setSelectedModelId(normalizeModelId(shot.videoModel));
-    setVeoFastQuality(resolveVeoFastQuality(shot.videoModel));
-  }, [shot.videoModel]);
+    if (!currentVideoModelId) return;
+    setSelectedModelId(normalizeModelId(currentVideoModelId));
+    setVeoFastQuality(resolveVeoFastQuality(currentVideoModelId));
+  }, [currentVideoModelId]);
 
   const handleGenerate = () => {
     onGenerate(aspectRatio, duration, effectiveModelId);

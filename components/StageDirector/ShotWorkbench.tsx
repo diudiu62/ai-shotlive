@@ -549,16 +549,17 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
           {isSectionOpen('video') && (
             <div className="p-5 border-t border-[var(--border-primary)]">
               <VideoGenerator
-                shot={shot}
-                hasStartFrame={!!startKf?.imageUrl}
-                hasEndFrame={!!endKf?.imageUrl}
-                onGenerate={onGenerateVideo}
-                onEditPrompt={onEditVideoPrompt}
-                onModelChange={(modelId) => {
-                  setLocalVideoModelId(modelId);
-                  onVideoModelChange(modelId);
-                }}
-              />
+          shot={shot}
+          hasStartFrame={!!startKf?.imageUrl}
+          hasEndFrame={!!endKf?.imageUrl}
+          onGenerate={onGenerateVideo}
+          onEditPrompt={onEditVideoPrompt}
+          currentVideoModelId={localVideoModelId}
+          onModelChange={(modelId) => {
+            setLocalVideoModelId(modelId);
+            onVideoModelChange(modelId);
+          }}
+        />
             </div>
           )}
         </section>
