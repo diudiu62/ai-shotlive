@@ -76,27 +76,9 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
                 title="编辑提示词"
               >
                 <Edit2 className="w-3 h-3" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">编辑提示词</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">提示词</span>
               </button>
             )}
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] text-[var(--text-tertiary)]">
-                AI增强提示词
-              </span>
-              <button
-                onClick={onToggleAIEnhancement}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                  useAIEnhancement ? 'bg-[var(--accent)]' : 'bg-[var(--border-secondary)]'
-                }`}
-                title={useAIEnhancement ? '关闭AI增强：使用基础提示词快速生成' : '开启AI增强：自动扩展为专业电影级描述'}
-              >
-                <span
-                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-[var(--btn-primary-bg)] transition-transform ${
-                    useAIEnhancement ? 'translate-x-5' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
           </div>
         </div>
         
@@ -196,8 +178,28 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* 控制按钮区 */}
-      <div className="flex items-center gap-4 justify-end">
+      {/* AI 增强开关 */}
+      <div className="flex items-center gap-2 justify-end">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-[var(--text-tertiary)]">
+            AI增强提示词
+          </span>
+          <button
+            onClick={onToggleAIEnhancement}
+            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+              useAIEnhancement ? 'bg-[var(--accent)]' : 'bg-[var(--border-secondary)]'
+            }`}
+            title={useAIEnhancement ? '关闭AI增强：使用基础提示词快速生成' : '开启AI增强：自动扩展为专业电影级描述'}
+          >
+            <span
+              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-[var(--btn-primary-bg)] transition-transform ${
+                useAIEnhancement ? 'translate-x-5' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        
+        </div>
+        
         {/* 一次性优化两帧按钮 */}
         {showEndFrame && (
           <button
