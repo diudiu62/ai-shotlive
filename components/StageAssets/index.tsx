@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Sparkles, RefreshCw, Loader2, MapPin, Archive, X, Search, Trash2, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProjectState, CharacterVariation, Character, Scene, Prop, AspectRatio, AssetLibraryItem, CharacterTurnaroundPanel } from '../../types';
-import { generateImage, generateVisualPrompts, generateCharacterTurnaroundPanels, generateCharacterTurnaroundImage } from '../../services/aiService';
+import { generateImage, generateVisualPrompts, generateCharacterTurnaroundPanels, generateCharacterTurnaroundImage, getStylePrompt, CHARACTER_TURNAROUND_LAYOUT } from '../../services/aiService';
 import { generateImageServerSide } from '../../services/taskService';
 import { 
   getRegionalPrefix, 
@@ -26,6 +26,7 @@ import * as PS from '../../services/projectPatchService';
 import { getToken } from '../../services/apiClient';
 import { AspectRatioSelector } from '../AspectRatioSelector';
 import { getUserAspectRatio, setUserAspectRatio, getActiveImageModel } from '../../services/modelRegistry';
+import { ensureStylesLoaded } from '@/services/visualStyleService';
 
 /**
  * 清理图片 URL 中的旧 token，保留 episode 等业务参数。
@@ -161,28 +162,37 @@ const StageAssets: React.FC<Props> = ({ project, updateProject, onApiKeyError, o
       prop.status === 'generating' && !prop.referenceImage
     );
 
-    if (hasStuckCharacters || hasStuckScenes || hasStuckProps) {
-      console.log('🔧 检测到卡住的生成状态，正在重置...');
-      patchScriptData(data => ({
-        ...data,
-        characters: data.characters.map(char => ({
-          ...char,
-          status: char.status === 'generating' && !char.referenceImage ? 'failed' as const : char.status,
-          variations: char.variations?.map(v => ({
-            ...v,
-            status: v.status === 'generating' && !v.referenceImage ? 'failed' as const : v.status
-          }))
-        })),
-        scenes: data.scenes.map(scene => ({
-          ...scene,
-          status: scene.status === 'generating' && !scene.referenceImage ? 'failed' as const : scene.status
-        })),
-        props: data.props?.map(prop => ({
-          ...prop,
-          status: prop.status === 'generating' && !prop.referenceImage ? 'failed' as const : prop.status
-        })),
-      }));
-    }
+    patchScriptData(data => ({
+      ...data,
+      characters: data.characters.map(char => ({
+        ...char,
+        status: char.status === 'generating' && !char.referenceImage ? 'failed' as const : char.status,
+        referenceImage: withAuthToken(char.referenceImage),
+        referenceImageUrl: withAuthToken(char.referenceImageUrl),
+        turnaround: char.turnaround ? {
+          ...char.turnaround,
+          imageUrl: withAuthToken(char.turnaround.imageUrl)
+        } : char.turnaround,
+        variations: char.variations?.map(v => ({
+          ...v,
+          status: v.status === 'generating' && !v.referenceImage ? 'failed' as const : v.status,
+          referenceImage: withAuthToken(v.referenceImage),
+          referenceImageUrl: withAuthToken(v.referenceImageUrl)
+        }))
+      })),
+      scenes: data.scenes.map(scene => ({
+        ...scene,
+        status: scene.status === 'generating' && !scene.referenceImage ? 'failed' as const : scene.status,
+        referenceImage: withAuthToken(scene.referenceImage),
+        referenceImageUrl: withAuthToken(scene.referenceImageUrl)
+      })),
+      props: data.props?.map(prop => ({
+        ...prop,
+        status: prop.status === 'generating' && !prop.referenceImage ? 'failed' as const : prop.status,
+        referenceImage: withAuthToken(prop.referenceImage),
+        referenceImageUrl: withAuthToken(prop.referenceImageUrl)
+      })),
+    }));
   }, [project.id]);
 
   /**
@@ -341,6 +351,15 @@ const StageAssets: React.FC<Props> = ({ project, updateProject, onApiKeyError, o
           referenceImageUrl: resultIsUrl ? imageUrl : undefined,
           status: 'completed' as const,
         }));
+        
+        // 持久化到服务器
+        if (project.id) {
+          PS.patchCharacter(project.id, id, {
+            referenceImage: imageUrl,
+            referenceImageUrl: resultIsUrl ? imageUrl : undefined,
+            status: 'completed'
+          });
+        }
       } else {
         patchSceneInScript(id, s => ({
           ...s,
@@ -348,14 +367,37 @@ const StageAssets: React.FC<Props> = ({ project, updateProject, onApiKeyError, o
           referenceImageUrl: resultIsUrl ? imageUrl : undefined,
           status: 'completed' as const,
         }));
+        
+        // 持久化到服务器
+        if (project.id) {
+          PS.patchScene(project.id, id, {
+            referenceImage: imageUrl,
+            referenceImageUrl: resultIsUrl ? imageUrl : undefined,
+            status: 'completed'
+          });
+        }
       }
 
     } catch (e: any) {
       console.error(e);
       if (type === 'character') {
         patchCharacterInScript(id, c => ({ ...c, status: 'failed' as const }));
+        
+        // 持久化到服务器
+        if (project.id) {
+          PS.patchCharacter(project.id, id, {
+            status: 'failed'
+          });
+        }
       } else {
         patchSceneInScript(id, s => ({ ...s, status: 'failed' as const }));
+        
+        // 持久化到服务器
+        if (project.id) {
+          PS.patchScene(project.id, id, {
+            status: 'failed'
+          });
+        }
       }
       if (onApiKeyError && onApiKeyError(e)) {
         return;
@@ -1140,6 +1182,16 @@ const StageAssets: React.FC<Props> = ({ project, updateProject, onApiKeyError, o
         }
         return { ...prev, scriptData: newData };
       });
+      
+      // 持久化到服务器
+      if (project.id) {
+        PS.patchCharacter(project.id, charId, {
+          turnaround: {
+            panels,
+            status: 'panels_ready',
+          }
+        });
+      }
     } catch (e: any) {
       console.error('九宫格视角描述生成失败:', e);
       updateProject((prev) => {
@@ -1151,6 +1203,15 @@ const StageAssets: React.FC<Props> = ({ project, updateProject, onApiKeyError, o
         }
         return { ...prev, scriptData: newData };
       });
+      
+      // 持久化到服务器
+      if (project.id) {
+        PS.patchCharacter(project.id, charId, {
+          turnaround: {
+            status: 'failed',
+          }
+        });
+      }
       if (onApiKeyError && onApiKeyError(e)) return;
       showAlert('九宫格视角描述生成失败', { type: 'error' });
     }
@@ -1175,6 +1236,45 @@ const StageAssets: React.FC<Props> = ({ project, updateProject, onApiKeyError, o
       return { ...prev, scriptData: newData };
     });
 
+    // 构建提示词（与 generateCharacterTurnaroundImage 内部逻辑一致）
+    await ensureStylesLoaded();
+    const stylePrompt = getStylePrompt(visualStyle);
+    const panelDescriptions = panels.map((p, idx) => {
+      const position = CHARACTER_TURNAROUND_LAYOUT.positionLabels[idx];
+      return `Panel ${idx + 1} (${position}): [${p.viewAngle} / ${p.shotSize}] - ${p.description}`;
+    }).join('\n');
+    const artDirectionSuffix = project.scriptData?.artDirection
+      ? `\nArt Direction Style Anchors: ${project.scriptData.artDirection.consistencyAnchors}\nLighting: ${project.scriptData.artDirection.lightingStyle}\nTexture: ${project.scriptData.artDirection.textureStyle}`
+      : '';
+    const prompt = `Generate a SINGLE image composed as a CHARACTER TURNAROUND/REFERENCE SHEET with a 3x3 grid layout (9 equal panels).
+The image shows the SAME CHARACTER from 9 DIFFERENT viewing angles and distances.
+Each panel is separated by thin white borders.
+This is a professional character design reference sheet for animation/film production.
+
+Visual Style: ${visualStyle} (${stylePrompt})
+
+Character: ${char.name} - ${char.visualPrompt || `${char.gender}, ${char.age}, ${char.personality}`}
+
+Grid Layout (left to right, top to bottom):
+${panelDescriptions}
+
+CRITICAL REQUIREMENTS:
+- The output MUST be a SINGLE image divided into exactly 9 equal rectangular panels in a 3x3 grid layout
+- Each panel MUST have a thin white border/separator (2-3px) between panels
+- ALL 9 panels show the EXACT SAME CHARACTER with IDENTICAL appearance:
+  * Same face features (eyes, nose, mouth, face shape) - ABSOLUTELY IDENTICAL across all panels
+  * Same hairstyle and hair color - NO variation allowed
+  * Same clothing and accessories - EXACTLY the same outfit in every panel
+  * Same body proportions and build
+  * Same skin tone and complexion
+- The ONLY difference between panels is the VIEWING ANGLE and DISTANCE
+- Use a clean, neutral background (solid color or subtle gradient) to emphasize the character
+- Each panel should be a well-composed, professional-quality character reference
+- Maintain consistent lighting across all panels for accurate color reference
+- Character should have a neutral/characteristic pose appropriate for a reference sheet${artDirectionSuffix}
+
+⚠️ CHARACTER CONSISTENCY IS THE #1 PRIORITY - The character must look like the EXACT SAME PERSON in all 9 panels!`;
+
     try {
       const imageUrl = await generateCharacterTurnaroundImage(
         char,
@@ -1184,17 +1284,33 @@ const StageAssets: React.FC<Props> = ({ project, updateProject, onApiKeyError, o
         project.scriptData?.artDirection
       );
 
+      // 为图片 URL 添加认证 token
+      const imageUrlWithToken = withAuthToken(imageUrl);
+      
       // 更新状态为 completed
       updateProject((prev) => {
         if (!prev.scriptData) return prev;
         const newData = { ...prev.scriptData };
         const c = newData.characters.find(c => compareIds(c.id, charId));
         if (c && c.turnaround) {
-          c.turnaround.imageUrl = imageUrl;
+          c.turnaround.imageUrl = imageUrlWithToken;
           c.turnaround.status = 'completed';
+          c.turnaround.prompt = prompt;
         }
         return { ...prev, scriptData: newData };
       });
+      
+      // 持久化到服务器（移除token，只保存基础URL）
+      if (project.id) {
+        PS.patchCharacter(project.id, charId, {
+          turnaround: {
+            imageUrl: stripAuthToken(imageUrl),
+            status: 'completed',
+            prompt,
+            panels
+          }
+        });
+      }
     } catch (e: any) {
       console.error('九宫格造型图片生成失败:', e);
       updateProject((prev) => {
@@ -1203,11 +1319,25 @@ const StageAssets: React.FC<Props> = ({ project, updateProject, onApiKeyError, o
         const c = newData.characters.find(c => compareIds(c.id, charId));
         if (c && c.turnaround) {
           c.turnaround.status = 'failed';
+          c.turnaround.error = e.message;
+          c.turnaround.prompt = prompt;
         }
         return { ...prev, scriptData: newData };
       });
+      
+      // 持久化到服务器
+      if (project.id) {
+        PS.patchCharacter(project.id, charId, {
+          turnaround: {
+            status: 'failed',
+            error: e.message,
+            prompt,
+            panels
+          }
+        });
+      }
       if (onApiKeyError && onApiKeyError(e)) return;
-      showAlert('九宫格造型图片生成失败', { type: 'error' });
+      showAlert(`九宫格造型图片生成失败: ${e.message}`, { type: 'error' });
     }
   };
 

@@ -20,7 +20,7 @@ interface SceneContextProps {
 
 const SceneContext: React.FC<SceneContextProps> = ({
   shot,
-  scene,
+  scene: propsScene,
   scenes = [],
   characters,
   availableCharacters,
@@ -33,13 +33,16 @@ const SceneContext: React.FC<SceneContextProps> = ({
   onAddProp,
   onRemoveProp
 }) => {
+  // 根据 shot.sceneId 从 scenes 中获取当前场景，确保选择变化时能立即更新
+  const currentScene = scenes.find(s => String(s.id) === String(shot.sceneId)) || propsScene;
+  
   return (
     <div className="space-y-4">
       
       <div className="flex gap-4 min-w-0">
         <div className="w-28 h-20 bg-[var(--bg-elevated)] rounded-lg overflow-hidden flex-shrink-0 border border-[var(--border-secondary)] relative">
-          {scene?.referenceImage ? (
-            <img src={scene.referenceImage} className="w-full h-full object-cover" alt={scene.location} />
+          {currentScene?.referenceImage ? (
+            <img src={currentScene.referenceImage} className="w-full h-full object-cover" alt={currentScene.location} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-[var(--bg-hover)]">
               <MapPin className="w-6 h-6 text-[var(--text-muted)]" />
@@ -50,13 +53,13 @@ const SceneContext: React.FC<SceneContextProps> = ({
         <div className="flex-1 min-w-0 flex flex-col gap-1.5 overflow-hidden justify-center">
           {/* Scene Name Selection */}
           <div className="relative group min-w-0">
-            {onSceneChange && scenes.length > 1 ? (
+            {onSceneChange && scenes.length > 0 ? (
               <div className="relative flex items-center">
                 <select
                   value={shot.sceneId}
                   onChange={(e) => onSceneChange(e.target.value)}
                   className="w-full appearance-none bg-transparent text-[var(--text-primary)] text-sm font-bold pr-6 outline-none hover:text-[var(--accent)] transition-colors cursor-pointer truncate"
-                  title={scene?.location}
+                  title={currentScene?.location}
                 >
                   {scenes.map(s => (
                     <option key={s.id} value={s.id}>
@@ -69,8 +72,8 @@ const SceneContext: React.FC<SceneContextProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="text-[var(--text-primary)] text-sm font-bold truncate" title={scene?.location}>
-                {scene?.location || '未知场景'}
+              <div className="text-[var(--text-primary)] text-sm font-bold truncate" title={currentScene?.location}>
+                {currentScene?.location || '未知场景'}
               </div>
             )}
           </div>
@@ -79,14 +82,14 @@ const SceneContext: React.FC<SceneContextProps> = ({
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
               <Clock className="w-3 h-3 shrink-0" />
-              <span className="truncate opacity-80" title={scene?.time}>
-                {scene?.time || '未设置时间'}
+              <span className="truncate opacity-80" title={currentScene?.time}>
+                {currentScene?.time || '未设置时间'}
               </span>
             </div>
             
-            {scene?.atmosphere && (
-              <p className="text-xs text-[var(--text-tertiary)] line-clamp-2 break-all leading-relaxed" title={scene.atmosphere}>
-                {scene.atmosphere}
+            {currentScene?.atmosphere && (
+              <p className="text-xs text-[var(--text-tertiary)] line-clamp-2 break-all leading-relaxed" title={currentScene.atmosphere}>
+                {currentScene.atmosphere}
               </p>
             )}
           </div>

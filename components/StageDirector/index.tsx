@@ -1017,7 +1017,13 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
         shots: replaceShotWithSubShots(prevProject.shots, shot.id, subShots)
       }));
       
-      // 6. 关闭工作台，显示成功提示
+      // 6. 持久化到服务器
+      if (project.id) {
+        // 使用专门的 splitShot 接口处理镜头拆分
+        PS.splitShot(project.id, shot.id, subShots);
+      }
+      
+      // 7. 关闭工作台，显示成功提示
       setActiveShotId(null);
       showAlert(`镜头已拆分为 ${subShots.length} 个子镜头`, { type: 'success' });
     } catch (e: any) {
@@ -1172,7 +1178,8 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
         ...s,
         nineGrid: {
           panels: confirmedPanels,
-          status: 'failed' as const
+          status: 'failed' as const,
+          error: e.message
         }
       }));
       
