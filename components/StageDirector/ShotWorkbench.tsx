@@ -12,6 +12,7 @@ interface ShotWorkbenchProps {
   scriptData?: ProjectState['scriptData'];
   currentVideoModelId: string;
   nextShotHasStartFrame?: boolean; // 下一个镜头是否有首帧
+  previousShotHasEndFrame?: boolean; // 上一个镜头是否有尾帧
   isAIOptimizing?: boolean;
   isSplittingShot?: boolean;
   onClose: () => void;
@@ -55,6 +56,7 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
   scriptData,
   currentVideoModelId,
   nextShotHasStartFrame = false,
+  previousShotHasEndFrame = false,
   isAIOptimizing = false,
   isSplittingShot = false,
   onClose,
@@ -451,7 +453,7 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
                 startKeyframe={startKf}
                 endKeyframe={endKf}
                 showEndFrame={showEndFrame}
-                canCopyPrevious={shotIndex > 0}
+                canCopyPrevious={shotIndex > 0 && previousShotHasEndFrame}
                 canCopyNext={shotIndex < totalShots - 1 && nextShotHasStartFrame}
                 isAIOptimizing={isAIOptimizing}
                 useAIEnhancement={useAIEnhancement}
