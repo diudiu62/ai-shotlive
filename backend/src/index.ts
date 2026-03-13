@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // 加载环境变量（非 Electron 模式下从项目根目录加载）
 if (!process.env.ELECTRON) {
-  dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+  dotenv.config({ path: path.resolve(__dirname, "../.env") });
 }
 
 import { initDatabase, getPool, isSqlite } from './config/database.js';

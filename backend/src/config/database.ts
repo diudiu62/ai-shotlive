@@ -3,12 +3,15 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { RowDataPacket } from 'mysql2';
-import { createSqlitePool, initDatabaseSqlite } from './sqliteDatabase.js';
+import { createSqlitePool, initDatabaseSqlite } from "./sqliteDatabase.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
-const DB_TYPE = (process.env.DB_TYPE || 'mysql').toLowerCase();
+const DB_TYPE = (process.env.DB_TYPE || "mysql").toLowerCase();
+
+// 打印当前数据库类型，用于调试
+console.log(`📋 当前数据库类型: ${DB_TYPE}`);
 
 // 单行数据最大 64MB（单张图片或视频），远小于之前需要的 256MB
 const TARGET_MAX_PACKET = 64 * 1024 * 1024;

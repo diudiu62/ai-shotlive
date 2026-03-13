@@ -10,7 +10,7 @@ import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 import { getPool, initDatabase } from '../config/database.js';
 import { saveProjectNormalized } from '../services/projectStorage.js';
