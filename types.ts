@@ -313,13 +313,34 @@ export interface ProjectState {
  * - 16:9: 横屏（默认）
  * - 9:16: 竖屏
  * - 1:1: 方形
+ * - 4:3: 经典比例
  */
-export type AspectRatio = '16:9' | '9:16' | '1:1';
+export type AspectRatio = '16:9' | '9:16' | '1:1' | '4:3';
 
 /**
- * 视频时长类型（仅异步视频模型支持）
+ * 视频时长类型
  */
-export type VideoDuration = 4 | 8 | 12;
+export type VideoDuration = '5s' | '10s' | '15s' | '30s' | '60s';
+
+/**
+ * 状态类型
+ */
+export type Status = 'idle' | 'pending' | 'generating' | 'completed' | 'failed';
+
+/**
+ * 聊天状态类型
+ */
+export type ChatStatus = 'idle' | 'loading' | 'success' | 'error';
+
+/**
+ * 特效预设类型
+ */
+export type EffectPreset = 'none' | 'fade' | 'slide' | 'zoom';
+
+/**
+ * 模型类型
+ */
+export type ModelType = 'text' | 'image' | 'video' | 'chat';
 
 /**
  * 模型提供商配置

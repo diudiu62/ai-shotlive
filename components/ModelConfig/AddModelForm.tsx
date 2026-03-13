@@ -17,6 +17,7 @@ import {
   DEFAULT_VIDEO_PARAMS_VEO,
   ImageApiFormat,
 } from '../../types/model';
+import { VideoDuration } from '../../types';
 import { getProviders, addProvider } from '../../services/modelRegistry';
 import { useAlert } from '../GlobalAlert';
 
@@ -52,17 +53,17 @@ const ModelForm: React.FC<ModelFormProps> = ({ type, model, onSave, onCancel }) 
   );
   
   // 视频模型特有参数
-  const [defaultAspectRatio, setDefaultAspectRatio] = useState<'16:9' | '9:16' | '1:1'>(
+  const [defaultAspectRatio, setDefaultAspectRatio] = useState<'16:9' | '9:16' | '1:1' | '4:3'>(
     (model?.type === 'video' ? (model as any).params?.defaultAspectRatio : undefined) || '16:9'
   );
-  const [supportedAspectRatios, setSupportedAspectRatios] = useState<('16:9' | '9:16' | '1:1')[]>(
+  const [supportedAspectRatios, setSupportedAspectRatios] = useState<('16:9' | '9:16' | '1:1' | '4:3')[]>(
     (model?.type === 'video' ? (model as any).params?.supportedAspectRatios : undefined) || ['16:9', '9:16']
   );
-  const [defaultDuration, setDefaultDuration] = useState<number>(
-    (model?.type === 'video' ? (model as any).params?.defaultDuration : undefined) || 8
+  const [defaultDuration, setDefaultDuration] = useState<VideoDuration>(
+    (model?.type === 'video' ? (model as any).params?.defaultDuration : undefined) || '15s'
   );
-  const [supportedDurations, setSupportedDurations] = useState<number[]>(
-    (model?.type === 'video' ? (model as any).params?.supportedDurations : undefined) || [4, 8, 12]
+  const [supportedDurations, setSupportedDurations] = useState<VideoDuration[]>(
+    (model?.type === 'video' ? (model as any).params?.supportedDurations : undefined) || ['5s', '10s', '15s', '30s', '60s']
   );
 
   // 提供商配置
@@ -92,8 +93,8 @@ const ModelForm: React.FC<ModelFormProps> = ({ type, model, onSave, onCancel }) 
         setVideoMode(videoParams?.mode || 'sync');
         setDefaultAspectRatio(videoParams?.defaultAspectRatio || '16:9');
         setSupportedAspectRatios(videoParams?.supportedAspectRatios || ['16:9', '9:16']);
-        setDefaultDuration(videoParams?.defaultDuration || 8);
-        setSupportedDurations(videoParams?.supportedDurations || [4, 8, 12]);
+        setDefaultDuration(videoParams?.defaultDuration || '15s');
+        setSupportedDurations(videoParams?.supportedDurations || ['5s', '10s', '15s', '30s', '60s']);
       }
     }
   }, [model, isEditMode]);
@@ -140,8 +141,8 @@ const ModelForm: React.FC<ModelFormProps> = ({ type, model, onSave, onCancel }) 
         mode: videoMode,
         defaultAspectRatio,
         supportedAspectRatios,
-        defaultDuration,
-        supportedDurations,
+        defaultDuration: defaultDuration as any,
+        supportedDurations: supportedDurations as any,
       };
     }
 
@@ -428,10 +429,11 @@ const ModelForm: React.FC<ModelFormProps> = ({ type, model, onSave, onCancel }) 
                         const input = e.target as HTMLInputElement;
                         const newDuration = Number(input.value);
                         if (newDuration >= 1 && newDuration <= 60) {
-                          setSupportedDurations([...supportedDurations, newDuration]);
+                          const durationString = `${newDuration}s` as VideoDuration;
+                          setSupportedDurations([...supportedDurations, durationString]);
                           // 如果是第一个时长，自动设为默认
                           if (supportedDurations.length === 0) {
-                            setDefaultDuration(newDuration);
+                            setDefaultDuration(durationString);
                           }
                           input.value = '';
                         }

@@ -70,7 +70,7 @@ const VideoGenerator: React.FC<VideoGeneratorProps> = ({
         setAspectRatio(selectedModel.params.defaultAspectRatio);
       }
       // 如果当前选择的时长不被新模型支持，切换到默认值
-      if (!selectedModel.params.supportedDurations.includes(duration)) {
+      if (!selectedModel.params.supportedDurations.includes(duration as any)) {
         setDuration(selectedModel.params.defaultDuration);
       }
     }

@@ -469,7 +469,7 @@ export function useVideoAgent() {
   }, [messages, handleAction])
 
   useEffect(() => {
-    if (status === "idle" && messages.length > 0) {
+    if (status === "error" && messages.length > 0) {
       const timer = setTimeout(() => {
         setMessages([])
         processedToolCallsRef.current.clear()

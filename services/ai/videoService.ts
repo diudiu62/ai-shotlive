@@ -35,7 +35,7 @@ const generateVideoAsync = async (
   endImageBase64: string | undefined,
   apiKey: string,
   aspectRatio: AspectRatio = '16:9',
-  duration: VideoDuration = 8,
+  duration: VideoDuration = '15s',
   modelName: string = 'sora-2'
 ): Promise<string> => {
   const references = [startImageBase64, endImageBase64].filter(Boolean) as string[];
@@ -336,7 +336,7 @@ export const generateVideo = async (
   endImageBase64?: string,
   model: string = 'veo',
   aspectRatio: AspectRatio = '16:9',
-  duration: VideoDuration = 8
+  duration: VideoDuration = '15s'
 ): Promise<string> => {
   const resolvedVideoModel = resolveModel("video", model);
   const requestModel = resolveRequestModel("video", model) || model;
@@ -364,7 +364,7 @@ export const generateVideo = async (
       modelId: requestModel,
       apiKey,
       aspectRatio,
-      duration,
+      duration: duration as any,
     });
   }
 
@@ -383,7 +383,7 @@ export const generateVideo = async (
       modelId: requestModel,
       apiKey,
       aspectRatio,
-      duration,
+      duration: duration as any,
     });
   }
 

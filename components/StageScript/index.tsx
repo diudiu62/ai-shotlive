@@ -205,7 +205,7 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
       });
     } catch (error) {
       console.error('保存质量校验设置失败:', error);
-      showAlert('保存设置失败，请重试', 'error');
+      showAlert('保存设置失败，请重试', { type: 'error' });
     }
   };
 
@@ -903,7 +903,7 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
               onRewrite={handleRewriteScript}
               isContinuing={isContinuing}
               isRewriting={isRewriting}
-              lastModified={project.lastModified}
+              lastModified={project.lastModified.toString()}
             />
           </div>
         )}

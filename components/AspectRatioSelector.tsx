@@ -88,7 +88,7 @@ export const VideoDurationSelector: React.FC<VideoDurationSelectorProps> = ({
   onChange,
   disabled = false
 }) => {
-  const durations: VideoDuration[] = [4, 8, 12];
+  const durations: VideoDuration[] = ['5s', '10s', '15s', '30s', '60s'];
 
   return (
     <div className="flex gap-1">

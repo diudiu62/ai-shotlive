@@ -115,6 +115,7 @@ const getSizeFromAspectRatio = (aspectRatio: AspectRatio): { width: number; heig
     '16:9': { width: 1280, height: 720, size: '1280x720' },
     '9:16': { width: 720, height: 1280, size: '720x1280' },
     '1:1': { width: 720, height: 720, size: '720x720' },
+    '4:3': { width: 960, height: 720, size: '960x720' },
   };
   return sizeMap[aspectRatio];
 };

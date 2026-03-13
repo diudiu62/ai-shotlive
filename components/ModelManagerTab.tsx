@@ -46,7 +46,7 @@ const ModelManagerTab: React.FC<ModelManagerTabProps> = ({ onConfigChange }) => 
   const [providers, setProviders] = useState<ModelProvider[]>([]);
   const [config, setConfig] = useState<ModelConfig | null>(null);
   const [defaultAspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
-  const [defaultVideoDuration, setDuration] = useState<VideoDuration>(8);
+  const [defaultVideoDuration, setDuration] = useState<VideoDuration>('15s');
   
   // 编辑状态
   const [editingProviderId, setEditingProviderId] = useState<string | null>(null);
@@ -414,7 +414,7 @@ const ModelManagerTab: React.FC<ModelManagerTabProps> = ({ onConfigChange }) => 
           <div>
             <label className="text-[10px] text-[var(--text-muted)] mb-1.5 block">默认时长 (异步)</label>
             <div className="flex gap-1">
-              {([4, 8, 12] as VideoDuration[]).map((d) => (
+              {(['5s', '10s', '15s', '30s', '60s'] as VideoDuration[]).map((d) => (
                 <button
                   key={d}
                   onClick={() => handleDurationChange(d)}

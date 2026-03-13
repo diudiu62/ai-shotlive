@@ -230,6 +230,19 @@ export const cleanJsonString = (str: string): string => {
 };
 
 /**
+ * 解析JSON字符串，带错误恢复机制
+ */
+export const parseJsonWithRecovery = <T>(jsonStr: string, defaultValue: T): T => {
+  try {
+    const cleaned = cleanJsonString(jsonStr);
+    return JSON.parse(cleaned) as T;
+  } catch (e) {
+    console.warn('JSON解析失败，使用默认值:', e);
+    return defaultValue;
+  }
+};
+
+/**
  * 从 HTTP 错误响应中解析错误信息，返回带 status 属性的 Error
  */
 export const parseHttpError = async (response: Response): Promise<Error> => {
@@ -577,6 +590,7 @@ export const getSoraVideoSize = (aspectRatio: AspectRatio): string => {
     '16:9': '1280x720',
     '9:16': '720x1280',
     '1:1': '720x720',
+    '4:3': '960x720'
   };
   return sizeMap[aspectRatio];
 };

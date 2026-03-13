@@ -4,7 +4,7 @@ import {
   parseJsonWithRecovery,
   retryOperation,
   getActiveChatModel,
-} from './aiService';
+} from './ai/apiCore.js';
 import { assessShotQuality } from './qualityAssessmentService';
 
 const QUALITY_SCHEMA_VERSION = 2;

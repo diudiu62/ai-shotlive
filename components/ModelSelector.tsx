@@ -31,6 +31,7 @@ const typeLabels: Record<ModelType, string> = {
   chat: '对话模型',
   image: '图片模型',
   video: '视频模型',
+  audio: '音频模型'
 };
 
 const ModelSelector: React.FC<ModelSelectorProps> = ({

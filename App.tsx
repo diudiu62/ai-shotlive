@@ -16,7 +16,7 @@ import { patchProject } from './services/projectPatchService';
 import { setLogCallback, clearLogCallback } from './services/renderLogService';
 import { useAlert } from './components/GlobalAlert';
 import { useAuth } from './contexts/AuthContext';
-import logoImg from './logo.png';
+// import logoImg from './logo.png';
 
 function App() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -281,7 +281,9 @@ function App() {
     return (
       <div className="h-screen bg-[var(--bg-base)] flex items-center justify-center p-6">
         <div className="max-w-md text-center space-y-6">
-          <img src={logoImg} alt="Logo" className="w-20 h-20 mx-auto mb-4" />
+          <div className="w-20 h-20 mx-auto mb-4 bg-[var(--bg-hover)] rounded-full flex items-center justify-center">
+            <span className="text-2xl font-bold text-[var(--accent)]">AI</span>
+          </div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">AI Drama Director</h1>
           <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-8">
             <p className="text-[var(--text-tertiary)] text-base leading-relaxed mb-4">

@@ -22,6 +22,7 @@ const mapRatio = (aspectRatio: AspectRatio): string => {
     '16:9': '16:9',
     '9:16': '9:16',
     '1:1': '1:1',
+    '4:3': '4:3'
   };
   return ratioMap[aspectRatio] || '16:9';
 };

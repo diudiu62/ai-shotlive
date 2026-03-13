@@ -4,6 +4,7 @@
  */
 import type { TimelineClip, MediaFile } from "@/components/StageExport/CutOSEditor/editor-context";
 import { PIXELS_PER_SECOND, DEFAULT_CLIP_TRANSFORM, DEFAULT_CLIP_EFFECTS } from "@/components/StageExport/CutOSEditor/editor-context";
+import { VideoDuration } from "@/types/model";
 import { extractLastFrame, extractThirdFrame } from "./frame-extractor";
 import { callVideoApi } from "@/services/adapters/videoAdapter";
 import { getActiveVideoModel, getVideoModels } from "@/services/modelRegistry";
@@ -139,7 +140,7 @@ export async function createMorphTransition(
       startImage: startBase64,
       endImage: endBase64,
       aspectRatio: "16:9",
-      duration: 5,
+      duration: '5s',
     },
     morphModel
   );

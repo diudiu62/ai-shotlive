@@ -174,9 +174,9 @@ export const getVideoModelCapabilities = (): {
   if (!model) {
     return {
       supportedAspectRatios: ['16:9', '9:16', '1:1'],
-      supportedDurations: [4, 8, 12],
+      supportedDurations: ['5s', '10s', '15s', '30s'],
       defaultAspectRatio: '16:9',
-      defaultDuration: 8,
+      defaultDuration: '10s',
     };
   }
   

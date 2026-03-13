@@ -51,7 +51,7 @@ const DEFAULT_STATE: ModelManagerState = {
   providers: [DEFAULT_PROVIDER],
   currentConfig: DEFAULT_CONFIG,
   defaultAspectRatio: '16:9',
-  defaultVideoDuration: 8
+  defaultVideoDuration: '15s'
 };
 
 // 运行时状态缓存
@@ -368,7 +368,8 @@ export const getSoraVideoSize = (aspectRatio: AspectRatio): string => {
   const sizeMap: Record<AspectRatio, string> = {
     '16:9': '1280x720',
     '9:16': '720x1280',
-    '1:1': '720x720'
+    '1:1': '720x720',
+    '4:3': '960x720'
   };
   return sizeMap[aspectRatio];
 };

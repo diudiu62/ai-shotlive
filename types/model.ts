@@ -15,12 +15,12 @@ export type ModelType = 'chat' | 'image' | 'video' | 'audio';
 /**
  * 横竖屏比例类型
  */
-export type AspectRatio = '16:9' | '9:16' | '1:1';
+export type AspectRatio = '1:1' | '4:3' | '16:9' | '9:16';
 
 /**
- * 视频时长类型（仅异步视频模式支持）
+ * 视频时长类型
  */
-export type VideoDuration = 4 | 8 | 12;
+export type VideoDuration = '5s' | '10s' | '15s' | '30s' | '60s';
 
 /**
  * 视频生成模式
@@ -84,6 +84,7 @@ export type ModelParams = ChatModelParams | ImageModelParams | VideoModelParams;
 export interface ModelDefinitionBase {
   id: string;                    // 唯一标识，如 'gpt-5.1'
   apiModel?: string;             // API 实际模型名（可与其他模型重复）
+  modelName?: string;            // 模型名称，用于API调用
   name: string;                  // 显示名称，如 'GPT-5.1'
   type: ModelType;               // 模型类型
   providerId: string;            // 提供商 ID
@@ -242,8 +243,8 @@ export const DEFAULT_VIDEO_PARAMS_VEO: VideoModelParams = {
   mode: 'sync',
   defaultAspectRatio: '16:9',
   supportedAspectRatios: ['16:9', '9:16'],  // Veo 不支持 1:1
-  defaultDuration: 8,
-  supportedDurations: [8],  // Veo 固定时长
+  defaultDuration: '10s',
+  supportedDurations: ['10s'],  // Veo 固定时长
 };
 
 /**
@@ -253,8 +254,8 @@ export const DEFAULT_VIDEO_PARAMS_SORA: VideoModelParams = {
   mode: 'async',
   defaultAspectRatio: '16:9',
   supportedAspectRatios: ['16:9', '9:16', '1:1'],
-  defaultDuration: 8,
-  supportedDurations: [4, 8, 12],
+  defaultDuration: '10s',
+  supportedDurations: ['5s', '10s', '15s', '30s'],
 };
 
 /**
@@ -264,8 +265,8 @@ export const DEFAULT_VIDEO_PARAMS_VEO_FAST: VideoModelParams = {
   mode: 'async',
   defaultAspectRatio: '16:9',
   supportedAspectRatios: ['16:9', '9:16'],
-  defaultDuration: 8,
-  supportedDurations: [8],
+  defaultDuration: '10s',
+  supportedDurations: ['10s'],
 };
 
 // ============================================
@@ -633,8 +634,8 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
       mode: "async" as VideoMode,
       defaultAspectRatio: "16:9" as AspectRatio,
       supportedAspectRatios: ["16:9", "9:16", "1:1"] as AspectRatio[],
-      defaultDuration: 8 as VideoDuration,
-      supportedDurations: [4, 8, 12] as VideoDuration[],
+      defaultDuration: '10s' as VideoDuration,
+      supportedDurations: ['5s', '10s', '15s', '30s'] as VideoDuration[],
     },
   },
   {
@@ -652,8 +653,8 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
       mode: "async" as VideoMode,
       defaultAspectRatio: "16:9" as AspectRatio,
       supportedAspectRatios: ["16:9", "9:16", "1:1"] as AspectRatio[],
-      defaultDuration: 8 as VideoDuration,
-      supportedDurations: [4, 8, 12] as VideoDuration[],
+      defaultDuration: '10s' as VideoDuration,
+      supportedDurations: ['5s', '10s', '15s', '30s'] as VideoDuration[],
     },
   },
   // ========== 可灵 (Kling) ==========
@@ -670,8 +671,8 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
       mode: "async" as VideoMode,
       defaultAspectRatio: "16:9" as AspectRatio,
       supportedAspectRatios: ["16:9", "9:16", "1:1"] as AspectRatio[],
-      defaultDuration: 8 as VideoDuration,
-      supportedDurations: [4, 8] as VideoDuration[],
+      defaultDuration: '15s' as VideoDuration,
+      supportedDurations: ['5s', '10s', '15s', '30s', '60s'] as VideoDuration[],
     },
   },
   // ========== Vidu ==========
@@ -688,8 +689,8 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
       mode: "async" as VideoMode,
       defaultAspectRatio: "16:9" as AspectRatio,
       supportedAspectRatios: ["16:9", "9:16", "1:1"] as AspectRatio[],
-      defaultDuration: 8 as VideoDuration,
-      supportedDurations: [4, 8, 12] as VideoDuration[],
+      defaultDuration: '10s' as VideoDuration,
+      supportedDurations: ['5s', '10s', '15s', '30s'] as VideoDuration[],
     },
   },
   // ========== 万相 (Wan) ==========
@@ -707,8 +708,8 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
       mode: "async" as VideoMode,
       defaultAspectRatio: "16:9" as AspectRatio,
       supportedAspectRatios: ["16:9", "9:16", "1:1"] as AspectRatio[],
-      defaultDuration: 8 as VideoDuration,
-      supportedDurations: [4, 8, 12] as VideoDuration[],
+      defaultDuration: '10s' as VideoDuration,
+      supportedDurations: ['5s', '10s', '15s', '30s'] as VideoDuration[],
     },
   },
   {
@@ -723,8 +724,8 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
       mode: "async" as VideoMode,
       defaultAspectRatio: "16:9" as AspectRatio,
       supportedAspectRatios: ["16:9", "9:16", "1:1"] as AspectRatio[],
-      defaultDuration: 4 as VideoDuration,
-      supportedDurations: [4, 8] as VideoDuration[],
+      defaultDuration: '5s' as VideoDuration,
+      supportedDurations: ['5s', '10s'] as VideoDuration[],
     },
   },
   {
@@ -739,8 +740,8 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
       mode: "async" as VideoMode,
       defaultAspectRatio: "16:9" as AspectRatio,
       supportedAspectRatios: ["16:9", "9:16", "1:1"] as AspectRatio[],
-      defaultDuration: 4 as VideoDuration,
-      supportedDurations: [4, 8] as VideoDuration[],
+      defaultDuration: '5s' as VideoDuration,
+      supportedDurations: ['5s', '10s'] as VideoDuration[],
     },
   },
   {
@@ -755,8 +756,8 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
       mode: "async" as VideoMode,
       defaultAspectRatio: "16:9" as AspectRatio,
       supportedAspectRatios: ["16:9", "9:16", "1:1"] as AspectRatio[],
-      defaultDuration: 4 as VideoDuration,
-      supportedDurations: [4, 8] as VideoDuration[],
+      defaultDuration: '5s' as VideoDuration,
+      supportedDurations: ['5s', '10s'] as VideoDuration[],
     },
   },
   {
@@ -771,8 +772,8 @@ export const BUILTIN_VIDEO_MODELS: VideoModelDefinition[] = [
       mode: "async" as VideoMode,
       defaultAspectRatio: "16:9" as AspectRatio,
       supportedAspectRatios: ["16:9", "9:16", "1:1"] as AspectRatio[],
-      defaultDuration: 4 as VideoDuration,
-      supportedDurations: [4, 8] as VideoDuration[],
+      defaultDuration: '5s' as VideoDuration,
+      supportedDurations: ['5s', '10s'] as VideoDuration[],
     },
   },
 ];

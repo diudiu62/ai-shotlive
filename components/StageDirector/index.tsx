@@ -523,7 +523,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
   * @param duration - 视频时长（仅异步模型有效）
    * @param modelId - 视频模型 ID
    */
-  const handleGenerateVideo = async (shot: Shot, aspectRatio: AspectRatio = '16:9', duration: VideoDuration = 8, modelId?: string) => {
+  const handleGenerateVideo = async (shot: Shot, aspectRatio: AspectRatio = '16:9', duration: VideoDuration = '15s', modelId?: string) => {
     const sKf = shot.keyframes?.find(k => k.type === 'start');
     const eKf = shot.keyframes?.find(k => k.type === 'end');
     
@@ -557,10 +557,13 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
       selectedModel,
       projectLanguage,
       isNineGridMode ? shot.nineGrid : undefined,
-      duration
+      parseInt(duration) || 15
     );
     
     const intervalId = shot.interval?.id || generateId(`int-${shot.id}`);
+    
+    // 将 VideoDuration 转换为秒数
+    const durationInSeconds = parseInt(duration) || 15;
     
     // 更新 shot 的 videoModel
     updateShot(shot.id, (s) => ({
@@ -570,7 +573,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
         id: intervalId,
         startKeyframeId: sKf?.id || '',
         endKeyframeId: eKf?.id || '',
-        duration: duration,
+        duration: durationInSeconds,
         motionStrength: 5,
         videoPrompt,
         status: 'generating'
