@@ -22,7 +22,7 @@ const Dashboard: React.FC<Props> = ({ onShowOnboarding, onShowModelConfig }) => 
   const router = useRouter();
   const { showAlert } = useAlert();
   const { theme, toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading: isAuthLoading } = useAuth();
   const [projects, setProjects] = useState<ProjectState[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -80,6 +80,13 @@ const Dashboard: React.FC<Props> = ({ onShowOnboarding, onShowModelConfig }) => 
   useEffect(() => {
     loadProjects();
   }, []);
+
+  // 当用户退出登录时，重定向到登录页面
+  useEffect(() => {
+    if (!user && !isAuthLoading) {
+      router.push('/');
+    }
+  }, [user, isAuthLoading, router]);
 
   useEffect(() => {
     if (!showLibraryModal) return;

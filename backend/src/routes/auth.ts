@@ -134,7 +134,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.put('/profile', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { currentPassword, newUsername, newPassword } = req.body;
-    const userId = req.userId!;
+    const userId = req.userId!
 
     if (!currentPassword) {
       res.status(400).json({ error: '请输入当前密码以验证身份' });
@@ -206,6 +206,23 @@ router.put('/profile', authMiddleware, async (req: AuthRequest, res: Response) =
   } catch (err) {
     console.error('修改资料失败:', err);
     res.status(500).json({ error: '修改失败，请稍后重试' });
+  }
+});
+
+/**
+ * POST /api/auth/logout - 用户登出
+ */
+router.post('/logout', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!
+    const username = req.username!
+    
+    console.log(`✅ 用户登出: ${username} (ID: ${userId})`);
+    
+    res.json({ message: '登出成功' });
+  } catch (err) {
+    console.error('登出失败:', err);
+    res.status(500).json({ error: '登出失败，请稍后重试' });
   }
 });
 

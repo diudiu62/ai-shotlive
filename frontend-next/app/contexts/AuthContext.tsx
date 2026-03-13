@@ -24,7 +24,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateProfile: (currentPassword: string, newUsername?: string, newPassword?: string) => Promise<void>;
 }
 
@@ -87,9 +87,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const handleLogout = useCallback(() => {
-    // 退出前先把当前偏好同步到服务器
-    syncPreferencesToServer();
+  const handleLogout = useCallback(async () => {
+    try {
+      // 退出前先把当前偏好同步到服务器
+      await syncPreferencesToServer();
+      // 调用后端退出登录接口，记录日志
+      await apiPost('/api/auth/logout', {});
+    } catch (error) {
+      // 同步失败或接口调用失败不影响退出
+      console.error('同步偏好或退出登录失败:', error);
+    }
 
     clearAuth();
     // 清除用户级别的 localStorage 缓存

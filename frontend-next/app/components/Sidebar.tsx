@@ -162,7 +162,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentStage, setStage, onExit, proje
               {user.username}
             </button>
             <button
-              onClick={logout}
+              onClick={async () => await logout()}
               className="flex items-center gap-1.5 text-[var(--text-muted)] hover:text-[var(--error-text)] cursor-pointer transition-colors flex-shrink-0"
               title="退出登录"
             >
