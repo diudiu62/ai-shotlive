@@ -1008,7 +1008,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
       // 4. 生成子镜头对象
       const subShotIds = generateSubShotIds(shot.id, subShotsData.subShots.length);
       const subShots = subShotsData.subShots.map((data, idx) => 
-        createSubShot(shot, data, subShotIds[idx])
+        createSubShot(shot, data, subShotIds[idx], project.scriptData)
       );
       
       // 5. 替换原镜头

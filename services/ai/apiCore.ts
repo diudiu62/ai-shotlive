@@ -201,14 +201,32 @@ export const retryOperation = async <T>(
 };
 
 /**
- * 清理AI返回的JSON字符串，移除markdown代码块标记
+ * 清理AI返回的JSON字符串，移除markdown代码块标记并处理常见格式问题
  */
 export const cleanJsonString = (str: string): string => {
   if (!str) return "{}";
   let cleaned = str.trim();
+  
+  // 移除markdown代码块标记
   cleaned = cleaned.replace(/^```(?:json)?\s*/i, '');
   cleaned = cleaned.replace(/```\s*$/, '');
-  return cleaned.trim();
+  
+  // 移除可能的前缀文本
+  const jsonStart = cleaned.indexOf('{');
+  if (jsonStart > 0) {
+    cleaned = cleaned.substring(jsonStart);
+  }
+  
+  // 移除可能的后缀文本
+  const jsonEnd = cleaned.lastIndexOf('}');
+  if (jsonEnd > 0) {
+    cleaned = cleaned.substring(0, jsonEnd + 1);
+  }
+  
+  // 移除多余的空格和换行
+  cleaned = cleaned.trim();
+  
+  return cleaned;
 };
 
 /**
