@@ -2,6 +2,7 @@ import { Shot, ProjectState, Keyframe, NineGridPanel, NineGridData } from '../..
 import { VIDEO_PROMPT_TEMPLATES, NINE_GRID } from './constants';
 import { getCameraMovementCompositionGuide } from './cameraMovementGuides';
 import { getStylePrompt } from '../../services/ai/promptConstants';
+import { assessScriptStageShotQuality } from '../../services/ai/scriptService';
 
 /**
  * getRefImagesForShot 的返回类型
@@ -400,12 +401,14 @@ export const generateSubShotIds = (originalShotId: string, count: number): strin
  * @param originalShot - 原始镜头对象
  * @param subShotData - AI返回的子镜头数据
  * @param subShotId - 子镜头ID
+ * @param scriptData - 剧本数据，用于生成质量评估
  * @returns 新的Shot对象
  */
 export const createSubShot = (
   originalShot: Shot,
   subShotData: any,
-  subShotId: string
+  subShotId: string,
+  scriptData?: ProjectState['scriptData']
 ): Shot => {
   // 处理关键帧数组
   const keyframes: any[] = [];
@@ -422,7 +425,8 @@ export const createSubShot = (
     });
   }
   
-  return {
+  // 创建子镜头对象
+  const subShot: Shot = {
     id: subShotId,
     sceneId: originalShot.sceneId, // 继承原镜头的场景ID
     actionSummary: subShotData.actionSummary, // 使用AI生成的动作描述
@@ -434,6 +438,16 @@ export const createSubShot = (
     keyframes: keyframes, // 使用AI生成的关键帧（包含visualPrompt）
     videoModel: originalShot.videoModel // 继承视频模型设置
   };
+  
+  // 生成质量评估
+  if (scriptData) {
+    subShot.qualityAssessment = assessScriptStageShotQuality({
+      shot: subShot,
+      scriptData
+    });
+  }
+  
+  return subShot;
 };
 
 /**
