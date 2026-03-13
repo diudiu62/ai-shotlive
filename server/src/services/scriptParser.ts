@@ -74,6 +74,7 @@ interface Shot {
   shotSize?: string;
   characters: string[];
   keyframes: { id: string; type: string; visualPrompt: string; status: string }[];
+  qualityAssessment?: any;
 }
 
 export interface ScriptParseParams {
