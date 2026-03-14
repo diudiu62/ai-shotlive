@@ -1,5 +1,5 @@
 /* 亮色主题 (Claude 风格) - 语义化颜色令牌 */
-[data-theme="light"] {
+:root {
   --bg-base: #F7F5F0;
   --bg-primary: #FFFFFF;
   --bg-secondary: #FAF9F7;

@@ -1,5 +1,5 @@
 /* 暗色主题 - 语义化颜色令牌 */
-[data-theme="dark"] {
+.dark {
   --bg-base: #050505;
   --bg-primary: #0A0A0A;
   --bg-secondary: #121212;

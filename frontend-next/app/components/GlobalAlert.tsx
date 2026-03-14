@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { X, AlertCircle, CheckCircle, Info } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 type AlertType = 'info' | 'success' | 'error' | 'warning';
 
@@ -127,10 +129,10 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const getIcon = () => {
     switch (alertState.type) {
-      case 'success': return <CheckCircle className="w-6 h-6 text-[var(--success)]" />;
-      case 'error': return <AlertCircle className="w-6 h-6 text-[var(--error)]" />;
-      case 'warning': return <AlertCircle className="w-6 h-6 text-[var(--warning)]" />;
-      default: return <Info className="w-6 h-6 text-[var(--info)]" />;
+      case 'success': return <CheckCircle className="w-6 h-6 text-green-500" />;
+      case 'error': return <AlertCircle className="w-6 h-6 text-red-500" />;
+      case 'warning': return <AlertCircle className="w-6 h-6 text-yellow-500" />;
+      default: return <Info className="w-6 h-6 text-blue-500" />;
     }
   };
 
@@ -153,65 +155,65 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         isToastStyle ? (
           /* Toast-style notification for auto-dismiss alerts */
           <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="flex items-center gap-3 bg-[var(--bg-elevated)] border border-[var(--border-secondary)] rounded-xl px-5 py-3 shadow-2xl min-w-[280px]">
+            <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-5 py-3 shadow-2xl min-w-[280px]">
               {getIcon()}
               <div className="flex-1">
-                <div className="text-sm font-semibold text-[var(--text-primary)]">{getTitle()}</div>
-                <div className="text-xs text-[var(--text-secondary)] mt-0.5">{alertState.message}</div>
+                <div className="text-sm font-semibold text-gray-900">{getTitle()}</div>
+                <div className="text-xs text-gray-600 mt-0.5">{alertState.message}</div>
               </div>
-              <button
+              <Button
+                variant="ghost"
                 onClick={handleDismiss}
-                className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors ml-2"
+                className="text-gray-500 hover:text-gray-900 ml-2 p-1"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
           /* Full modal dialog for confirmations/errors */
-          <div 
-            className="fixed inset-0 z-[9999] bg-[var(--bg-base)]/80 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={alertState.showCancel ? handleCancel : handleDismiss}
-          >
-            <div 
-              className="bg-[var(--bg-elevated)] border border-[var(--border-secondary)] rounded-xl p-6 max-w-sm w-full space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  {getIcon()}
-                  <h3 className="text-lg font-semibold text-[var(--text-primary)]">{getTitle()}</h3>
+          <Dialog open={alertState.isOpen} onOpenChange={handleDismiss}>
+            <DialogContent className="sm:max-w-sm">
+              <DialogHeader>
+                <div className="flex items-start justify-between w-full">
+                  <div className="flex items-center gap-3">
+                    {getIcon()}
+                    <DialogTitle className="text-lg font-semibold text-gray-900">{getTitle()}</DialogTitle>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    onClick={alertState.showCancel ? handleCancel : handleDismiss}
+                    className="text-gray-500 hover:text-gray-900 p-1"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
                 </div>
-                <button 
-                  onClick={alertState.showCancel ? handleCancel : handleDismiss}
-                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              </DialogHeader>
               
-              <div className="text-[var(--text-secondary)] text-sm leading-relaxed">
+              <div className="text-gray-600 text-sm leading-relaxed">
                 {alertState.message}
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <DialogFooter>
                 {alertState.showCancel && (
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={handleCancel}
-                    className="px-4 py-2 bg-[var(--bg-hover)] hover:bg-[var(--border-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg text-sm font-medium transition-colors"
+                    className="px-4 py-2"
                   >
                     {alertState.cancelText}
-                  </button>
+                  </Button>
                 )}
-                <button
+                <Button
+                  variant="default"
                   onClick={handleConfirm}
-                  className="px-4 py-2 bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] text-[var(--btn-primary-text)] rounded-lg text-sm font-medium transition-colors"
+                  className="px-4 py-2"
                 >
                   {alertState.confirmText}
-                </button>
-              </div>
-            </div>
-          </div>
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         )
       )}
     </AlertContext.Provider>

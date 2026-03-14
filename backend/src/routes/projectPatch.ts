@@ -839,7 +839,7 @@ router.get('/:id/chapters', async (req: AuthRequest, res: Response) => {
     const total = countRow.total;
 
     const [rows] = await pool.execute<any[]>(
-      `SELECT id, chapter_index, reel, title, CHAR_LENGTH(content) AS word_count
+      `SELECT id, chapter_index, reel, title, LENGTH(content) AS word_count
        FROM novel_chapters WHERE project_id = ? AND user_id = ?
        ORDER BY chapter_index LIMIT ? OFFSET ?`,
       [projectId, userId, pageSize, offset]
@@ -912,7 +912,7 @@ router.get('/:id/episodes', async (req: AuthRequest, res: Response) => {
     const total = countRow.total;
 
     const [rows] = await pool.execute<any[]>(
-      `SELECT id, name, chapter_ids, chapter_range, status, episode_created_at, episode_updated_at, CHAR_LENGTH(script) AS script_length
+      `SELECT id, name, chapter_ids, chapter_range, status, episode_created_at, episode_updated_at, LENGTH(script) AS script_length
        FROM novel_episodes WHERE project_id = ? AND user_id = ?
        ORDER BY episode_created_at LIMIT ? OFFSET ?`,
       [projectId, userId, pageSize, offset]

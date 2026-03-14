@@ -548,10 +548,10 @@ export async function loadProjectNormalized(
   // 导出时 includeFullContent=true 以获取完整数据
   const chapterQuery = includeFullContent
     ? 'SELECT * FROM novel_chapters WHERE project_id = ? AND user_id = ? ORDER BY chapter_index'
-    : 'SELECT id, chapter_index, reel, title, CHAR_LENGTH(content) AS word_count FROM novel_chapters WHERE project_id = ? AND user_id = ? ORDER BY chapter_index';
+    : 'SELECT id, chapter_index, reel, title, LENGTH(content) AS word_count FROM novel_chapters WHERE project_id = ? AND user_id = ? ORDER BY chapter_index';
   const episodeQuery = includeFullContent
     ? 'SELECT * FROM novel_episodes WHERE project_id = ? AND user_id = ?'
-    : 'SELECT id, name, chapter_ids, chapter_range, status, episode_created_at, episode_updated_at, CHAR_LENGTH(script) AS script_length FROM novel_episodes WHERE project_id = ? AND user_id = ?';
+    : 'SELECT id, name, chapter_ids, chapter_range, status, episode_created_at, episode_updated_at, LENGTH(script) AS script_length FROM novel_episodes WHERE project_id = ? AND user_id = ?';
 
   // 剧本级数据隔离：始终按 episode_id 加载，无选中剧本时用 _default
   const activeEpisodeId = meta.selected_episode_id || '';

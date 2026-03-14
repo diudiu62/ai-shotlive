@@ -1,16 +1,19 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import StageAssets from "../../components/StageAssets";
+import MainLayout from "../../components/MainLayout";
 import { ProjectState } from '@/app/types/types';
 import { loadProjectFromDB } from '@/app/services/storageService';
 
 function AssetsPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const projectId = searchParams.get('projectId');
   const [project, setProject] = useState<ProjectState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isNavigationLocked, setIsNavigationLocked] = useState(false);
 
   useEffect(() => {
     if (projectId) {
@@ -41,6 +44,20 @@ function AssetsPageContent() {
     });
   };
 
+  const handleSetStage = (stage: 'script' | 'assets' | 'director' | 'export' | 'prompts') => {
+    if (isNavigationLocked) return;
+    router.push(`/stages/${stage}?projectId=${projectId}`);
+  };
+
+  const handleExit = () => {
+    if (isNavigationLocked) return;
+    router.push('/dashboard');
+  };
+
+  const handleGeneratingChange = (isGenerating: boolean) => {
+    setIsNavigationLocked(isGenerating);
+  };
+
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
@@ -50,7 +67,19 @@ function AssetsPageContent() {
   }
 
   return (
-    <StageAssets project={project} updateProject={updateProject} />
+    <MainLayout
+      currentStage="assets"
+      onSetStage={handleSetStage}
+      onExit={handleExit}
+      projectName={project.title}
+      isNavigationLocked={isNavigationLocked}
+    >
+      <StageAssets 
+        project={project} 
+        updateProject={updateProject}
+        onGeneratingChange={handleGeneratingChange}
+      />
+    </MainLayout>
   );
 }
 
