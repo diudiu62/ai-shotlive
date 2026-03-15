@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { Plus, RotateCw, BrainCircuit } from 'lucide-react';
-import { STYLES } from './constants';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 interface Props {
   script: string;
@@ -31,22 +32,19 @@ const ScriptEditor: React.FC<Props> = ({
   const isDisabled = isContinuing || isRewriting || !script.trim();
 
   return (
-    <div className="flex-1 flex flex-col bg-[var(--bg-base)] relative">
+    <div className="flex-1 flex flex-col bg-background relative">
       {/* Header */}
-      <div className="h-14 border-b border-[var(--border-primary)] flex items-center justify-between px-8 bg-[var(--bg-base)] shrink-0">
+      <div className="h-14 flex items-center justify-between px-8 bg-background shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-1.5 h-1.5 rounded-full bg-[var(--border-secondary)]"></div>
-          <span className="text-xs font-bold text-[var(--text-tertiary)]">剧本编辑器</span>
+          <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground"></div>
+          <span className="text-xs font-bold text-muted-foreground">剧本编辑器</span>
         </div>
         <div className="flex items-center gap-3">
-          <button
+          <Button
             onClick={onContinue}
             disabled={isDisabled}
-            className={`px-3 py-1.5 text-xs font-bold rounded-md flex items-center gap-1.5 transition-all shadow-sm ${
-              isDisabled
-                ? STYLES.button.disabled
-                : STYLES.button.primary
-            }`}
+            size="sm"
+            className="text-xs flex items-center gap-1.5 shadow-sm"
           >
             {isContinuing ? (
               <>
@@ -59,15 +57,12 @@ const ScriptEditor: React.FC<Props> = ({
                 AI续写
               </>
             )}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onRewrite}
             disabled={isDisabled}
-            className={`px-3 py-1.5 text-xs font-bold rounded-md flex items-center gap-1.5 transition-all shadow-sm ${
-              isDisabled
-                ? STYLES.button.disabled
-                : STYLES.button.primary
-            }`}
+            size="sm"
+            className="text-xs flex items-center gap-1.5 shadow-sm"
           >
             {isRewriting ? (
               <>
@@ -80,10 +75,11 @@ const ScriptEditor: React.FC<Props> = ({
                 AI改写
               </>
             )}
-          </button>
-          <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">MARKDOWN SUPPORTED</span>
+          </Button>
+          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">MARKDOWN SUPPORTED</span>
         </div>
       </div>
+      <Separator />
       
       {/* Editor Area */}
       <div className="flex-1 overflow-y-auto">
@@ -91,19 +87,20 @@ const ScriptEditor: React.FC<Props> = ({
           <textarea
             value={script}
             onChange={(e) => onChange(e.target.value)}
-            className="flex-1 bg-transparent text-[var(--text-secondary)] font-serif text-lg leading-loose focus:outline-none resize-none placeholder:text-[var(--text-muted)] selection:bg-[var(--bg-hover)]"
+            className="flex-1 bg-transparent text-foreground font-serif text-lg leading-loose focus:outline-none resize-none placeholder:text-muted-foreground selection:bg-muted"
             placeholder="在此输入故事大纲或直接粘贴剧本..."
             spellCheck={false}
           />
         </div>
       </div>
+      <Separator />
 
       {/* Status Footer */}
-      <div className="h-8 border-t border-[var(--border-subtle)] bg-[var(--bg-base)] px-4 flex items-center justify-end gap-4 text-[10px] text-[var(--text-muted)] font-mono select-none">
+      <div className="h-8 bg-background px-4 flex items-center justify-end gap-4 text-[10px] text-muted-foreground font-mono select-none">
         <span>{stats.characters} 字符</span>
         <span>{stats.lines} 行</span>
         <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-[var(--border-primary)]"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-border"></div>
           {lastModified ? '已自动保存' : '准备就绪'}
         </div>
       </div>

@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { Play, Download, FileVideo, Loader2, Scissors } from 'lucide-react';
-import { STYLES, DownloadState } from './constants';
+import { DownloadState } from './constants';
 import { useAlert } from '../GlobalAlert';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   completedShotsCount: number;
@@ -29,24 +30,26 @@ const ActionButtons: React.FC<Props> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <button 
+      <Button 
         onClick={onPreview}
         disabled={completedShotsCount === 0}
-        className={completedShotsCount > 0 ? STYLES.button.primary : STYLES.button.disabled}
+        variant={completedShotsCount > 0 ? 'default' : 'outline'}
+        className={completedShotsCount > 0 ? 'bg-primary text-primary-foreground' : 'opacity-50 cursor-not-allowed'}
       >
         <Play className="w-4 h-4" />
         Preview Video ({completedShotsCount}/{totalShots})
-      </button>
+      </Button>
 
-      <button 
+      <Button 
         onClick={onDownloadMaster}
         disabled={progress < 100 || isDownloading} 
+        variant={progress === 100 ? 'secondary' : 'outline'}
         className={
           isDownloading
-            ? STYLES.button.loading
+            ? 'opacity-75 cursor-not-allowed'
             : progress === 100 
-            ? STYLES.button.secondary
-            : STYLES.button.disabled
+            ? 'bg-secondary text-secondary-foreground'
+            : 'opacity-50 cursor-not-allowed'
         }
       >
         {isDownloading ? (
@@ -55,22 +58,23 @@ const ActionButtons: React.FC<Props> = ({
           <Download className="w-4 h-4" />
         )}
         {isDownloading ? `${phase} ${downloadProgress}%` : 'Download Master (.mp4)'}
-      </button>
-      <button 
-        className={completedShotsCount > 0 ? STYLES.button.tertiary : STYLES.button.disabled}
+      </Button>
+      <Button 
+        variant={completedShotsCount > 0 ? 'outline' : 'outline'}
         onClick={onOpenCutOS}
         disabled={completedShotsCount === 0}
+        className={completedShotsCount > 0 ? '' : 'opacity-50 cursor-not-allowed'}
       >
         <Scissors className="w-4 h-4" />
         AI 剪辑
-      </button>
-      <button 
-        className={STYLES.button.tertiary}
+      </Button>
+      <Button 
+        variant="outline"
         onClick={() => showAlert('暂未开发', { type: 'info', title: '提示' })}
       >
         <FileVideo className="w-4 h-4" />
         Export EDL / XML
-      </button>
+      </Button>
     </div>
   );
 };

@@ -6,6 +6,7 @@ import { Shot, ProjectState, AspectRatio, VideoDuration, NineGridPanel, NineGrid
 import SceneContext from './SceneContext';
 import KeyframeEditor from './KeyframeEditor';
 import VideoGenerator from './VideoGenerator';
+import { Button } from '@/components/ui/button';
 
 interface ShotWorkbenchProps {
   shot: Shot;
@@ -264,27 +265,33 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
         </div>
         
         <div className="flex items-center gap-1">
-          <button
+          <Button
             onClick={onPrevious}
             disabled={shotIndex === 0}
-            className="p-2 hover:bg-[var(--bg-hover)] rounded text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-20 transition-colors"
+            variant="ghost"
+            size="icon"
+            className="p-2 text-muted-foreground hover:text-primary disabled:opacity-20 transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onNext}
             disabled={shotIndex === totalShots - 1}
-            className="p-2 hover:bg-[var(--bg-hover)] rounded text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-20 transition-colors"
+            variant="ghost"
+            size="icon"
+            className="p-2 text-muted-foreground hover:text-primary disabled:opacity-20 transition-colors"
           >
             <ChevronRight className="w-4 h-4" />
-          </button>
-          <div className="w-px h-4 bg-[var(--border-secondary)] mx-2"></div>
-          <button
+          </Button>
+          <div className="w-px h-4 bg-border mx-2"></div>
+          <Button
             onClick={onClose}
-            className="p-2 hover:bg-[var(--error-hover-bg)] rounded text-[var(--text-tertiary)] hover:text-[var(--error-text)] transition-colors"
+            variant="ghost"
+            size="icon"
+            className="p-2 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
           >
             <X className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -296,22 +303,24 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
           {isSectionOpen('quality') && quality && (
             <div className="px-4 pb-4 border-t border-[var(--border-primary)] space-y-2">
               <div className="pt-3 flex items-center justify-between gap-2">
-                <span className={`px-2 py-1 rounded-md text-[10px] font-mono border ${qualityBadgeClass}`}>
+                <span className={`px-2 py-1 rounded-md text-[10px] font-mono border ${quality.grade === 'pass' ? 'bg-success text-success-foreground border-success' : quality.grade === 'warning' ? 'bg-warning text-warning-foreground border-warning' : 'bg-destructive text-destructive-foreground border-destructive'}`}>
                   评分 {quality.score} · {qualityGradeLabel}
                 </span>
-                <button
+                <Button
                   type="button"
                   onClick={onReassessQuality}
-                  className="px-2 py-1 rounded-md text-[10px] font-semibold border border-[var(--accent-border)] text-[var(--accent-text)] hover:bg-[var(--accent-bg)] flex items-center gap-1"
+                  variant="default"
+                  size="sm"
+                  className="px-2 py-1 text-[10px] font-semibold flex items-center gap-1"
                   title="使用大模型重新评估当前镜头质量"
                 >
                   <Sparkles className="w-3 h-3" />
                   重新评估
-                </button>
+                </Button>
               </div>
               <p className="text-xs text-[var(--text-secondary)]">{qualitySummary}</p>
               {qualityActionHint && (
-                <p className="text-[10px] text-[var(--accent-text)] bg-[var(--accent-bg)] border border-[var(--accent-border)] rounded px-2 py-1.5">
+                <p className="text-[10px] text-primary bg-primary/10 border border-primary/20 rounded px-2 py-1.5">
                   下一步建议：{qualityActionHint}
                 </p>
               )}
@@ -329,14 +338,16 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
                       <span className="flex-1 text-[11px] text-[var(--text-tertiary)] truncate" title={check.details || check.label}>
                         {getCheckLabel(check.key, check.label)}
                       </span>
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setExpandedCheckKey((prev) => (prev === check.key ? null : check.key))}
-                        className="p-1 rounded border border-[var(--border-primary)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--accent-border)]"
+                        variant="outline"
+                        size="icon"
+                        className="p-1 text-muted-foreground hover:text-primary"
                         title="查看评分依据"
                       >
                         <CircleHelp className="w-3 h-3" />
-                      </button>
+                      </Button>
                     </div>
                     {expandedCheckKey === check.key && (
                       <div className="ml-16 rounded border border-[var(--border-primary)] bg-[var(--bg-base)]/60 px-2 py-1.5 text-[10px] leading-relaxed text-[var(--text-secondary)] whitespace-pre-line">
@@ -388,10 +399,12 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
             <div className="p-5 border-t border-[var(--border-primary)] space-y-4">
               <div className="flex items-center gap-2 justify-end">
                 <div className="flex items-center gap-2">
-                  <button 
+                  <Button 
                     onClick={onSplitShot}
                     disabled={isSplittingShot}
-                    className="px-2 py-1 text-[var(--success-text)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 rounded-md hover:bg-[var(--success-bg)]"
+                    variant="ghost"
+                    size="sm"
+                    className="px-2 py-1 text-success hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 rounded-md hover:bg-success/10"
                     title="AI拆分镜头"
                   >
                     {isSplittingShot ? (
@@ -400,11 +413,13 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
                       <Scissors className="w-3 h-3" />
                     )}
                     <span className="text-[10px] font-bold uppercase tracking-wider">拆分镜头</span>
-                  </button>
-                  <button 
+                  </Button>
+                  <Button 
                     onClick={onGenerateAIAction}
                     disabled={isAIOptimizing}
-                    className="px-2 py-1 text-[var(--accent-text)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 rounded-md hover:bg-[var(--accent-bg)]"
+                    variant="ghost"
+                    size="sm"
+                    className="px-2 py-1 text-primary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 rounded-md hover:bg-primary/10"
                     title="AI生成动作建议"
                   >
                     {isAIOptimizing ? (
@@ -413,15 +428,17 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
                       <Sparkles className="w-3 h-3" />
                     )}
                     <span className="text-[10px] font-bold uppercase tracking-wider">AI建议</span>
-                  </button>
-                  <button 
+                  </Button>
+                  <Button 
                     onClick={onEditActionSummary}
-                    className="px-2 py-1 text-[var(--warning-text)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-1 rounded-md hover:bg-[var(--warning-bg)]"
+                    variant="ghost"
+                    size="sm"
+                    className="px-2 py-1 text-warning hover:text-primary transition-colors flex items-center gap-1 rounded-md hover:bg-warning/10"
                     title="编辑叙事动作"
                   >
                     <Edit2 className="w-3 h-3" />
                     <span className="text-[10px] font-bold uppercase tracking-wider">编辑动作</span>
-                  </button>
+                  </Button>
                 </div>
               </div>
               
@@ -474,54 +491,61 @@ const ShotWorkbench: React.FC<ShotWorkbenchProps> = ({
               {localVideoModelId !== 'veo' && (
                 <div className="space-y-3 pt-4 border-t border-[var(--border-secondary)]">
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={
-                        nineGrid?.status === 'completed' || nineGrid?.status === 'panels_ready' || nineGrid?.status === 'generating_image'
-                          ? onShowNineGrid 
-                          : onGenerateNineGrid
-                      }
-                      disabled={nineGrid?.status === 'generating_panels' || nineGrid?.status === 'generating_image'}
-                      className={`flex-1 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border ${
-                        nineGrid?.status === 'generating_panels' || nineGrid?.status === 'generating_image'
-                          ? 'bg-[var(--bg-surface)] text-[var(--text-muted)] border-[var(--border-primary)] cursor-wait'
-                          : nineGrid?.status === 'completed'
-                            ? 'bg-[var(--success-bg)] text-[var(--success-text)] border-[var(--success-border)] hover:bg-[var(--success-hover-bg)]'
-                            : nineGrid?.status === 'panels_ready'
-                              ? 'bg-[var(--warning-bg)] text-[var(--warning-text)] border-[var(--warning-border)] hover:bg-[var(--warning-hover-bg)]'
-                              : 'bg-[var(--bg-surface)] text-[var(--text-tertiary)] border-[var(--border-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-hover)]'
-                      }`}
-                      title="九宫格分镜预览 - 使用AI将镜头拆分为9个不同视角的预览图"
-                    >
-                      {nineGrid?.status === 'generating_panels' ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>镜头描述生成中...</span>
-                        </>
-                      ) : nineGrid?.status === 'generating_image' ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>九宫格图片生成中...</span>
-                        </>
-                      ) : nineGrid?.status === 'panels_ready' ? (
-                        <>
-                          <Grid3x3 className="w-3.5 h-3.5" />
-                          <span>查看/确认镜头描述</span>
-                          <span className="ml-1 px-1.5 py-0.5 bg-[var(--warning-text)]/10 rounded text-[8px]">待确认</span>
-                        </>
-                      ) : nineGrid?.status === 'completed' ? (
-                        <>
-                          <Grid3x3 className="w-3.5 h-3.5" />
-                          <span>查看九宫格分镜</span>
-                          <span className="ml-1 px-1.5 py-0.5 bg-[var(--success-text)]/10 rounded text-[8px]">Advanced</span>
-                        </>
-                      ) : (
-                        <>
-                          <Grid3x3 className="w-3.5 h-3.5" />
-                          <span>九宫格分镜预览</span>
-                          <span className="ml-1 px-1.5 py-0.5 bg-[var(--accent)]/10 text-[var(--accent-text)] rounded text-[8px]">Advanced</span>
-                        </>
-                      )}
-                    </button>
+                    <Button
+                    onClick={
+                      nineGrid?.status === 'completed' || nineGrid?.status === 'panels_ready' || nineGrid?.status === 'generating_image'
+                        ? onShowNineGrid 
+                        : onGenerateNineGrid
+                    }
+                    disabled={nineGrid?.status === 'generating_panels' || nineGrid?.status === 'generating_image'}
+                    variant={
+                      nineGrid?.status === 'completed'
+                        ? 'default'
+                        : nineGrid?.status === 'panels_ready'
+                          ? 'default'
+                          : 'outline'
+                    }
+                    className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                      nineGrid?.status === 'generating_panels' || nineGrid?.status === 'generating_image'
+                        ? 'bg-background text-muted-foreground border border-border cursor-wait'
+                        : nineGrid?.status === 'completed'
+                          ? 'bg-success text-success-foreground border-success hover:bg-success/90'
+                          : nineGrid?.status === 'panels_ready'
+                            ? 'bg-warning text-warning-foreground border-warning hover:bg-warning/90'
+                            : 'bg-background text-muted-foreground border border-border hover:text-primary hover:border-primary hover:bg-muted/50'
+                    }`}
+                    title="九宫格分镜预览 - 使用AI将镜头拆分为9个不同视角的预览图"
+                  >
+                    {nineGrid?.status === 'generating_panels' ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>镜头描述生成中...</span>
+                      </>
+                    ) : nineGrid?.status === 'generating_image' ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>九宫格图片生成中...</span>
+                      </>
+                    ) : nineGrid?.status === 'panels_ready' ? (
+                      <>
+                        <Grid3x3 className="w-3.5 h-3.5" />
+                        <span>查看/确认镜头描述</span>
+                        <span className="ml-1 px-1.5 py-0.5 bg-warning/20 rounded text-[8px]">待确认</span>
+                      </>
+                    ) : nineGrid?.status === 'completed' ? (
+                      <>
+                        <Grid3x3 className="w-3.5 h-3.5" />
+                        <span>查看九宫格分镜</span>
+                        <span className="ml-1 px-1.5 py-0.5 bg-success/20 rounded text-[8px]">Advanced</span>
+                      </>
+                    ) : (
+                      <>
+                        <Grid3x3 className="w-3.5 h-3.5" />
+                        <span>九宫格分镜预览</span>
+                        <span className="ml-1 px-1.5 py-0.5 bg-primary/10 text-primary rounded text-[8px]">Advanced</span>
+                      </>
+                    )}
+                  </Button>
                   </div>
                   
                   {/* Nine Grid thumbnail preview (if generated) */}

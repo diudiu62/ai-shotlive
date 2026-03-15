@@ -3,6 +3,7 @@
 import React from 'react';
 import { Monitor, Smartphone, Square } from 'lucide-react';
 import { AspectRatio, VideoDuration } from '@/app/types/types';
+import { Button } from '@/components/ui/button';
 
 interface AspectRatioSelectorProps {
   value: AspectRatio;
@@ -52,23 +53,18 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
   return (
     <div className="flex gap-1">
       {filteredOptions.map((option) => (
-        <button
+        <Button
           key={option.value}
           onClick={() => !disabled && onChange(option.value)}
           disabled={disabled}
-          className={`
-            flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-all
-            ${value === option.value
-              ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-              : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)] hover:text-[var(--text-secondary)]'
-            }
-            ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-          `}
+          variant={value === option.value ? 'default' : 'outline'}
+          size="sm"
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           title={`${option.label} (${option.desc})`}
         >
           {option.icon}
           {!compact && <span>{option.label}</span>}
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -95,21 +91,16 @@ export const VideoDurationSelector: React.FC<VideoDurationSelectorProps> = ({
   return (
     <div className="flex gap-1">
       {durations.map((d) => (
-        <button
+        <Button
           key={d}
           onClick={() => !disabled && onChange(d)}
           disabled={disabled}
-          className={`
-            px-3 py-1.5 rounded-md text-xs transition-all
-            ${value === d
-              ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-              : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)] hover:text-[var(--text-secondary)]'
-            }
-            ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-          `}
+          variant={value === d ? 'default' : 'outline'}
+          size="sm"
+          className={`px-3 py-1.5 text-xs ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {d}秒
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -173,21 +164,16 @@ export const VideoSettingsPanel: React.FC<VideoSettingsPanelProps> = ({
           <span className="text-[10px] text-[var(--text-tertiary)] uppercase">时长</span>
           <div className="flex gap-1">
             {availableDurations.map((d) => (
-              <button
+              <Button
                 key={d}
                 onClick={() => !disabled && onDurationChange(d)}
                 disabled={disabled}
-                className={`
-                  px-3 py-1.5 rounded-md text-xs transition-all
-                  ${duration === d
-                    ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-                    : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)] hover:text-[var(--text-secondary)]'
-                  }
-                  ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                `}
+                variant={duration === d ? 'default' : 'outline'}
+                size="sm"
+                className={`px-3 py-1.5 text-xs ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {d}秒
-              </button>
+              </Button>
             ))}
           </div>
         </div>

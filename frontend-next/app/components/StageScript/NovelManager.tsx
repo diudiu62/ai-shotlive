@@ -7,7 +7,14 @@ import { getActiveChatModel } from '../../services/modelRegistry';
 import { Upload, BookOpen, Trash2, ChevronDown, ChevronRight, FileText, AlertCircle, CheckCircle2, X, ChevronLeft, Loader2, Wand2, Settings2, Plus, Sparkles } from 'lucide-react';
 import * as PS from '../../services/projectPatchService';
 import OptionSelector from './OptionSelector';
-import { NOVEL_GENRE_OPTIONS, NOVEL_LENGTH_OPTIONS, NOVEL_TONE_OPTIONS, LANGUAGE_OPTIONS, STYLES } from './constants';
+import { NOVEL_GENRE_OPTIONS, NOVEL_LENGTH_OPTIONS, NOVEL_TONE_OPTIONS, LANGUAGE_OPTIONS } from './constants';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type VisualStyleOption = { label: string; value: string; desc?: string };
 
@@ -165,8 +172,8 @@ const NovelManager: React.FC<Props> = ({
       setContentCache(new Map());
       // 上传后回到第一页
       setTimeout(() => loadChaptersPage(1), 300);
-    } catch (err: any) {
-      setUploadError(err.message || '文件解析失败');
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : '文件解析失败');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -335,8 +342,8 @@ const NovelManager: React.FC<Props> = ({
       );
       setEditingContent(result);
       setContentCache(prev => new Map(prev).set(chapter.id, result));
-    } catch (err: any) {
-      setUploadError(err?.message || 'AI 生成失败');
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : 'AI 生成失败');
     } finally {
       setGeneratingChapterId(null);
     }
@@ -374,77 +381,79 @@ const NovelManager: React.FC<Props> = ({
         </div>
 
         {/* Config Form */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-          {/* 标题 */}
-          <div className="space-y-2">
-            <label className={STYLES.label}>项目标题</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => onTitleChange(e.target.value)}
-              className={STYLES.input}
-              placeholder="输入项目名称..."
-            />
-          </div>
-
-          {/* 小说类型 */}
-          <div className="space-y-2">
-            <label className={STYLES.label}>小说类型</label>
-            <div className="relative">
-              <select
-                value={NOVEL_GENRE_OPTIONS.some(o => o.value === novelGenre) ? novelGenre : 'custom'}
-                onChange={(e) => onNovelGenreChange(e.target.value)}
-                className={STYLES.select}
-              >
-                {NOVEL_GENRE_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-              <div className="absolute right-3 top-3 pointer-events-none">
-                <ChevronRight className="w-4 h-4 text-[var(--text-muted)] rotate-90" />
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <Card>
+            <CardHeader className="p-0 pb-4">
+              <CardTitle className="text-sm font-bold text-[var(--text-primary)]">基本信息</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 space-y-4">
+              {/* 标题 */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">项目标题</Label>
+                <Input
+                  type="text"
+                  value={title}
+                  onChange={(e) => onTitleChange(e.target.value)}
+                  placeholder="输入项目名称..."
+                />
               </div>
-            </div>
-            {novelGenre === 'custom' && (
-              <input
-                type="text"
-                value={customGenreInput}
-                onChange={(e) => onCustomGenreChange(e.target.value)}
-                className={STYLES.input}
-                placeholder="输入自定义类型..."
-              />
-            )}
-          </div>
 
-          {/* 输出语言 */}
-          <div className="space-y-2">
-            <label className={STYLES.label}>输出语言</label>
-            <div className="relative">
-              <select
-                value={language}
-                onChange={(e) => onLanguageChange(e.target.value)}
-                className={STYLES.select}
-              >
-                {LANGUAGE_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-              <div className="absolute right-3 top-3 pointer-events-none">
-                <ChevronRight className="w-4 h-4 text-[var(--text-muted)] rotate-90" />
+              {/* 小说类型 */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">小说类型</Label>
+                <Select
+                  value={NOVEL_GENRE_OPTIONS.some(o => o.value === novelGenre) ? novelGenre : 'custom'}
+                  onValueChange={(value) => value && onNovelGenreChange(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择小说类型" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {NOVEL_GENRE_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {novelGenre === 'custom' && (
+                  <Input
+                    type="text"
+                    value={customGenreInput}
+                    onChange={(e) => onCustomGenreChange(e.target.value)}
+                    placeholder="输入自定义类型..."
+                  />
+                )}
               </div>
-            </div>
-          </div>
 
-          {/* 小说简介 */}
-          <div className="space-y-2">
-            <label className={STYLES.label}>小说简介</label>
-            <textarea
-              value={novelSynopsis}
-              onChange={(e) => onNovelSynopsisChange(e.target.value)}
-              className={`${STYLES.input} resize-none`}
-              rows={4}
-              placeholder="输入小说的故事梗概或简介，整个项目将基于此展开..."
-            />
-          </div>
+              {/* 输出语言 */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">输出语言</Label>
+                <Select
+                  value={language}
+                  onValueChange={(value) => value && onLanguageChange(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择语言" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LANGUAGE_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 小说简介 */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">小说简介</Label>
+                <Textarea
+                  value={novelSynopsis}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onNovelSynopsisChange(e.target.value)}
+                  rows={4}
+                  placeholder="输入小说的故事梗概或简介，整个项目将基于此展开..."
+                />
+              </div>
+            </CardContent>
+          </Card>
 
           {/* 视觉风格 */}
           <OptionSelector
@@ -464,83 +473,86 @@ const NovelManager: React.FC<Props> = ({
       {/* 右侧：小说章节管理 */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* 头部：上传区域 */}
-        <div className="flex-shrink-0 p-6 border-b border-[var(--border-primary)]">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-2">
-                <BookOpen className="w-4 h-4" />
-                小说章节
-              </h3>
-              <p className="text-xs text-[var(--text-muted)] mt-1">
-                上传小说文件或新建章节，系统自动解析/递增章节序号
-              </p>
+        <Card className="flex-shrink-0 border-b border-border rounded-none">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  小说章节
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  上传小说文件或新建章节，系统自动解析/递增章节序号
+                </p>
+              </div>
+              {totalChapters > 0 && (
+                <div className="text-xs text-muted-foreground font-mono">
+                  {totalChapters} 章 · {totalWords.toLocaleString()} 字
+                </div>
+              )}
             </div>
-            {totalChapters > 0 && (
-              <div className="text-xs text-[var(--text-tertiary)] font-mono">
-                {totalChapters} 章 · {totalWords.toLocaleString()} 字
+
+            <div className="flex gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".txt"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="flex items-center gap-2 text-xs"
+              >
+                {isUploading ? (
+                  <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : (
+                  <Upload className="w-3.5 h-3.5" />
+                )}
+                {isUploading ? '解析中...' : '上传小说文件'}
+              </Button>
+              <Button
+                onClick={handleAddChapter}
+                variant="secondary"
+                className="flex items-center gap-2 text-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                新建章节
+              </Button>
+
+              {totalChapters > 0 && (
+                <Button
+                  onClick={handleDeleteAllChapters}
+                  variant="destructive"
+                  className="flex items-center gap-1.5 text-xs"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  清空全部
+                </Button>
+              )}
+            </div>
+
+            <p className="text-[10px] text-muted-foreground mt-2">
+              上传：支持 .txt 格式（UTF-8 编码），最大 10MB, 需包含【第X章】格式。新建：点击「新建章节」可手动编写，章节序号自动递增。
+            </p>
+
+            {uploadError && (
+              <div className="mt-3 flex items-start gap-2 text-xs text-destructive bg-destructive/10 border border-destructive rounded-lg px-3 py-2">
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                <span>{uploadError}</span>
+                <Button
+                  onClick={() => setUploadError(null)}
+                  variant="ghost"
+                  size="icon"
+                  className="ml-auto h-6 w-6"
+                >
+                  <X className="w-3 h-3" />
+                </Button>
               </div>
             )}
-          </div>
-
-          <div className="flex gap-3">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".txt"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="flex items-center gap-2 px-4 py-2.5 text-xs font-medium rounded-lg transition-all
-                bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)]
-                disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isUploading ? (
-                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              ) : (
-                <Upload className="w-3.5 h-3.5" />
-              )}
-              {isUploading ? '解析中...' : '上传小说文件'}
-            </button>
-            <button
-              onClick={handleAddChapter}
-              className="flex items-center gap-2 px-4 py-2.5 text-xs font-medium rounded-lg transition-all
-                bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-primary)]
-                hover:bg-[var(--bg-hover)] hover:border-[var(--accent)]"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              新建章节
-            </button>
-
-            {totalChapters > 0 && (
-              <button
-                onClick={handleDeleteAllChapters}
-                className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium rounded-lg transition-all
-                  text-[var(--error-text)] bg-[var(--error-bg)] border border-[var(--error-border)]
-                  hover:bg-[var(--error-hover-bg)]"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                清空全部
-              </button>
-            )}
-          </div>
-
-          <p className="text-[10px] text-[var(--text-muted)] mt-2">
-            上传：支持 .txt 格式（UTF-8 编码），最大 10MB，需包含"第X章"格式。新建：点击「新建章节」可手动编写，章节序号自动递增。
-          </p>
-
-          {uploadError && (
-            <div className="mt-3 flex items-start gap-2 text-xs text-[var(--error-text)] bg-[var(--error-bg)] border border-[var(--error-border)] rounded-lg px-3 py-2">
-              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-              <span>{uploadError}</span>
-              <button onClick={() => setUploadError(null)} className="ml-auto flex-shrink-0">
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
 
         {/* 章节列表 */}
         <div className="flex-1 overflow-y-auto">
@@ -635,71 +647,83 @@ const NovelManager: React.FC<Props> = ({
                               </div>
                             ) : isEditing ? (
                               <div>
-                                <textarea
+                                <Textarea
                                   value={editingContent}
                                   onChange={(e) => setEditingContent(e.target.value)}
                                   disabled={!!generatingChapterId}
-                                  className="w-full h-64 p-3 text-xs text-[var(--text-secondary)] bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg resize-y focus:outline-none focus:border-[var(--accent)] disabled:opacity-80 disabled:cursor-not-allowed"
+                                  rows={12}
+                                  className="h-64 text-xs resize-y"
                                 />
                                 <div className="flex flex-wrap gap-2 mt-2 items-center">
-                                  <button
+                                  <Button
                                     onClick={() => handleSaveEdit(chapter.id)}
                                     disabled={!!generatingChapterId}
-                                    className="px-3 py-1.5 text-[10px] font-medium rounded-md bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50"
+                                    size="sm"
+                                    className="text-[10px]"
                                   >
                                     保存
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button
                                     onClick={handleCancelEdit}
+                                    variant="secondary"
                                     disabled={!!generatingChapterId}
-                                    className="px-3 py-1.5 text-[10px] font-medium rounded-md text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
+                                    size="sm"
+                                    className="text-[10px]"
                                   >
                                     取消
-                                  </button>
-                                  <span className="text-[10px] text-[var(--text-muted)] mx-1">|</span>
+                                  </Button>
+                                  <span className="text-[10px] text-muted-foreground mx-1">|</span>
                                   {generatingChapterId === chapter.id ? (
-                                    <span className="flex items-center gap-1.5 text-[10px] text-[var(--accent-text)]">
+                                    <span className="flex items-center gap-1.5 text-[10px] text-primary">
                                       <Loader2 className="w-3 h-3 animate-spin" />
                                       AI 生成中...
                                     </span>
                                   ) : chapter.index > 1 ? (
                                     <>
-                                      <button
+                                      <Button
                                         onClick={() => openAiModal(chapter, true)}
-                                        className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-medium rounded-md bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-primary)] hover:border-[var(--accent)] transition-colors"
+                                        variant="secondary"
+                                        size="sm"
+                                        className="flex items-center gap-1 text-[10px]"
                                       >
                                         <Sparkles className="w-3 h-3" />
                                         AI生成（参考上一章）
-                                      </button>
-                                      <button
+                                      </Button>
+                                      <Button
                                         onClick={() => openAiModal(chapter, false)}
-                                        className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-medium rounded-md bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-primary)] hover:border-[var(--accent)] transition-colors"
+                                        variant="secondary"
+                                        size="sm"
+                                        className="flex items-center gap-1 text-[10px]"
                                       >
                                         <Sparkles className="w-3 h-3" />
                                         AI生成（独立创作）
-                                      </button>
+                                      </Button>
                                     </>
                                   ) : (
-                                    <button
+                                    <Button
                                       onClick={() => openAiModal(chapter, false)}
-                                      className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-medium rounded-md bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-primary)] hover:border-[var(--accent)] transition-colors"
+                                      variant="secondary"
+                                      size="sm"
+                                      className="flex items-center gap-1 text-[10px]"
                                     >
                                       <Sparkles className="w-3 h-3" />
                                       AI生成
-                                    </button>
+                                    </Button>
                                   )}
                                 </div>
                               </div>
                             ) : cachedContent ? (
                               <div>
-                                <div className="text-xs text-[var(--text-tertiary)] leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap bg-[var(--bg-primary)] rounded-lg p-3 border border-[var(--border-subtle)]">
-                                  {cachedContent.slice(0, 2000)}
-                                  {cachedContent.length > 2000 && (
-                                    <span className="text-[var(--text-muted)]">
-                                      ...（共 {cachedContent.length.toLocaleString()} 字）
-                                    </span>
-                                  )}
-                                </div>
+                                <Card className="max-h-48 overflow-y-auto">
+                                  <CardContent className="p-3 text-xs text-[var(--text-tertiary)] leading-relaxed whitespace-pre-wrap">
+                                    {cachedContent.slice(0, 2000)}
+                                    {cachedContent.length > 2000 && (
+                                      <span className="text-[var(--text-muted)]">
+                                        ...（共 {cachedContent.length.toLocaleString()} 字）
+                                      </span>
+                                    )}
+                                  </CardContent>
+                                </Card>
                                 <button
                                   onClick={() => handleStartEdit(chapter)}
                                   className="mt-2 text-[10px] text-[var(--accent-text)] hover:text-[var(--accent-text-hover)] transition-colors"
@@ -775,114 +799,105 @@ const NovelManager: React.FC<Props> = ({
       </div>
 
       {/* AI 生成弹窗 */}
-      {aiModalOpen && aiModalChapter && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setAiModalOpen(false)}>
-          <div
-            className="w-full max-w-md bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl shadow-xl p-6 space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[var(--accent)]" />
-                AI 生成第{aiModalChapter.index}章
-              </h3>
-              <button onClick={() => setAiModalOpen(false)} className="p-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)]">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <label className={STYLES.label}>剧情提示词</label>
-              <textarea
-                value={aiModalPlotPrompt}
-                onChange={(e) => setAiModalPlotPrompt(e.target.value)}
-                className={`${STYLES.input} resize-none`}
-                rows={3}
-                placeholder="描述本章希望发生的情节、人物动向、情感转折等..."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className={STYLES.label}>小说类型</label>
-              <div className="relative">
-                <select
-                  value={NOVEL_GENRE_OPTIONS.some(o => o.value === aiModalGenre) ? aiModalGenre : 'custom'}
-                  onChange={(e) => setAiModalGenre(e.target.value)}
-                  className={STYLES.select}
-                >
-                  {NOVEL_GENRE_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-                <div className="absolute right-3 top-3 pointer-events-none">
-                  <ChevronRight className="w-4 h-4 text-[var(--text-muted)] rotate-90" />
-                </div>
-              </div>
-              {aiModalGenre === 'custom' && (
-                <input
-                  type="text"
-                  value={aiModalCustomGenre}
-                  onChange={(e) => setAiModalCustomGenre(e.target.value)}
-                  className={STYLES.input}
-                  placeholder="输入自定义类型..."
+      <Dialog open={aiModalOpen} onOpenChange={setAiModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              AI 生成第{aiModalChapter?.index}章
+            </DialogTitle>
+          </DialogHeader>
+          {aiModalChapter && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">剧情提示词</Label>
+                <Textarea
+                  value={aiModalPlotPrompt}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setAiModalPlotPrompt(e.target.value)}
+                  rows={3}
+                  placeholder="描述本章希望发生的情节、人物动向、情感转折等..."
                 />
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <label className={STYLES.label}>篇幅</label>
-                <div className="relative">
-                  <select
-                    value={aiModalLength}
-                    onChange={(e) => setAiModalLength(e.target.value)}
-                    className={STYLES.select}
-                  >
-                    {NOVEL_LENGTH_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-3 pointer-events-none">
-                    <ChevronRight className="w-4 h-4 text-[var(--text-muted)] rotate-90" />
-                  </div>
-                </div>
               </div>
+
               <div className="space-y-2">
-                <label className={STYLES.label}>情感基调</label>
-                <div className="relative">
-                  <select
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">小说类型</Label>
+                <Select
+                  value={NOVEL_GENRE_OPTIONS.some(o => o.value === aiModalGenre) ? aiModalGenre : 'custom'}
+                  onValueChange={(value) => value && setAiModalGenre(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择小说类型" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {NOVEL_GENRE_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {aiModalGenre === 'custom' && (
+                  <Input
+                    type="text"
+                    value={aiModalCustomGenre}
+                    onChange={(e) => setAiModalCustomGenre(e.target.value)}
+                    placeholder="输入自定义类型..."
+                  />
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">篇幅</Label>
+                  <Select
+                  value={aiModalLength}
+                  onValueChange={(value) => value && setAiModalLength(value)}
+                >
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择篇幅" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {NOVEL_LENGTH_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">情感基调</Label>
+                  <Select
                     value={aiModalTone}
-                    onChange={(e) => setAiModalTone(e.target.value)}
-                    className={STYLES.select}
+                    onValueChange={(value) => value && setAiModalTone(value)}
                   >
-                    {NOVEL_TONE_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-3 pointer-events-none">
-                    <ChevronRight className="w-4 h-4 text-[var(--text-muted)] rotate-90" />
-                  </div>
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择情感基调" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {NOVEL_TONE_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            </div>
 
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={() => setAiModalOpen(false)}
-                className="flex-1 px-4 py-2.5 text-xs font-medium rounded-lg border border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
-              >
-                取消
-              </button>
-              <button
-                onClick={handleAiModalConfirm}
-                className="flex-1 px-4 py-2.5 text-xs font-medium rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]"
-              >
-                开始生成
-              </button>
+              <DialogFooter>
+                <Button
+                  onClick={() => setAiModalOpen(false)}
+                  variant="secondary"
+                  className="flex-1 text-xs"
+                >
+                  取消
+                </Button>
+                <Button
+                  onClick={handleAiModalConfirm}
+                  className="flex-1 text-xs"
+                >
+                  开始生成
+                </Button>
+              </DialogFooter>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

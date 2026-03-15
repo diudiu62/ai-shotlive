@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { Save, X } from 'lucide-react';
-import { STYLES } from './constants';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   value: string;
@@ -23,40 +24,33 @@ const PromptEditor: React.FC<Props> = ({
   size = 'large',
   isVideo = false
 }) => {
-  const textareaClass = `${STYLES.textarea.base} ${
-    size === 'large' ? STYLES.textarea.large :
-    size === 'video' ? STYLES.textarea.video :
-    STYLES.textarea.small
-  }`;
-
-  const saveButtonClass = isVideo 
-    ? STYLES.button.saveVideo 
-    : size === 'small' 
-      ? STYLES.button.saveSmall 
-      : STYLES.button.save;
-
-  const cancelButtonClass = size === 'small' 
-    ? STYLES.button.cancelSmall 
-    : STYLES.button.cancel;
+  const getTextareaRows = () => {
+    switch (size) {
+      case 'large': return 6;
+      case 'video': return 8;
+      case 'small': return 4;
+      default: return 6;
+    }
+  };
 
   return (
     <div className="space-y-2">
-      <textarea
+      <Textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={textareaClass}
         placeholder={placeholder}
+        rows={getTextareaRows()}
         autoFocus
       />
       <div className="flex gap-2">
-        <button onClick={onSave} className={saveButtonClass}>
+        <Button onClick={onSave} variant="default" size={size === 'small' ? 'sm' : 'default'} className="flex items-center gap-1">
           <Save className="w-3 h-3" />
           保存
-        </button>
-        <button onClick={onCancel} className={cancelButtonClass}>
+        </Button>
+        <Button onClick={onCancel} variant="outline" size={size === 'small' ? 'sm' : 'default'} className="flex items-center gap-1">
           <X className="w-3 h-3" />
           取消
-        </button>
+        </Button>
       </div>
     </div>
   );

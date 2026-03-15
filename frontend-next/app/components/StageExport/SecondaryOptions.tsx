@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { Layers, Database, Clock, Loader2 } from 'lucide-react';
-import { STYLES, DownloadState } from './constants';
+import { DownloadState } from './constants';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   assetsDownloadState: DownloadState;
@@ -30,63 +31,59 @@ const SecondaryOptions: React.FC<Props> = ({
       {/* Source Assets Download */}
       <div 
         onClick={onDownloadAssets}
-        className={isDownloading ? STYLES.card.active : STYLES.card.base}
+        className={`p-6 border rounded-lg transition-all cursor-pointer group ${isDownloading ? 'border-primary bg-primary/5' : 'border-border bg-background hover:border-primary hover:bg-primary/5'}`}
       >
         {isDownloading && (
-          <div className={STYLES.card.loading}>
-            <Loader2 className="w-6 h-6 text-[var(--accent-text)] animate-spin mb-2" />
-            <p className="text-xs text-[var(--text-primary)] font-mono">{phase}</p>
-            <div className="w-32 h-1 bg-[var(--bg-hover)] rounded-full overflow-hidden mt-2">
-              <div className="h-full bg-[var(--accent)] transition-all duration-300" style={{ width: `${progress}%` }}></div>
+          <div className="flex flex-col items-center mb-4">
+            <Loader2 className="w-6 h-6 text-primary animate-spin mb-2" />
+            <p className="text-xs text-primary font-mono">{phase}</p>
+            <div className="w-32 h-1 bg-muted rounded-full overflow-hidden mt-2">
+              <div className="h-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }}></div>
             </div>
           </div>
         )}
         <Layers className={`w-5 h-5 mb-4 transition-colors ${
-          isDownloading ? 'text-[var(--accent-text)]' : 'text-[var(--text-muted)] group-hover:text-[var(--accent-text)]'
+          isDownloading ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'
         }`} />
         <div>
-          <h4 className="text-sm font-bold text-[var(--text-primary)] mb-1">Source Assets</h4>
-          <p className="text-[10px] text-[var(--text-tertiary)]">Download all generated images and raw video clips.</p>
+          <h4 className="text-sm font-bold text-primary mb-1">Source Assets</h4>
+          <p className="text-[10px] text-muted-foreground">Download all generated images and raw video clips.</p>
         </div>
       </div>
 
       {/* Export / Import Data */}
-      <div className={STYLES.card.base}>
-        <Database className="w-5 h-5 text-[var(--text-muted)] group-hover:text-[var(--accent-text)] mb-4 transition-colors" />
+      <div className="p-6 border border-border rounded-lg bg-background">
+        <Database className="w-5 h-5 text-muted-foreground group-hover:text-primary mb-4 transition-colors" />
         <div>
-          <h4 className="text-sm font-bold text-[var(--text-primary)] mb-1">Export / Import</h4>
-          <p className="text-[10px] text-[var(--text-tertiary)]">Export database & media files as ZIP, or import backup to a new user.</p>
+          <h4 className="text-sm font-bold text-primary mb-1">Export / Import</h4>
+          <p className="text-[10px] text-muted-foreground">Export database & media files as ZIP, or import backup to a new user.</p>
           <div className="mt-3 flex gap-2">
-            <button
+            <Button
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
                 onExportData();
               }}
               disabled={isDataExporting}
-              className={
-                isDataExporting
-                  ? 'px-3 py-2 text-[10px] rounded-md bg-[var(--accent)]/70 text-[var(--text-primary)] cursor-wait'
-                  : 'px-3 py-2 text-[10px] rounded-md bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:bg-[var(--border-secondary)]'
-              }
+              variant="outline"
+              size="sm"
+              className="px-3 py-2 text-[10px]"
             >
               {isDataExporting ? 'Exporting...' : 'Export'}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
                 onImportData();
               }}
               disabled={isDataImporting}
-              className={
-                isDataImporting
-                  ? 'px-3 py-2 text-[10px] rounded-md bg-[var(--accent)]/70 text-[var(--text-primary)] cursor-wait'
-                  : 'px-3 py-2 text-[10px] rounded-md bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:bg-[var(--border-secondary)]'
-              }
+              variant="outline"
+              size="sm"
+              className="px-3 py-2 text-[10px]"
             >
               {isDataImporting ? 'Importing...' : 'Import'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -94,12 +91,12 @@ const SecondaryOptions: React.FC<Props> = ({
       {/* Render Logs */}
       <div 
         onClick={onShowLogs}
-        className={STYLES.card.base}
+        className="p-6 border border-border rounded-lg transition-all cursor-pointer group hover:border-primary hover:bg-primary/5"
       >
-        <Clock className="w-5 h-5 text-[var(--text-muted)] group-hover:text-[var(--accent-text)] mb-4 transition-colors" />
+        <Clock className="w-5 h-5 text-muted-foreground group-hover:text-primary mb-4 transition-colors" />
         <div>
-          <h4 className="text-sm font-bold text-[var(--text-primary)] mb-1">Render Logs</h4>
-          <p className="text-[10px] text-[var(--text-tertiary)]">View generation history and status.</p>
+          <h4 className="text-sm font-bold text-primary mb-1">Render Logs</h4>
+          <p className="text-[10px] text-muted-foreground">View generation history and status.</p>
         </div>
       </div>
     </div>

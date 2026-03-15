@@ -3,11 +3,12 @@
 import React from 'react';
 import { Film } from 'lucide-react';
 import { Shot, ScriptData, Status } from '@/app/types/types';
-import { EditingPrompt, STYLES } from './constants';
+import { EditingPrompt } from './constants';
 import { getDefaultVideoPrompt } from './utils';
 import CollapsibleSection from './CollapsibleSection';
 import PromptEditor from './PromptEditor';
 import StatusBadge from './StatusBadge';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   shots: Shot[];
@@ -45,44 +46,46 @@ const KeyframeSection: React.FC<Props> = ({
       {shots.map((shot, shotIndex) => {
         const scene = scriptData?.scenes.find(s => s.id === shot.sceneId);
         return (
-          <div key={shot.id} className={STYLES.card.base}>
+          <div key={shot.id} className="p-4 border border-border rounded-lg bg-background mb-4">
             <div className="mb-3">
               <div className="flex items-center gap-2 mb-1">
-                <span className={STYLES.badge.shotNumber}>
+                <span className="px-2 py-1 bg-primary/10 text-primary text-xs font-bold rounded">
                   镜头 {shotIndex + 1}
                 </span>
                 {scene && (
-                  <span className="text-xs text-[var(--text-tertiary)]">
+                  <span className="text-xs text-muted-foreground">
                     {scene.location}
                   </span>
                 )}
               </div>
-              <p className="text-sm text-[var(--text-tertiary)]">{shot.actionSummary}</p>
-              <p className="text-xs text-[var(--text-muted)] mt-1">
+              <p className="text-sm text-muted-foreground">{shot.actionSummary}</p>
+              <p className="text-xs text-muted-foreground mt-1">
                 {shot.cameraMovement} · {shot.shotSize || '标准镜头'}
               </p>
             </div>
 
-            <div className="space-y-3 pl-4 border-l-2 border-[var(--accent-border)]">
+            <div className="space-y-3 pl-4 border-l-2 border-primary/20">
               {shot.keyframes.map((keyframe) => (
-                <div key={keyframe.id} className={STYLES.card.nested}>
+                <div key={keyframe.id} className="p-3 border border-border rounded-lg bg-muted/30">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className={
                         keyframe.type === 'start' 
-                          ? STYLES.badge.keyframeStart 
-                          : STYLES.badge.keyframeEnd
+                          ? 'px-2 py-1 bg-success/10 text-success text-xs font-bold rounded' 
+                          : 'px-2 py-1 bg-warning/10 text-warning text-xs font-bold rounded'
                       }>
                         {keyframe.type === 'start' ? '起始帧' : '结束帧'}
                       </span>
                       <StatusBadge status={(keyframe.status || 'idle') as Status} />
                     </div>
-                    <button
+                    <Button
                       onClick={() => onStartEdit('keyframe', keyframe.id, keyframe.visualPrompt, undefined, shot.id)}
-                      className={STYLES.button.editSmall}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
                     >
                       编辑
-                    </button>
+                    </Button>
                   </div>
 
                   {editingPrompt?.type === 'keyframe' && 
@@ -96,13 +99,13 @@ const KeyframeSection: React.FC<Props> = ({
                       size="small"
                     />
                   ) : (
-                    <p className={STYLES.display.small}>
+                    <p className="text-xs text-secondary">
                       {keyframe.visualPrompt}
                     </p>
                   )}
 
                   {keyframe.imageUrl && (
-                    <div className="mt-2 rounded overflow-hidden border border-[var(--border-primary)]">
+                    <div className="mt-2 rounded overflow-hidden border border-border">
                       <img 
                         src={keyframe.imageUrl} 
                         alt={`关键帧 ${keyframe.type}`}
@@ -115,24 +118,26 @@ const KeyframeSection: React.FC<Props> = ({
 
               {/* Video Prompt Section */}
               {shot.interval && (
-                <div className="mt-3 pt-3 border-t border-[var(--border-subtle)]">
-                  <div className="bg-[var(--accent-bg)] border border-[var(--accent-border)] rounded p-3">
+                <div className="mt-3 pt-3 border-t border-border">
+                  <div className="bg-primary/10 border border-primary/20 rounded p-3">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className={STYLES.badge.videoPrompt}>
+                        <span className="px-2 py-1 bg-primary/20 text-primary text-xs font-bold rounded">
                           视频生成提示词
                         </span>
                         <StatusBadge status={(shot.interval.status || 'idle') as Status} />
                       </div>
-                      <button
+                      <Button
                         onClick={() => {
                           const defaultPrompt = shot.interval!.videoPrompt || getDefaultVideoPrompt(shot);
                           onStartEdit('video', shot.interval!.id, defaultPrompt, undefined, shot.id);
                         }}
-                        className={STYLES.button.editVideo}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs"
                       >
                         编辑
-                      </button>
+                      </Button>
                     </div>
 
                     {editingPrompt?.type === 'video' && editingPrompt.shotId === shot.id ? (
@@ -146,11 +151,11 @@ const KeyframeSection: React.FC<Props> = ({
                       />
                     ) : (
                       <div className="space-y-2">
-                        <p className={STYLES.display.small}>
+                        <p className="text-xs text-secondary">
                           {shot.interval.videoPrompt || (
-                            <span className="text-[var(--text-tertiary)]">
+                            <span className="text-muted-foreground">
                               {getDefaultVideoPrompt(shot)}
-                              <span className="block mt-1 text-[var(--warning)]">
+                              <span className="block mt-1 text-warning">
                                 ⚠ 此视频生成时未保存提示词，以上为推测内容
                               </span>
                             </span>

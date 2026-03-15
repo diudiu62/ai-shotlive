@@ -2,6 +2,9 @@
 
 import React from 'react';
 import { X, Edit2, Check, Sparkles, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 interface EditModalProps {
   isOpen: boolean;
@@ -42,38 +45,25 @@ const EditModal: React.FC<EditModalProps> = ({
   };
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-[var(--overlay-heavy)] backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-[var(--bg-elevated)] border border-[var(--border-secondary)] rounded-xl p-6 max-w-2xl w-full space-y-4 shadow-2xl animate-in fade-in duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="bg-card border-border max-w-2xl w-full p-6 shadow-2xl">
         <div className="flex items-center justify-between">
-          <h3 className="text-[var(--text-primary)] font-bold flex items-center gap-2">
-            {icon || <Edit2 className="w-4 h-4 text-[var(--accent-text)]" />}
+          <h3 className="text-foreground font-bold flex items-center gap-2">
+            {icon || <Edit2 className="w-4 h-4 text-primary" />}
             {title}
           </h3>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-[var(--bg-hover)] rounded text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-          >
+          <DialogClose className="p-2 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors">
             <X className="w-4 h-4" />
-          </button>
+          </DialogClose>
         </div>
         
         {/* AI生成按钮 */}
         {showAIGenerate && (
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={handleAIGenerate}
               disabled={isAIGenerating}
-              className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                isAIGenerating
-                  ? 'bg-[var(--border-secondary)] text-[var(--text-tertiary)] cursor-not-allowed'
-                  : 'bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)] shadow-lg'
-              }`}
+              className="flex-1 py-2.5 text-sm font-bold gap-2"
             >
               {isAIGenerating ? (
                 <>
@@ -86,38 +76,39 @@ const EditModal: React.FC<EditModalProps> = ({
                   AI生成动作建议
                 </>
               )}
-            </button>
+            </Button>
           </div>
         )}
 
-        <textarea
+        <Textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full h-64 bg-[var(--bg-base)] text-[var(--text-primary)] border border-[var(--border-secondary)] rounded-lg p-4 text-sm outline-none focus:border-[var(--border-secondary)] transition-colors resize-none ${textareaClassName}`}
+          className={`w-full h-64 text-sm resize-none ${textareaClassName}`}
           placeholder={placeholder}
           autoFocus
           disabled={isAIGenerating}
         />
         
         <div className="flex justify-end gap-3">
-          <button
+          <Button
             onClick={onClose}
             disabled={isAIGenerating}
-            className="px-4 py-2 bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:bg-[var(--border-secondary)] rounded-lg text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="secondary"
+            className="px-4 py-2 text-sm font-bold"
           >
             取消
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onSave}
             disabled={isAIGenerating}
-            className="px-4 py-2 bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)] rounded-lg text-sm font-bold transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-bold gap-2"
           >
             <Check className="w-4 h-4" />
             保存
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

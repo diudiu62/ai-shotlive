@@ -16,13 +16,16 @@ import SceneSection from './SceneSection';
 import PropSection from './PropSection';
 import KeyframeSection from './KeyframeSection';
 import * as PS from '../../services/projectPatchService';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Props {
   project: ProjectState;
   updateProject: (updates: Partial<ProjectState> | ((prev: ProjectState) => ProjectState)) => void;
+  onGeneratingChange?: (isGenerating: boolean) => void;
 }
 
-const StagePrompts: React.FC<Props> = ({ project, updateProject }) => {
+const StagePrompts: React.FC<Props> = ({ project, updateProject, onGeneratingChange }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState<PromptCategory>('all');
   const [editingPrompt, setEditingPrompt] = useState<EditingPrompt>(null);
@@ -131,26 +134,27 @@ const StagePrompts: React.FC<Props> = ({ project, updateProject }) => {
           {/* Search and Filter */}
           <div className="flex gap-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
-              <input
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="搜索提示词、角色、场景..."
-                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-primary)] text-[var(--text-primary)] pl-10 pr-4 py-2 rounded-lg text-sm focus:border-[var(--accent)] focus:outline-none"
+                className="w-full pl-10"
               />
             </div>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value as PromptCategory)}
-              className="bg-[var(--bg-elevated)] border border-[var(--border-primary)] text-[var(--text-primary)] px-4 py-2 rounded-lg text-sm focus:border-[var(--accent)] focus:outline-none"
-            >
-              <option value="all">全部</option>
-              <option value="characters">角色</option>
-              <option value="scenes">场景</option>
-              <option value="props">道具</option>
-              <option value="keyframes">关键帧</option>
-            </select>
+            <Select value={category} onValueChange={(value) => setCategory(value as PromptCategory)}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="全部" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部</SelectItem>
+                <SelectItem value="characters">角色</SelectItem>
+                <SelectItem value="scenes">场景</SelectItem>
+                <SelectItem value="props">道具</SelectItem>
+                <SelectItem value="keyframes">关键帧</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>

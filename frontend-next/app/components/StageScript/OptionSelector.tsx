@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-
-import { STYLES } from './constants';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface Option {
   label: string;
@@ -39,40 +40,38 @@ const OptionSelector: React.FC<Props> = ({
 }) => {
   return (
     <div className="space-y-2">
-      <label className={`${STYLES.label} flex items-center gap-2`}>
+      <Label className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
         {icon}
         {label}
-      </label>
+      </Label>
       <div className={`grid grid-cols-${gridCols} gap-2`}>
         {options.map((opt) => (
-          <button
+          <Button
             key={opt.value}
             onClick={() => onChange(opt.value)}
             title={opt.desc}
-            className={`px-${gridCols === 1 ? '3' : '2'} py-2.5 text-[11px] font-medium rounded-md transition-all text-${gridCols === 1 ? 'left' : 'center'} border ${
-              value === opt.value
-                ? STYLES.button.selected
-                : `${STYLES.button.secondary} border`
-            }`}
+            variant={value === opt.value ? "default" : "secondary"}
+            size="sm"
+            className={`text-[11px] text-${gridCols === 1 ? 'left' : 'center'}`}
           >
             {opt.label}
-          </button>
+          </Button>
         ))}
       </div>
       {value === 'custom' && onCustomInputChange && (
         <div className="pt-1">
-          <input 
+          <Input 
             type="text"
             value={customInput}
             onChange={(e) => onCustomInputChange(e.target.value)}
-            className={`${STYLES.input} font-mono`}
+            className="font-mono"
             placeholder={customPlaceholder}
           />
         </div>
       )}
       {helpText && (
-        <div className="pt-1 px-3 py-2 bg-[var(--nav-hover-bg)] border border-[var(--border-primary)] rounded-md">
-          <p className="text-[10px] text-[var(--text-tertiary)] leading-relaxed">
+        <div className="pt-1 px-3 py-2 bg-muted border border-border rounded-md">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             💡 提示：{helpText}
             {helpLink && (
               <>
@@ -81,7 +80,7 @@ const OptionSelector: React.FC<Props> = ({
                   href={helpLink.url} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] underline underline-offset-2 transition-colors font-medium"
+                  className="text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors font-medium"
                 >
                   {helpLink.text}
                 </a>

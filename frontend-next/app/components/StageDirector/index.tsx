@@ -38,7 +38,7 @@ import * as PS from '../../services/projectPatchService';
 interface Props {
   project: ProjectState;
   updateProject: (updates: Partial<ProjectState> | ((prev: ProjectState) => ProjectState)) => void;
-  onApiKeyError?: (error: any) => boolean;
+  onApiKeyError?: (error: Error) => boolean;
   onGeneratingChange?: (isGenerating: boolean) => void;
 }
 
@@ -400,7 +400,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
     try {
       const refResult = getRefImagesForShot(shot, project.scriptData);
       const activeImageModel = getActiveModel('image');
-      const imageModelId = (activeImageModel as any)?.apiModel || activeImageModel?.id || 'gemini-3-pro-image-preview';
+      const imageModelId = activeImageModel?.apiModel || activeImageModel?.id || 'gemini-3-pro-image-preview';
 
       // 生成尾帧时，将首帧图片作为额外参考图注入（排在最前面，优先级最高）
       let finalRefImages = refResult.images;
@@ -432,7 +432,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
           return updateKeyframeInShot(s, type, createKeyframe(kfId, type, prompt, url, 'completed'));
         })
       }));
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
       updateProject((prevProject: ProjectState) => ({
         ...prevProject,
@@ -442,8 +442,8 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
         })
       }));
       
-      if (onApiKeyError && onApiKeyError(e)) return;
-      showAlert(`生成失败: ${e.message}`, { type: 'error' });
+      if (e instanceof Error && onApiKeyError && onApiKeyError(e)) return;
+      showAlert(`生成失败: ${e instanceof Error ? e.message : '未知错误'}`, { type: 'error' });
     }
   };
 
@@ -487,8 +487,8 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
     input.type = 'file';
     input.accept = 'image/*';
     
-    input.onchange = async (e: any) => {
-      const file = e.target.files?.[0];
+    input.onchange = async (e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
       
       if (!file.type.startsWith('image/')) {
@@ -567,7 +567,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
     // 更新 shot 的 videoModel
     updateShot(shot.id, (s) => ({
       ...s,
-      videoModel: selectedModel as any,
+      videoModel: selectedModel as Shot['videoModel'],
       interval: s.interval ? { ...s.interval, status: 'generating', videoPrompt } : {
         id: intervalId,
         startKeyframeId: sKf?.id || '',
@@ -611,15 +611,15 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
           status: 'completed'
         }
       }));
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
       updateShot(shot.id, (s) => ({
         ...s,
         interval: s.interval ? { ...s.interval, status: 'failed' } : undefined
       }));
       
-      if (onApiKeyError && onApiKeyError(e)) return;
-      showAlert(`视频生成失败: ${e.message}`, { type: 'error' });
+      if (e instanceof Error && onApiKeyError && onApiKeyError(e)) return;
+      showAlert(`视频生成失败: ${e instanceof Error ? e.message : '未知错误'}`, { type: 'error' });
     }
   };
 
@@ -702,7 +702,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
     await executeBatchGenerate(shotsToProcess, isRegenerate);
   };
 
-  const executeBatchGenerate = async (shotsToProcess: any[], isRegenerate: boolean) => {
+  const executeBatchGenerate = async (shotsToProcess: Shot[], isRegenerate: boolean) => {
     setBatchProgress({ 
       current: 0, 
       total: shotsToProcess.length, 
@@ -1143,7 +1143,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
       
       // 4. 通过服务端生成九宫格图片（和关键帧一样走 server-side，避免 CORS + 正确使用参考图）
       const activeImageModel = getActiveModel('image');
-      const imageModelId = (activeImageModel as any)?.apiModel || activeImageModel?.id || 'gemini-3-pro-image-preview';
+      const imageModelId = activeImageModel?.apiModel || activeImageModel?.id || 'gemini-3-pro-image-preview';
       
       const imageUrl = await generateImageServerSide(
         project.id,
@@ -1502,7 +1502,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
               setToastMessage(lines.join('\n'));
               updateShot(activeShot.id, s => ({
                 ...s,
-                videoModel: modelId as any
+                videoModel: modelId as Shot['videoModel']
               }));
               if (project.id) PS.patchShot(project.id, activeShot.id, { videoModel: modelId });
             }}
@@ -1589,6 +1589,7 @@ const StageDirector: React.FC<Props> = ({ project, updateProject, onApiKeyError,
         imageUrl={previewImage?.url || null}
         title={previewImage?.title}
         onClose={() => setPreviewImage(null)}
+        open={!!previewImage}
       />
     </div>
   );

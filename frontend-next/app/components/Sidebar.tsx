@@ -6,6 +6,7 @@ import { FileText, Users, Clapperboard, Film, ChevronLeft, ListTree, HelpCircle,
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import ProfileModal from './ProfileModal';
+import { Badge } from "@/components/ui/badge";
 
 interface SidebarProps {
   currentStage: string;
@@ -16,13 +17,19 @@ interface SidebarProps {
   onShowOnboarding?: () => void;
   onShowModelConfig?: () => void;
   isNavigationLocked?: boolean;
+  collapsed?: boolean;
+  onCollapseChange?: (collapsed: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentStage, setStage, onExit, projectName, activeEpisodeName, onShowOnboarding, onShowModelConfig, isNavigationLocked }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentStage, setStage, onExit, projectName, activeEpisodeName, onShowOnboarding, onShowModelConfig, isNavigationLocked, collapsed = false, onCollapseChange }) => {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  
+  const handleCollapse = () => {
+    const newCollapsed = !collapsed;
+    onCollapseChange?.(newCollapsed);
+  };
   const navItems = [
     { id: 'script', label: '小说与剧本', icon: FileText, sub: 'Phase 01' },
     { id: 'assets', label: '角色与场景', icon: Users, sub: 'Phase 02' },
@@ -32,10 +39,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentStage, setStage, onExit, proje
   ];
 
   return (
-    <aside className={`${collapsed ? 'w-16' : 'w-72'} bg-sidebar border-r border-sidebar-border h-screen fixed left-0 top-0 flex flex-col z-50 select-none transition-all duration-300`}>
+    <aside className={`${collapsed ? 'w-16' : 'w-72'} layout-section border-r border-sidebar-border h-screen fixed left-0 top-0 flex flex-col z-50 select-none transition-all duration-300`}>
       {/* Header */}
       <div className="p-4 border-b border-sidebar-border">
-        <div className="w-full flex justify-between items-center mb-6">
+        <div className="w-full flex justify-between items-center">
           <a 
             href="/" 
             target="_blank" 
@@ -52,18 +59,21 @@ const Sidebar: React.FC<SidebarProps> = ({ currentStage, setStage, onExit, proje
             )}
           </a>
           <button
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={handleCollapse}
             className="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors text-sidebar-foreground flex-shrink-0"
             title={collapsed ? '展开侧边栏' : '收起侧边栏'}
           >
             <ChevronLeft className={`w-4 h-4 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
           </button>
         </div>
+      </div>
 
-        {!collapsed && (
+      {/* Project Status */}
+      {!collapsed && (
+        <div className="p-4 border-b border-sidebar-border">
           <button 
             onClick={onExit}
-            className={`flex items-center gap-2 transition-colors text-xs font-mono uppercase tracking-wide group w-full ${
+            className={`flex items-center gap-2 transition-colors text-xs font-mono uppercase tracking-wide group mb-2 ${
               isNavigationLocked 
                 ? 'text-sidebar-foreground/50 opacity-50 cursor-not-allowed' 
                 : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
@@ -73,23 +83,19 @@ const Sidebar: React.FC<SidebarProps> = ({ currentStage, setStage, onExit, proje
             <ChevronLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
             返回项目列表
           </button>
-        )}
-      </div>
-
-      {/* Project Status */}
-      {!collapsed && (
-        <div className="p-4 border-b border-sidebar-border">
-           <div className="text-[10px] text-sidebar-foreground/50 uppercase tracking-widest mb-1">当前项目</div>
-           <div className="text-sm font-medium text-sidebar-foreground truncate font-mono">{projectName || '未命名项目'}</div>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-xs text-sidebar-foreground/50 uppercase tracking-widest">当前项目</div>
+            <Badge>{projectName || '未命名项目'}</Badge>
+          </div>
            {activeEpisodeName ? (
-             <div className="mt-2 flex items-center gap-1.5">
+             <div className="flex items-center gap-1.5">
                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                <span className="text-[10px] text-sidebar-foreground/70 truncate">
                  当前剧本：{activeEpisodeName}
                </span>
              </div>
            ) : (
-             <div className="mt-2 flex items-center gap-1.5">
+             <div className="flex items-center gap-1.5">
                <div className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
                <span className="text-[10px] text-yellow-500">
                  未选择剧本

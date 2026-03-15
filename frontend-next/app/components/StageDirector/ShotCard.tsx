@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Image as ImageIcon, Video, Trash2, CheckSquare, Square } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Shot } from '@/app/types/types';
 
 interface ShotCardProps {
@@ -50,51 +51,55 @@ const ShotCard: React.FC<ShotCardProps> = ({ shot, index, isActive, isSelected =
     <div 
       onClick={onClick}
       className={`
-        group relative flex flex-col bg-[var(--bg-elevated)] border rounded-xl overflow-hidden cursor-pointer transition-all duration-200
-        ${isActive ? 'border-[var(--accent)] ring-1 ring-[var(--accent-border)] shadow-xl scale-[0.98]' : 'border-[var(--border-primary)] hover:border-[var(--border-secondary)] hover:shadow-lg'}
+        group relative flex flex-col bg-muted border rounded-xl overflow-hidden cursor-pointer transition-all duration-200
+        ${isActive ? 'border-primary ring-1 ring-primary/20 shadow-xl scale-[0.98]' : 'border-border hover:border-border/80 hover:shadow-lg'}
       `}
     >
       {/* Header */}
-      <div className="px-3 py-2 bg-[var(--bg-surface)] border-b border-[var(--border-primary)] flex justify-between items-center">
+      <div className="px-3 py-2 bg-card border-b border-border flex justify-between items-center">
         <div className="flex items-center gap-2">
           {onSelect && (
-            <button
+            <Button
               onClick={onSelect}
-              className="p-1 rounded-md text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-all"
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
               title={isSelected ? '取消选择' : '选择'}
             >
               {isSelected ? (
-                <CheckSquare className="w-3.5 h-3.5 text-[var(--accent-text)]" />
+                <CheckSquare className="w-3.5 h-3.5 text-primary" />
               ) : (
                 <Square className="w-3.5 h-3.5" />
               )}
-            </button>
+            </Button>
           )}
-          <span className={`font-mono text-[10px] font-bold ${isActive ? 'text-[var(--accent-text)]' : 'text-[var(--text-tertiary)]'}`}>
+          <span className={`font-mono text-[10px] font-bold ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
             {getShotDisplayNumber()}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-[9px] px-1.5 py-0.5 bg-[var(--bg-hover)] text-[var(--text-tertiary)] rounded uppercase">
+          <span className="text-[9px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded uppercase">
             {shot.cameraMovement}
           </span>
           {onDelete && (
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(shot.id);
               }}
-              className="p-1 rounded-md text-[var(--text-muted)] hover:text-[var(--error)] hover:bg-[var(--error)]/10 transition-all opacity-0 group-hover:opacity-100"
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6 opacity-0 group-hover:opacity-100"
               title="删除分镜"
             >
-              <Trash2 className="w-3 h-3" />
-            </button>
+              <Trash2 className="w-3 h-3 text-muted-foreground hover:text-destructive" />
+            </Button>
           )}
         </div>
       </div>
 
       {/* Thumbnail */}
-      <div className="aspect-video bg-[var(--bg-elevated)] relative overflow-hidden">
+      <div className="aspect-video bg-muted relative overflow-hidden">
         {hasImage ? (
           <img 
             src={sKf!.imageUrl} 
@@ -102,7 +107,7 @@ const ShotCard: React.FC<ShotCardProps> = ({ shot, index, isActive, isSelected =
             alt={`Shot ${index + 1}`}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-[var(--text-muted)]">
+          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
             <ImageIcon className="w-8 h-8 opacity-20" />
           </div>
         )}
@@ -110,7 +115,7 @@ const ShotCard: React.FC<ShotCardProps> = ({ shot, index, isActive, isSelected =
         {/* Badges */}
         <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
           {hasVideo && (
-            <div className="px-2 py-1 bg-[var(--success)] text-[var(--text-primary)] rounded-full text-[9px] font-bold uppercase flex items-center gap-1 shadow-lg">
+            <div className="px-2 py-1 bg-success text-success-foreground rounded-full text-[9px] font-bold uppercase flex items-center gap-1 shadow-lg">
               <Video className="w-2.5 h-2.5" />
               VIDEO
             </div>
@@ -123,15 +128,15 @@ const ShotCard: React.FC<ShotCardProps> = ({ shot, index, isActive, isSelected =
         </div>
 
         {!isActive && !hasImage && (
-          <div className="absolute inset-0 bg-[var(--bg-base)]/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <span className="text-[var(--text-primary)] text-xs font-mono">点击编辑</span>
+          <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <span className="text-foreground text-xs font-mono">点击编辑</span>
           </div>
         )}
       </div>
 
       {/* Footer */}
       <div className="p-3">
-        <p className="text-xs text-[var(--text-tertiary)] line-clamp-2 leading-relaxed">
+        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
           {shot.actionSummary}
         </p>
       </div>

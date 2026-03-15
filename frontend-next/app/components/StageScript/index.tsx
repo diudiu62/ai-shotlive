@@ -15,6 +15,9 @@ import NovelManager from './NovelManager';
 import EpisodeManager from './EpisodeManager';
 import * as PS from '../../services/projectPatchService';
 import { fetchVisualStyles, stylesToOptions } from '../../services/visualStyleService';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 interface Props {
   project: ProjectState;
@@ -182,9 +185,9 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
         });
         setActiveTab('script');
         console.log('✅ [StageScript] 后台剧本解析任务恢复完成');
-      } catch (err: any) {
-        console.error('❌ [StageScript] 恢复解析任务失败:', err.message);
-        setError(`恢复解析任务失败: ${err.message}`);
+      } catch (err: unknown) {
+        console.error('❌ [StageScript] 恢复解析任务失败:', err);
+        setError(`恢复解析任务失败: ${err instanceof Error ? err.message : String(err)}`);
         updateProject({ isParsingScript: false });
         PS.patchProject(project.id, { isParsingScript: false });
       } finally {
@@ -281,7 +284,8 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
         }
       );
 
-      let { scriptData, shots } = result;
+      const { scriptData, shots: initialShots } = result;
+      let shots = initialShots;
 
       scriptData.targetDuration = finalDuration;
       scriptData.language = localLanguage;
@@ -336,9 +340,9 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
 
       setActiveTab('script');
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(`错误: ${err.message || "AI 连接失败"}`);
+      setError(`错误: ${err instanceof Error ? err.message : "AI 连接失败"}`);
       updateProject({ isParsingScript: false });
       PS.patchProject(project.id, { isParsingScript: false });
     } finally {
@@ -385,16 +389,16 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
       } else if (streamed) {
         PS.patchProject(project.id, { rawScript: baseScript + '\n\n' + streamed });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(`AI续写失败: ${err.message || "连接失败"}`);
+      setError(`AI续写失败: ${err instanceof Error ? err.message : "连接失败"}`);
       try {
         const continuedContent = await continueScript(baseScript, localLanguage, finalModel);
         const newScript = baseScript + '\n\n' + continuedContent;
         setLocalScript(newScript);
         updateProject({ rawScript: newScript });
         PS.patchProject(project.id, { rawScript: newScript });
-      } catch (fallbackErr: any) {
+      } catch (fallbackErr: unknown) {
         console.error(fallbackErr);
       }
     } finally {
@@ -441,15 +445,15 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
       } else if (streamed) {
         PS.patchProject(project.id, { rawScript: streamed });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(`AI改写失败: ${err.message || "连接失败"}`);
+      setError(`AI改写失败: ${err instanceof Error ? err.message : "连接失败"}`);
       try {
         const rewrittenContent = await rewriteScript(baseScript, localLanguage, finalModel);
         setLocalScript(rewrittenContent);
         updateProject({ rawScript: rewrittenContent });
         PS.patchProject(project.id, { rawScript: rewrittenContent });
-      } catch (fallbackErr: any) {
+      } catch (fallbackErr: unknown) {
         console.error(fallbackErr);
       }
     } finally {
@@ -787,10 +791,7 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
     <div className="h-full bg-[var(--bg-base)] flex flex-col">
       {showProcessingToast && (
         <div className="fixed right-4 top-4 z-[9999] w-full max-w-md rounded-xl border border-[var(--border-default)] bg-black/80 px-4 py-3 shadow-2xl backdrop-blur">
-          <div className="flex items-center gap-3">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-500 border-t-white" />
-            <div className="text-sm text-white">{toastMessage}</div>
-          </div>
+
           {processingLogs.length > 0 && (
             <div className="mt-2 max-h-40 space-y-1 overflow-auto text-xs text-zinc-300">
               {processingLogs.map((line, index) => (
@@ -803,156 +804,151 @@ const StageScript: React.FC<Props> = ({ project, updateProject, onShowModelConfi
         </div>
       )}
 
-      {/* Tab 导航栏 */}
-      <div className="flex-shrink-0 border-b border-[var(--border-primary)] bg-[var(--bg-primary)]">
-        <div className="flex">
-          {tabItems.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`relative px-5 py-3 text-xs font-medium uppercase tracking-wider transition-colors
-                ${activeTab === tab.id
-                  ? 'text-[var(--text-primary)] border-b-2 border-[var(--text-primary)]'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
-                }`}
-            >
-              <span className="flex items-center gap-1.5">
-                {tab.label}
-                {tab.badge !== undefined && tab.badge > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 text-[9px] font-mono rounded-full bg-[var(--accent-bg)] text-[var(--accent-text)] border border-[var(--accent-border)]">
-                    {tab.badge}
-                  </span>
-                )}
-              </span>
-            </button>
-          ))}
+      {/* Tab 导航栏和内容 */}
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabMode)} className="flex flex-col h-full">
+          <TabsList className="h-auto bg-transparent p-0">
+            {tabItems.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className={`px-5 py-3 text-xs font-medium uppercase tracking-wider transition-colors data-[state=active]:bg-[var(--bg-secondary)] data-[state=active]:text-[var(--text-primary)] data-[state=inactive]:text-[var(--text-muted)] data-[state=inactive]:hover:text-[var(--text-secondary)]`}
+              >
+                <span className="flex items-center gap-1.5">
+                  {tab.label}
+                  {tab.badge !== undefined && tab.badge > 0 && (
+                    <Badge className="text-[9px] font-mono h-4 min-w-[16px] px-1">
+                      {tab.badge}
+                    </Badge>
+                  )}
+                </span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <Separator />
+
+        <div className="flex-1 overflow-hidden">
+          <TabsContent value="novel" className="h-full p-0">
+            <NovelManager
+              project={project}
+              updateProject={updateProject}
+              title={localTitle}
+              novelGenre={localNovelGenre}
+              novelSynopsis={localNovelSynopsis}
+              language={localLanguage}
+              visualStyle={localVisualStyle}
+              customGenreInput={customGenreInput}
+              customStyleInput={customStyleInput}
+              visualStyleOptions={visualStyleOptions}
+              onTitleChange={setLocalTitle}
+              onNovelGenreChange={setLocalNovelGenre}
+              onNovelSynopsisChange={setLocalNovelSynopsis}
+              onLanguageChange={setLocalLanguage}
+              onVisualStyleChange={setLocalVisualStyle}
+              onCustomGenreChange={setCustomGenreInput}
+              onCustomStyleChange={setCustomStyleInput}
+            />
+          </TabsContent>
+          <TabsContent value="episodes" className="h-full p-0">
+            <EpisodeManager
+              project={project}
+              updateProject={updateProject}
+              onSelectEpisodeForStoryboard={handleSelectEpisodeForStoryboard}
+              onSwitchEpisode={onSwitchEpisode}
+              onGeneratingChange={onGeneratingChange}
+            />
+          </TabsContent>
+          <TabsContent value="story" className="h-full p-0">
+            {!project.selectedEpisodeId && (project.novelEpisodes?.length > 0) ? (
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                <Clapperboard className="w-16 h-16 text-[var(--text-muted)] mb-4 opacity-30" />
+                <p className="text-sm text-[var(--text-tertiary)] mb-2">请先选择一个剧本</p>
+                <p className="text-xs text-[var(--text-muted)] mb-4">在「剧集剧本」标签页中点击【使用此剧本创作】来选定一个剧本，<br />后续的故事编辑、分镜、角色等数据将绑定到该剧本。</p>
+                <button
+                  onClick={() => setActiveTab('episodes')}
+                  className="px-4 py-2 text-xs font-medium rounded-lg bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)] transition-colors"
+                >
+                  前往选择剧本
+                </button>
+              </div>
+            ) : (
+              <div className="flex h-full bg-[var(--bg-base)] text-[var(--text-secondary)]">
+                <ConfigPanel
+                  duration={localDuration}
+                  model={localModel}
+                  customDurationInput={customDurationInput}
+                  customModelInput={customModelInput}
+                  isProcessing={isProcessing}
+                  error={error}
+                  onShowModelConfig={onShowModelConfig}
+                  onDurationChange={setLocalDuration}
+                  onModelChange={setLocalModel}
+                  onCustomDurationChange={setCustomDurationInput}
+                  onCustomModelChange={setCustomModelInput}
+                  enableQualityCheck={enableQualityCheck}
+                  onToggleQualityCheck={handleQualityCheckToggle}
+                  onAnalyze={handleAnalyze}
+                />
+                <ScriptEditor
+                  script={localScript}
+                  onChange={setLocalScript}
+                  onContinue={handleContinueScript}
+                  onRewrite={handleRewriteScript}
+                  isContinuing={isContinuing}
+                  isRewriting={isRewriting}
+                  lastModified={project.lastModified.toString()}
+                />
+              </div>
+            )}
+          </TabsContent>
+          <TabsContent value="script" className="h-full p-0">
+            {!project.selectedEpisodeId && (project.novelEpisodes?.length > 0) ? (
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                <Clapperboard className="w-16 h-16 text-[var(--text-muted)] mb-4 opacity-30" />
+                <p className="text-sm text-[var(--text-tertiary)] mb-2">请先选择一个剧本</p>
+                <p className="text-xs text-[var(--text-muted)] mb-4">在「剧集剧本」标签页中点击【使用此剧本创作】来选定一个剧本。</p>
+                <button
+                  onClick={() => setActiveTab('episodes')}
+                  className="px-4 py-2 text-xs font-medium rounded-lg bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)] transition-colors"
+                >
+                  前往选择剧本
+                </button>
+              </div>
+            ) : (
+              <SceneBreakdown
+                project={project}
+                editingCharacterId={editingCharacterId}
+                editingCharacterPrompt={editingCharacterPrompt}
+                editingShotId={editingShotId}
+                editingShotPrompt={editingShotPrompt}
+                editingShotCharactersId={editingShotCharactersId}
+                editingShotActionId={editingShotActionId}
+                editingShotActionText={editingShotActionText}
+                editingShotDialogueText={editingShotDialogueText}
+                onEditCharacter={handleEditCharacter}
+                onSaveCharacter={handleSaveCharacter}
+                onCancelCharacterEdit={handleCancelCharacterEdit}
+                onEditShotPrompt={handleEditShotPrompt}
+                onSaveShotPrompt={handleSaveShotPrompt}
+                onCancelShotPrompt={handleCancelShotPrompt}
+                onEditShotCharacters={handleEditShotCharacters}
+                onAddCharacterToShot={handleAddCharacterToShot}
+                onRemoveCharacterFromShot={handleRemoveCharacterFromShot}
+                onCloseShotCharactersEdit={handleCloseShotCharactersEdit}
+                onEditShotAction={handleEditShotAction}
+                onSaveShotAction={handleSaveShotAction}
+                onCancelShotAction={handleCancelShotAction}
+                onAddShot={handleAddShot}
+                onAddSubShot={handleAddSubShot}
+                onDeleteShot={handleDeleteShot}
+                onBackToStory={() => setActiveTab('story')}
+              />
+            )}
+          </TabsContent>
         </div>
-      </div>
-
-      {/* Tab 内容 */}
-      <div className="flex-1 overflow-hidden">
-        {activeTab === 'novel' && (
-          <NovelManager
-            project={project}
-            updateProject={updateProject}
-            title={localTitle}
-            novelGenre={localNovelGenre}
-            novelSynopsis={localNovelSynopsis}
-            language={localLanguage}
-            visualStyle={localVisualStyle}
-            customGenreInput={customGenreInput}
-            customStyleInput={customStyleInput}
-            visualStyleOptions={visualStyleOptions}
-            onTitleChange={setLocalTitle}
-            onNovelGenreChange={setLocalNovelGenre}
-            onNovelSynopsisChange={setLocalNovelSynopsis}
-            onLanguageChange={setLocalLanguage}
-            onVisualStyleChange={setLocalVisualStyle}
-            onCustomGenreChange={setCustomGenreInput}
-            onCustomStyleChange={setCustomStyleInput}
-          />
-        )}
-
-        {activeTab === 'episodes' && (
-          <EpisodeManager
-            project={project}
-            updateProject={updateProject}
-            onSelectEpisodeForStoryboard={handleSelectEpisodeForStoryboard}
-            onSwitchEpisode={onSwitchEpisode}
-            onGeneratingChange={onGeneratingChange}
-          />
-        )}
-
-        {activeTab === 'story' && !project.selectedEpisodeId && (project.novelEpisodes?.length > 0) && (
-          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-            <Clapperboard className="w-16 h-16 text-[var(--text-muted)] mb-4 opacity-30" />
-            <p className="text-sm text-[var(--text-tertiary)] mb-2">请先选择一个剧本</p>
-            <p className="text-xs text-[var(--text-muted)] mb-4">在「剧集剧本」标签页中点击"使用此剧本创作"来选定一个剧本，<br />后续的故事编辑、分镜、角色等数据将绑定到该剧本。</p>
-            <button
-              onClick={() => setActiveTab('episodes')}
-              className="px-4 py-2 text-xs font-medium rounded-lg bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)] transition-colors"
-            >
-              前往选择剧本
-            </button>
-          </div>
-        )}
-
-        {activeTab === 'story' && (project.selectedEpisodeId || !(project.novelEpisodes?.length > 0)) && (
-          <div className="flex h-full bg-[var(--bg-base)] text-[var(--text-secondary)]">
-            <ConfigPanel
-              duration={localDuration}
-              model={localModel}
-              customDurationInput={customDurationInput}
-              customModelInput={customModelInput}
-              isProcessing={isProcessing}
-              error={error}
-              onShowModelConfig={onShowModelConfig}
-              onDurationChange={setLocalDuration}
-              onModelChange={setLocalModel}
-              onCustomDurationChange={setCustomDurationInput}
-              onCustomModelChange={setCustomModelInput}
-              enableQualityCheck={enableQualityCheck}
-              onToggleQualityCheck={handleQualityCheckToggle}
-              onAnalyze={handleAnalyze}
-            />
-            <ScriptEditor
-              script={localScript}
-              onChange={setLocalScript}
-              onContinue={handleContinueScript}
-              onRewrite={handleRewriteScript}
-              isContinuing={isContinuing}
-              isRewriting={isRewriting}
-              lastModified={project.lastModified.toString()}
-            />
-          </div>
-        )}
-
-        {activeTab === 'script' && !project.selectedEpisodeId && (project.novelEpisodes?.length > 0) && (
-          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-            <Clapperboard className="w-16 h-16 text-[var(--text-muted)] mb-4 opacity-30" />
-            <p className="text-sm text-[var(--text-tertiary)] mb-2">请先选择一个剧本</p>
-            <p className="text-xs text-[var(--text-muted)] mb-4">在「剧集剧本」标签页中点击"使用此剧本创作"来选定一个剧本。</p>
-            <button
-              onClick={() => setActiveTab('episodes')}
-              className="px-4 py-2 text-xs font-medium rounded-lg bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)] transition-colors"
-            >
-              前往选择剧本
-            </button>
-          </div>
-        )}
-
-        {activeTab === 'script' && (project.selectedEpisodeId || !(project.novelEpisodes?.length > 0)) && (
-          <SceneBreakdown
-            project={project}
-            editingCharacterId={editingCharacterId}
-            editingCharacterPrompt={editingCharacterPrompt}
-            editingShotId={editingShotId}
-            editingShotPrompt={editingShotPrompt}
-            editingShotCharactersId={editingShotCharactersId}
-            editingShotActionId={editingShotActionId}
-            editingShotActionText={editingShotActionText}
-            editingShotDialogueText={editingShotDialogueText}
-            onEditCharacter={handleEditCharacter}
-            onSaveCharacter={handleSaveCharacter}
-            onCancelCharacterEdit={handleCancelCharacterEdit}
-            onEditShotPrompt={handleEditShotPrompt}
-            onSaveShotPrompt={handleSaveShotPrompt}
-            onCancelShotPrompt={handleCancelShotPrompt}
-            onEditShotCharacters={handleEditShotCharacters}
-            onAddCharacterToShot={handleAddCharacterToShot}
-            onRemoveCharacterFromShot={handleRemoveCharacterFromShot}
-            onCloseShotCharactersEdit={handleCloseShotCharactersEdit}
-            onEditShotAction={handleEditShotAction}
-            onSaveShotAction={handleSaveShotAction}
-            onCancelShotAction={handleCancelShotAction}
-            onAddShot={handleAddShot}
-            onAddSubShot={handleAddSubShot}
-            onDeleteShot={handleDeleteShot}
-            onBackToStory={() => setActiveTab('story')}
-          />
-        )}
-      </div>
+      </Tabs>
+      
     </div>
+    
   );
 };
 

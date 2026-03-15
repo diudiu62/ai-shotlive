@@ -25,9 +25,10 @@ import { useAlert } from '../GlobalAlert';
 interface Props {
   project: ProjectState;
   onShowModelConfig?: () => void;
+  onGeneratingChange?: (isGenerating: boolean) => void;
 }
 
-const StageExport: React.FC<Props> = ({ project }) => {
+const StageExport: React.FC<Props> = ({ project, onGeneratingChange }) => {
   const { showAlert } = useAlert();
   const completedShots = getCompletedShots(project);
   const progress = calculateProgress(project);

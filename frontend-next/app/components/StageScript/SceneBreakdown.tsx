@@ -7,6 +7,8 @@ import { deduplicateScenes } from './utils';
 import CharacterList from './CharacterList';
 import SceneList from './SceneList';
 import ShotRow from './ShotRow';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 interface Props {
   project: ProjectState;
@@ -68,48 +70,52 @@ const SceneBreakdown: React.FC<Props> = ({
   const uniqueScenes = deduplicateScenes(project.scriptData?.scenes);
 
   return (
-    <div className="flex flex-col h-full bg-[var(--bg-base)] animate-in fade-in duration-500">
+    <div className="flex flex-col h-full bg-background animate-in fade-in duration-500">
       {/* Header */}
-      <div className="h-16 px-6 border-b border-[var(--border-primary)] bg-[var(--bg-sunken)] flex items-center justify-between shrink-0 z-20">
+      <div className="h-16 px-6 bg-card flex items-center justify-between shrink-0 z-20">
         <div className="flex items-center gap-6">
-          <h2 className="text-lg font-light text-[var(--text-primary)] tracking-tight flex items-center gap-3">
-            <List className="w-5 h-5 text-[var(--text-tertiary)]" />
+          <h2 className="text-lg font-light text-foreground tracking-tight flex items-center gap-3">
+            <List className="w-5 h-5 text-muted-foreground" />
             拍摄清单
-            <span className="text-xs text-[var(--text-muted)] font-mono uppercase tracking-wider ml-1">Script Manifest</span>
+            <span className="text-xs text-muted-foreground font-mono uppercase tracking-wider ml-1">Script Manifest</span>
           </h2>
-          <div className="h-6 w-px bg-[var(--border-primary)]"></div>
+          <div className="h-6 w-px bg-border"></div>
           
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
-              <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest">项目</span>
-              <span className="text-sm text-[var(--text-secondary)] font-medium">{project.scriptData?.title}</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">项目</span>
+              <span className="text-sm text-foreground font-medium">{project.scriptData?.title}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest">时长</span>
-              <span className="text-sm font-mono text-[var(--text-tertiary)]">{project.targetDuration}</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">时长</span>
+              <span className="text-sm font-mono text-muted-foreground">{project.targetDuration}</span>
             </div>
           </div>
         </div>
         
-        <button 
+        <Button 
           onClick={onBackToStory}
-          className="text-xs font-bold text-[var(--text-tertiary)] hover:text-[var(--text-primary)] flex items-center gap-2 px-4 py-2 hover:bg-[var(--bg-hover)] rounded-lg transition-all"
+          variant="secondary"
+          size="sm"
+          className="text-xs flex items-center gap-2"
         >
           <ArrowLeft className="w-3 h-3" />
           返回编辑
-        </button>
+        </Button>
       </div>
+      <Separator />
 
       {/* Content Split View */}
       <div className="flex-1 overflow-hidden flex">
         {/* Sidebar */}
-        <div className="w-72 border-r border-[var(--border-primary)] bg-[var(--bg-primary)] flex flex-col hidden lg:flex">
-          <div className="p-6 border-b border-[var(--border-subtle)]">
-            <h3 className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4 flex items-center gap-2">
+        <div className="w-72 bg-card flex flex-col hidden lg:flex">
+          <div className="p-6">
+            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
               <TextQuote className="w-3 h-3" /> 故事梗概
             </h3>
-            <p className="text-xs text-[var(--text-tertiary)] italic leading-relaxed font-serif">"{project.scriptData?.logline}"</p>
+            <p className="text-xs text-muted-foreground italic leading-relaxed font-serif">{project.scriptData?.logline}</p>
           </div>
+          <Separator />
 
           <div className="flex-1 overflow-y-auto p-6 space-y-8">
             <CharacterList
@@ -126,43 +132,46 @@ const SceneBreakdown: React.FC<Props> = ({
         </div>
 
         {/* Main: Script & Shots */}
-        <div className="flex-1 overflow-y-auto bg-[var(--bg-base)] p-0">
+        <div className="flex-1 overflow-y-auto bg-background p-0">
           <div className="max-w-5xl mx-auto pb-20">
             {project.scriptData?.scenes.map((scene, index) => {
               const sceneShots = project.shots.filter(s => s.sceneId === scene.id);
 
               return (
-                <div key={scene.id} className="border-b border-[var(--border-primary)]">
+                <div key={scene.id}>
                   {/* Scene Header */}
-                  <div className="sticky top-0 z-10 bg-[var(--bg-sunken)]/95 backdrop-blur border-y border-[var(--border-primary)] px-8 py-5 flex items-center justify-between shadow-lg shadow-black/20">
+                  <div className="sticky top-0 z-10 bg-card/95 backdrop-blur px-8 py-5 flex items-center justify-between shadow-lg shadow-black/20">
                     <div className="flex items-baseline gap-4">
-                      <span className="text-3xl font-bold text-[var(--text-primary)]/10 font-mono">{(index + 1).toString().padStart(2, '0')}</span>
-                      <h3 className="text-lg font-bold text-[var(--text-primary)] uppercase tracking-wider">
+                      <span className="text-3xl font-bold text-foreground/10 font-mono">{(index + 1).toString().padStart(2, '0')}</span>
+                      <h3 className="text-lg font-bold text-foreground uppercase tracking-wider">
                         {scene.location}
                       </h3>
                     </div>
-                    <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-[var(--text-tertiary)]">
+                    <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                       <span className="flex items-center gap-1.5"><Clock className="w-3 h-3"/> {scene.time}</span>
-                      <span className="text-[var(--text-muted)]">|</span>
+                      <span className="text-muted-foreground">|</span>
                       <span>{scene.atmosphere}</span>
-                      <button
+                      <Button
                         onClick={() => onAddShot(scene.id)}
-                        className="ml-2 px-2.5 py-1 bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-secondary)] rounded-md flex items-center gap-1.5 transition-colors"
+                        variant="secondary"
+                        size="sm"
+                        className="ml-2 text-xs flex items-center gap-1.5"
                         title="追加分镜：有镜头时会自动生成子分镜"
                       >
                         <Plus className="w-3 h-3" />
                         新增分镜
-                      </button>
+                      </Button>
                     </div>
                   </div>
+                  <Separator />
 
                   {/* Shot Rows */}
                   {sceneShots.length === 0 ? (
-                    <div className="px-8 py-10 text-sm text-[var(--text-muted)]">
+                    <div className="px-8 py-10 text-sm text-muted-foreground">
                       当前场景还没有分镜，点击“新增分镜”开始补充。
                     </div>
                   ) : (
-                    <div className="divide-y divide-zinc-800/50">
+                    <div className="divide-y divide-border">
                       {sceneShots.map((shot) => (
                         <ShotRow
                           key={shot.id}
@@ -191,6 +200,7 @@ const SceneBreakdown: React.FC<Props> = ({
                       ))}
                     </div>
                   )}
+                  <Separator />
                 </div>
               );
             })}

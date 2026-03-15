@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Upload, Sparkles, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ImageUploadButtonProps {
   onUpload: (file: File) => void;
@@ -25,12 +26,10 @@ const ImageUploadButton: React.FC<ImageUploadButtonProps> = ({
   variant = 'separate',
 }) => {
   const sizeClasses = {
-    small: 'px-3 py-1.5 text-[10px]',
-    medium: 'px-4 py-2 text-xs',
-    large: 'px-6 py-3 text-sm',
+    small: 'h-8 px-3 text-[10px]',
+    medium: 'h-9 px-4 text-xs',
+    large: 'h-10 px-6 text-sm',
   };
-
-  const buttonClass = `${sizeClasses[size]} bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:bg-[var(--border-secondary)] rounded font-bold transition-all border border-[var(--border-secondary)] flex items-center gap-1 cursor-pointer`;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -44,10 +43,10 @@ const ImageUploadButton: React.FC<ImageUploadButtonProps> = ({
     return (
       <div className="flex gap-1">
         {onGenerate && (
-          <button
+          <Button
             onClick={onGenerate}
             disabled={isGenerating}
-            className={buttonClass}
+            className={sizeClasses[size]}
           >
             {isGenerating ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -55,9 +54,9 @@ const ImageUploadButton: React.FC<ImageUploadButtonProps> = ({
               <Sparkles className="w-3 h-3" />
             )}
             {generateLabel}
-          </button>
+          </Button>
         )}
-        <label className={buttonClass}>
+        <label className={`inline-flex items-center justify-center rounded-4xl border border-transparent bg-primary text-primary-foreground hover:bg-primary/80 transition-all ${sizeClasses[size]}`}>
           <Upload className="w-3 h-3" />
           {uploadLabel}
           <input
@@ -75,10 +74,10 @@ const ImageUploadButton: React.FC<ImageUploadButtonProps> = ({
   return (
     <div className="flex gap-2">
       {onGenerate && hasImage && (
-        <button
+        <Button
           onClick={onGenerate}
           disabled={isGenerating}
-          className={`flex-1 py-1.5 bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] rounded text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 border border-[var(--border-primary)] transition-colors`}
+          className="flex-1 py-1.5 text-xs font-bold uppercase tracking-wider"
         >
           {isGenerating ? (
             <>
@@ -91,9 +90,9 @@ const ImageUploadButton: React.FC<ImageUploadButtonProps> = ({
               重新生成
             </>
           )}
-        </button>
+        </Button>
       )}
-      <label className={`flex-1 py-1.5 bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] rounded text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 border border-[var(--border-primary)] transition-colors cursor-pointer`}>
+      <label className="flex-1 inline-flex items-center justify-center rounded-4xl border border-transparent bg-primary text-primary-foreground hover:bg-primary/80 transition-all py-1.5 text-xs font-bold uppercase tracking-wider">
         <Upload className="w-3 h-3" />
         {uploadLabel}
         <input

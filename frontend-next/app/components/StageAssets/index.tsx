@@ -62,7 +62,7 @@ const withAuthToken = (url: string | undefined): string | undefined => {
 interface Props {
   project: ProjectState;
   updateProject: (updates: Partial<ProjectState> | ((prev: ProjectState) => ProjectState)) => void;
-  onApiKeyError?: (error: any) => boolean;
+  onApiKeyError?: (error: Error) => boolean;
   onGeneratingChange?: (isGenerating: boolean) => void;
 }
 
@@ -420,7 +420,7 @@ const StageAssets: React.FC<Props> = ({ project, updateProject, onApiKeyError, o
     await executeBatchGenerate(itemsToGen, type);
   };
 
-  const executeBatchGenerate = async (targetItems: any[], type: 'character' | 'scene') => {
+  const executeBatchGenerate = async (targetItems: (Character | Scene)[], type: 'character' | 'scene') => {
     setBatchProgress({ current: 0, total: targetItems.length });
 
     for (let i = 0; i < targetItems.length; i++) {

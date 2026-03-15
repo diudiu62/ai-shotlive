@@ -3,8 +3,12 @@
 import React from 'react';
 import { Wand2, BrainCircuit, AlertCircle } from 'lucide-react';
 import OptionSelector from './OptionSelector';
-import { DURATION_OPTIONS, STYLES } from './constants';
+import { DURATION_OPTIONS } from './constants';
 import ModelSelector from '../ModelSelector';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 interface Props {
   duration: string;
@@ -40,14 +44,15 @@ const ConfigPanel: React.FC<Props> = ({
   onAnalyze
 }) => {
   return (
-    <div className="w-80 border-r border-[var(--border-primary)] flex flex-col bg-[var(--bg-primary)]">
+    <div className="w-80 flex flex-col bg-card">
       {/* Header */}
-      <div className="h-14 px-5 border-b border-[var(--border-primary)] flex items-center justify-between shrink-0">
-        <h2 className="text-sm font-bold text-[var(--text-primary)] tracking-wide flex items-center gap-2">
-          <Wand2 className="w-4 h-4 text-[var(--text-tertiary)]" />
+      <div className="h-14 px-5 flex items-center justify-between shrink-0">
+        <h2 className="text-sm font-bold text-foreground tracking-wide flex items-center gap-2">
+          <Wand2 className="w-4 h-4 text-muted-foreground" />
           分镜配置
         </h2>
       </div>
+      <Separator />
 
       {/* Config Form */}
       <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
@@ -72,49 +77,47 @@ const ConfigPanel: React.FC<Props> = ({
             disabled={isProcessing}
             label="分镜生成模型"
           />
-          <p className="text-[9px] text-[var(--text-muted)]">
+          <p className="text-[9px] text-muted-foreground">
             在{' '}
-            <button
+            <Button
               type="button"
               onClick={onShowModelConfig}
-              className="text-[var(--accent-text)] hover:text-[var(--accent-text-hover)] underline underline-offset-2 transition-colors"
+              variant="link"
+              size="sm"
+              className="text-xs p-0 h-auto"
             >
               模型配置
-            </button>{' '}
+            </Button>{' '}
             中可添加更多模型
           </p>
         </div>
 
         {/* Quality Check */}
-        <div className="pt-6 border-t border-[var(--border-primary)]">
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
+        <div className="pt-6">
+          <Separator className="mb-6" />
+          <div className="flex items-center gap-3">
+            <Switch
               checked={enableQualityCheck}
-              onChange={(e) => onToggleQualityCheck(e.target.checked)}
+              onCheckedChange={onToggleQualityCheck}
               disabled={isProcessing}
-              className="mt-0.5 h-4 w-4 rounded border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--accent-text)]"
             />
-            <span className="text-xs text-[var(--text-secondary)]">
+            <Label className="text-xs text-foreground cursor-pointer">
               启用分镜质量校验与自动修复（推荐）
-            </span>
-          </label>
-          <p className="text-[10px] text-[var(--text-muted)] mt-2">
+            </Label>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
             开启后会在分镜生成完成时自动打分并修复坏点（字段缺失、关键帧结构问题、资产ID非法等）。
           </p>
         </div>
       </div>
 
       {/* Action Button */}
-      <div className="p-6 border-t border-[var(--border-primary)] bg-[var(--bg-primary)]">
-        <button
+      <div className="p-6 bg-card">
+        <Separator className="mb-6" />
+        <Button
           onClick={onAnalyze}
           disabled={isProcessing}
-          className={`w-full py-3.5 font-bold text-xs tracking-widest uppercase rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg ${
-            isProcessing 
-              ? STYLES.button.disabled
-              : STYLES.button.primary
-          }`}
+          className="w-full py-3.5 font-bold text-xs tracking-widest uppercase flex items-center justify-center gap-2 shadow-lg"
         >
           {isProcessing ? (
             <>
@@ -127,9 +130,9 @@ const ConfigPanel: React.FC<Props> = ({
               生成分镜脚本
             </>
           )}
-        </button>
+        </Button>
         {error && (
-          <div className="mt-4 p-3 bg-[var(--error-bg)] border border-[var(--error-border)] text-[var(--error)] text-xs rounded flex items-center gap-2">
+          <div className="mt-4 p-3 bg-destructive/10 border border-destructive text-destructive text-xs rounded flex items-center gap-2">
             <AlertCircle className="w-3 h-3 flex-shrink-0" />
             {error}
           </div>

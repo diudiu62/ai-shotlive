@@ -3,6 +3,9 @@
 import React from 'react';
 import { Loader2, Edit2, Upload, ArrowRight, ArrowLeft, Sparkles, Wand2, Trash2 } from 'lucide-react';
 import { Keyframe } from '@/app/types/types';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface KeyframeEditorProps {
   startKeyframe?: Keyframe;
@@ -55,14 +58,16 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
     return (
       <div className="space-y-2">
         <div className="flex justify-between items-center">
-          <label className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">
+          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
             {label}
-          </label>
+          </Label>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={() => onOptimizeWithAI(type)}
               disabled={isAIOptimizing}
-              className="px-2 py-1 text-[var(--accent-text)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 rounded-md hover:bg-[var(--accent-bg)]"
+              variant="ghost"
+              size="sm"
+              className="px-2 py-1 text-primary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 rounded-md hover:bg-accent"
               title="AI优化提示词"
             >
               {isAIOptimizing ? (
@@ -71,21 +76,23 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
                 <Sparkles className="w-3 h-3" />
               )}
               <span className="text-[10px] font-bold uppercase tracking-wider">AI优化</span>
-            </button>
+            </Button>
             {keyframe?.visualPrompt && (
-              <button
+              <Button
                 onClick={() => onEditPrompt(type, keyframe.visualPrompt!)}
-                className="px-2 py-1 text-[var(--warning-text)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-1 rounded-md hover:bg-[var(--warning-bg)]"
+                variant="ghost"
+                size="sm"
+                className="px-2 py-1 text-warning hover:text-primary transition-colors flex items-center gap-1 rounded-md hover:bg-warning/10"
                 title="编辑提示词"
               >
                 <Edit2 className="w-3 h-3" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">提示词</span>
-              </button>
+              </Button>
             )}
           </div>
         </div>
         
-        <div className="aspect-video bg-[var(--bg-base)] rounded-lg border border-[var(--border-primary)] overflow-hidden relative group">
+        <div className="aspect-video bg-background rounded-lg border border-border overflow-hidden relative group">
           {keyframe?.imageUrl ? (
             <>
               <img
@@ -94,26 +101,28 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
                 onClick={() => onImageClick(keyframe.imageUrl!, `${label} - 关键帧`)}
                 alt={label}
               />
-              <div className="absolute inset-0 bg-[var(--bg-base)]/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                <span className="text-[var(--text-primary)] text-xs font-mono">点击预览</span>
+              <div className="absolute inset-0 bg-background/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                <span className="text-primary text-xs font-mono">点击预览</span>
               </div>
             </>
           ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-[var(--text-muted)] p-2">
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-2">
               {isGenerating ? (
                 <>
-                  <Loader2 className="w-6 h-6 animate-spin mb-2 text-[var(--accent)]" />
-                  <span className="text-[10px] text-[var(--text-tertiary)]">生成中...</span>
+                  <Loader2 className="w-6 h-6 animate-spin mb-2 text-primary" />
+                  <span className="text-[10px] text-muted-foreground">生成中...</span>
                 </>
               ) : hasFailed ? (
                 <>
-                  <span className="text-[10px] text-[var(--error)] mb-2">生成失败</span>
-                  <button
+                  <span className="text-[10px] text-destructive mb-2">生成失败</span>
+                  <Button
                     onClick={() => onGenerateKeyframe(type)}
-                    className="px-2 py-1 bg-[var(--error-bg)] text-[var(--error-text)] hover:bg-[var(--error-hover-bg-strong)] rounded text-[9px] font-bold transition-colors border border-[var(--error-border)]"
+                    variant="destructive"
+                    size="sm"
+                    className="px-2 py-1 text-[9px] font-bold"
                   >
                     重试
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <span className="text-[10px] text-center">未生成</span>
@@ -126,29 +135,35 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
         <div className="flex gap-2">
           {!isGenerating && (
             <>
-              <button
+              <Button
                 onClick={() => onGenerateKeyframe(type)}
                 disabled={isGenerating}
-                className="flex-1 py-1.5 bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] text-[var(--btn-primary-text)] rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 disabled:opacity-50"
+                variant="default"
+                size="sm"
+                className="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 disabled:opacity-50"
               >
                 {keyframe?.imageUrl ? '重新生成' : '生成'}
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => onUploadKeyframe(type)}
-                className="flex-1 py-1.5 bg-[var(--bg-hover)] hover:bg-[var(--border-secondary)] text-[var(--text-secondary)] rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1"
+                variant="secondary"
+                size="sm"
+                className="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1"
               >
                 <Upload className="w-3 h-3" />
                 上传
-              </button>
+              </Button>
               {keyframe?.imageUrl && (
-                <button
+                <Button
                   onClick={() => onDeleteKeyframe(type)}
-                  className="flex-1 py-1.5 bg-[var(--error-bg)] hover:bg-[var(--error-hover-bg-strong)] text-[var(--error-text)] rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 border border-[var(--error-border)]"
+                  variant="destructive"
+                  size="sm"
+                  className="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1"
                   title="删除关键帧"
                 >
                   <Trash2 className="w-3 h-3" />
                   删除
-                </button>
+                </Button>
               )}
             </>
           )}
@@ -156,24 +171,28 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
 
         {/* Copy Previous Button for Start Frame */}
         {type === 'start' && canCopyPrevious && !keyframe?.imageUrl && (
-          <button
+          <Button
             onClick={onCopyPrevious}
-            className="w-full py-1.5 bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 border border-[var(--border-secondary)]"
+            variant="outline"
+            size="sm"
+            className="w-full py-1.5 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1"
           >
             <ArrowRight className="w-3 h-3" />
             复制上一镜头尾帧
-          </button>
+          </Button>
         )}
 
         {/* Copy Next Button for End Frame */}
         {type === 'end' && canCopyNext && !keyframe?.imageUrl && (
-          <button
+          <Button
             onClick={onCopyNext}
-            className="w-full py-1.5 bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 border border-[var(--border-secondary)]"
+            variant="outline"
+            size="sm"
+            className="w-full py-1.5 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1"
           >
             <ArrowLeft className="w-3 h-3" />
             复制下一镜头首帧
-          </button>
+          </Button>
         )}
       </div>
     );
@@ -184,31 +203,25 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
       {/* AI 增强开关 */}
       <div className="flex items-center gap-2 justify-end">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-[var(--text-tertiary)]">
+          <span className="text-[10px] text-muted-foreground">
             AI增强提示词
           </span>
-          <button
-            onClick={onToggleAIEnhancement}
-            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-              useAIEnhancement ? 'bg-[var(--accent)]' : 'bg-[var(--border-secondary)]'
-            }`}
+          <Switch
+            checked={useAIEnhancement}
+            onCheckedChange={onToggleAIEnhancement}
             title={useAIEnhancement ? '关闭AI增强：使用基础提示词快速生成' : '开启AI增强：自动扩展为专业电影级描述'}
-          >
-            <span
-              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-[var(--btn-primary-bg)] transition-transform ${
-                useAIEnhancement ? 'translate-x-5' : 'translate-x-1'
-              }`}
-            />
-          </button>
+          />
         
         </div>
         
         {/* 一次性优化两帧按钮 */}
         {showEndFrame && (
-          <button
+          <Button
             onClick={onOptimizeBothWithAI}
             disabled={isAIOptimizing}
-            className="px-3 py-1.5 bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] text-[var(--btn-primary-text)] rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="default"
+            size="sm"
+            className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
             title="AI一次性优化起始帧和结束帧（推荐）"
           >
             {isAIOptimizing ? (
@@ -222,7 +235,7 @@ const KeyframeEditor: React.FC<KeyframeEditorProps> = ({
                 <span>AI优化两帧</span>
               </>
             )}
-          </button>
+          </Button>
         )}
       </div>
 

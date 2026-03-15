@@ -11,6 +11,9 @@ import {
   getActiveVideoModel,
 } from '../../services/modelRegistry';
 import { VideoModelDefinition } from '../../types/model';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface VideoGeneratorProps {
   shot: Shot;
@@ -106,44 +109,47 @@ const VideoGenerator: React.FC<VideoGeneratorProps> = ({
             ● READY
           </span>
         )}
-        <button 
+        <Button 
           onClick={onEditPrompt}
-          className="px-2 py-1 text-[var(--warning-text)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-1 rounded-md hover:bg-[var(--warning-bg)]"
+          variant="ghost"
+          size="sm"
+          className="px-2 py-1 text-warning hover:text-primary flex items-center gap-1 rounded-md hover:bg-warning/10"
           title="预览/编辑视频提示词"
         >
           <Edit2 className="w-3 h-3" />
           <span className="text-[10px] font-bold uppercase tracking-wider">编辑提示词</span>
-        </button>
+        </Button>
       </div>
       
       {/* Model Selector */}
       <div className="space-y-2">
-        <label className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest block">
+        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
           选择视频模型
-        </label>
-        <select
-          value={selectedModelId}
-          onChange={(e) => {
-            const newModelId = e.target.value;
+        </Label>
+        <Select value={selectedModelId} onValueChange={(newModelId) => {
+          if (newModelId) {
             setSelectedModelId(newModelId);
             const resolvedModelId = newModelId === 'veo_3_1-fast'
               ? (veoFastQuality === '4k' ? 'veo_3_1-fast-4K' : 'veo_3_1-fast')
               : newModelId;
             onModelChange?.(resolvedModelId);
-          }}
-          className="w-full bg-[var(--bg-base)] text-[var(--text-primary)] border border-[var(--border-secondary)] rounded-lg px-3 py-2 text-xs outline-none focus:border-[var(--accent)] transition-colors"
-          disabled={isGenerating}
-        >
-          {videoModels.map((model) => {
-            const vm = model as VideoModelDefinition;
-            const modeLabel = vm.params?.mode === 'async' ? '异步' : '首尾帧';
-            return (
-              <option key={model.id} value={model.id}>
-                {model.name} ({modeLabel})
-              </option>
-            );
-          })}
-        </select>
+          }
+        }} disabled={isGenerating}>
+          <SelectTrigger className="w-full text-xs h-9">
+            <SelectValue placeholder="选择视频模型" />
+          </SelectTrigger>
+          <SelectContent>
+            {videoModels.map((model) => {
+              const vm = model as VideoModelDefinition;
+              const modeLabel = vm.params?.mode === 'async' ? '异步' : '首尾帧';
+              return (
+                <SelectItem key={model.id} value={model.id}>
+                  {model.name} ({modeLabel})
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
         {selectedModel && (
           <p className="text-[9px] text-[var(--text-muted)] font-mono">
             ✦ {selectedModel.name}: 
@@ -154,36 +160,26 @@ const VideoGenerator: React.FC<VideoGeneratorProps> = ({
         )}
         {selectedModelId === 'veo_3_1-fast' && (
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-[var(--text-tertiary)] uppercase">清晰度</span>
+            <span className="text-[10px] text-muted-foreground uppercase">清晰度</span>
             <div className="flex gap-1">
-              <button
+              <Button
                 onClick={() => handleVeoFastQualityChange('standard')}
                 disabled={isGenerating}
-                className={`
-                  px-3 py-1.5 rounded-md text-xs transition-all
-                  ${veoFastQuality === 'standard'
-                    ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-                    : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)] hover:text-[var(--text-secondary)]'
-                  }
-                  ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                `}
+                variant={veoFastQuality === 'standard' ? 'default' : 'outline'}
+                size="sm"
+                className="px-3 py-1.5 text-xs"
               >
                 标准
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => handleVeoFastQualityChange('4k')}
                 disabled={isGenerating}
-                className={`
-                  px-3 py-1.5 rounded-md text-xs transition-all
-                  ${veoFastQuality === '4k'
-                    ? 'bg-[var(--accent)] text-[var(--text-primary)]'
-                    : 'bg-[var(--bg-hover)] text-[var(--text-tertiary)] hover:bg-[var(--border-secondary)] hover:text-[var(--text-secondary)]'
-                  }
-                  ${isGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                `}
+                variant={veoFastQuality === '4k' ? 'default' : 'outline'}
+                size="sm"
+                className="px-3 py-1.5 text-xs"
               >
                 4K
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -191,9 +187,9 @@ const VideoGenerator: React.FC<VideoGeneratorProps> = ({
 
       {/* 视频设置：横竖屏 & 时长 */}
       <div className="space-y-2">
-        <label className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest block">
+        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
           视频设置
-        </label>
+        </Label>
         <VideoSettingsPanel
           aspectRatio={aspectRatio}
           onAspectRatioChange={setAspectRatio}
@@ -218,13 +214,14 @@ const VideoGenerator: React.FC<VideoGeneratorProps> = ({
       )}
 
       {/* Generate Button */}
-      <button
+      <Button
         onClick={handleGenerate}
         disabled={!canGenerate || isGenerating}
-        className={`w-full py-3 rounded-lg font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${
+        variant={hasVideo ? 'outline' : 'default'}
+        className={`w-full py-3 font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 ${
           hasVideo 
-            ? 'bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:bg-[var(--border-secondary)]'
-            : 'bg-[var(--accent)] text-[var(--text-primary)] hover:bg-[var(--accent-hover)] shadow-lg shadow-[var(--accent-shadow)]'
+            ? 'bg-background text-secondary hover:bg-muted'
+            : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg'
         } ${(!canGenerate) ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {isGenerating ? (
@@ -235,7 +232,7 @@ const VideoGenerator: React.FC<VideoGeneratorProps> = ({
         ) : (
           <>{hasVideo ? '重新生成视频' : '开始生成视频'}</>
         )}
-      </button>
+      </Button>
       
       {/* Status Messages */}
       {!hasEndFrame && (

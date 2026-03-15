@@ -82,41 +82,41 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-base)]/70 p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-6"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md bg-[var(--bg-primary)] border border-[var(--border-primary)] p-6 md:p-8"
+        className="relative w-full max-w-md bg-background border border-border p-6 md:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 p-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
+          className="absolute right-4 top-4 p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           title="关闭"
         >
           <X className="w-4 h-4" />
         </button>
 
-        <div className="border-b border-[var(--border-subtle)] pb-4 mb-6">
-          <h2 className="text-lg text-[var(--text-primary)] flex items-center gap-2">
-            <User className="w-4 h-4 text-[var(--accent-text)]" />
+        <div className="border-b border-border pb-4 mb-6">
+          <h2 className="text-lg text-foreground flex items-center gap-2">
+            <User className="w-4 h-4 text-primary" />
             账户设置
-            <span className="text-[var(--text-muted)] text-xs font-mono uppercase tracking-widest">Profile</span>
+            <span className="text-muted-foreground text-xs font-mono uppercase tracking-widest">Profile</span>
           </h2>
-          <p className="text-xs text-[var(--text-tertiary)] mt-2">修改用户名、密码或主题</p>
+          <p className="text-xs text-muted-foreground mt-2">修改用户名、密码或主题</p>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-[var(--border-subtle)] mb-6">
+        <div className="flex border-b border-border mb-6">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'profile' ? 'text-[var(--text-primary)] border-b-2 border-[var(--accent-text)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'profile' ? 'text-foreground border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
           >
             个人资料
           </button>
           <button
             onClick={() => setActiveTab('theme')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'theme' ? 'text-[var(--text-primary)] border-b-2 border-[var(--accent-text)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'theme' ? 'text-foreground border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
           >
             <div className="flex items-center gap-2">
               <Palette className="w-4 h-4" />
@@ -129,16 +129,16 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Username */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">
+              <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
                 用户名
               </label>
               <div className="relative">
-                <User className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
+                <User className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-primary)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--border-secondary)] transition-colors"
+                  className="w-full pl-9 pr-3 py-2.5 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
                   placeholder="新用户名"
                 />
               </div>
@@ -146,22 +146,22 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
 
             {/* Current Password */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">
-                当前密码 <span className="text-[var(--error-text)]">*</span>
+              <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+                当前密码 <span className="text-destructive">*</span>
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type={showCurrentPassword ? 'text' : 'password'}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full pl-9 pr-10 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-primary)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--border-secondary)] transition-colors"
+                  className="w-full pl-9 pr-10 py-2.5 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
                   placeholder="输入当前密码验证身份"
                 />
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -170,22 +170,22 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
 
             {/* New Password */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">
-                新密码 <span className="text-[var(--text-muted)]">(选填)</span>
+              <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+                新密码 <span className="text-muted-foreground">(选填)</span>
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type={showNewPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full pl-9 pr-10 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-primary)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--border-secondary)] transition-colors"
+                  className="w-full pl-9 pr-10 py-2.5 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
                   placeholder="不修改请留空"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -195,16 +195,16 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
             {/* Confirm New Password */}
             {hasPasswordChange && (
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">
+                <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
                   确认新密码
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type={showNewPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-primary)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--border-secondary)] transition-colors"
+                    className="w-full pl-9 pr-3 py-2.5 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
                     placeholder="再次输入新密码"
                   />
                 </div>
@@ -213,12 +213,12 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
 
             {/* Error / Success */}
             {error && (
-              <div className="px-3 py-2.5 border border-[var(--error-border)] bg-[var(--error-hover-bg)] text-[var(--error-text)] text-xs">
+              <div className="px-3 py-2.5 border border-destructive bg-destructive/10 text-destructive text-xs">
                 {error}
               </div>
             )}
             {success && (
-              <div className="px-3 py-2.5 border border-[var(--success)] bg-[var(--success)]/10 text-[var(--success)] text-xs">
+              <div className="px-3 py-2.5 border border-primary bg-primary/10 text-primary text-xs">
                 {success}
               </div>
             )}
@@ -227,7 +227,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
             <button
               type="submit"
               disabled={isSubmitting || !hasChanges}
-              className="w-full py-3 bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2"
+              className="w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>
@@ -242,7 +242,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
         ) : (
           <div className="space-y-6">
             <div>
-              <h3 className="text-sm font-medium text-[var(--text-primary)] mb-4">选择颜色主题</h3>
+              <h3 className="text-sm font-medium text-foreground mb-4">选择颜色主题</h3>
               <div className="grid grid-cols-2 gap-4">
                 {[
                   { value: 'rose', label: '玫瑰色', color: '#f43f5e' },
@@ -253,23 +253,23 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ onClose }) => {
                   <button
                     key={theme.value}
                     onClick={() => setColorTheme(theme.value as ColorTheme)}
-                    className={`p-4 border rounded-lg transition-all ${colorTheme === theme.value ? 'border-[var(--accent-text)] ring-2 ring-[var(--accent-text)]/20' : 'border-[var(--border-primary)] hover:border-[var(--border-secondary)]'}`}
+                    className={`p-4 border rounded-lg transition-all ${colorTheme === theme.value ? 'border-primary ring-2 ring-primary/20' : 'border-border hover:border-primary'}`}
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className="w-8 h-8 rounded-full"
                         style={{ backgroundColor: theme.color }}
                       />
-                      <span className="text-sm text-[var(--text-primary)]">{theme.label}</span>
+                      <span className="text-sm text-foreground">{theme.label}</span>
                     </div>
                     {colorTheme === theme.value && (
-                      <div className="mt-2 text-xs text-[var(--accent-text)] font-medium">当前主题</div>
+                      <div className="mt-2 text-xs text-primary font-medium">当前主题</div>
                     )}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="text-xs text-[var(--text-muted)]">
+            <div className="text-xs text-muted-foreground">
               选择一个主题来个性化你的界面。主题设置会保存在本地，下次访问时仍然生效。
             </div>
           </div>

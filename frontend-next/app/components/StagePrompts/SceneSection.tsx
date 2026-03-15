@@ -3,9 +3,10 @@
 import React from 'react';
 import { MapPin } from 'lucide-react';
 import { Scene } from '@/app/types/types';
-import { EditingPrompt, STYLES } from './constants';
+import { EditingPrompt } from './constants';
 import CollapsibleSection from './CollapsibleSection';
 import PromptEditor from './PromptEditor';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   scenes: Scene[];
@@ -39,20 +40,21 @@ const SceneSection: React.FC<Props> = ({
       onToggle={onToggle}
     >
       {scenes.map(scene => (
-        <div key={scene.id} className={STYLES.card.base}>
+        <div key={scene.id} className="p-4 border border-border rounded-lg bg-background mb-4">
           <div className="flex items-start justify-between mb-3">
             <div>
-              <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">{scene.location}</h3>
-              <p className="text-sm text-[var(--text-tertiary)]">
+              <h3 className="text-lg font-bold text-primary mb-1">{scene.location}</h3>
+              <p className="text-sm text-muted-foreground">
                 {scene.time} · {scene.atmosphere}
               </p>
             </div>
-            <button
+            <Button
               onClick={() => onStartEdit('scene', scene.id, scene.visualPrompt || '')}
-              className={STYLES.button.edit}
+              variant="outline"
+              size="sm"
             >
               编辑
-            </button>
+            </Button>
           </div>
 
           {editingPrompt?.type === 'scene' && editingPrompt.id === scene.id ? (
@@ -64,7 +66,7 @@ const SceneSection: React.FC<Props> = ({
               size="large"
             />
           ) : (
-            <p className={STYLES.display.base}>
+            <p className="text-sm text-secondary">
               {scene.visualPrompt || '未设置提示词'}
             </p>
           )}

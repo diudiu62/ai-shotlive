@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Loader2, Eye, EyeOff, Film, User, Lock, ArrowRight, Sparkles, Star, Play, Settings, LogOut, Palette, Sun, Moon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme, ColorTheme } from '../contexts/ThemeContext';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,8 +58,8 @@ const Login: React.FC = () => {
         await register(username.trim(), password);
       }
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || '操作失败，请稍后重试');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '操作失败，请稍后重试');
     } finally {
       setIsSubmitting(false);
     }
@@ -278,7 +278,7 @@ const Login: React.FC = () => {
                             <Button
                               key={themeOption.value}
                               variant={colorTheme === themeOption.value ? "default" : "ghost"}
-                              onClick={() => setColorTheme(themeOption.value as any)}
+                              onClick={() => setColorTheme(themeOption.value as ColorTheme)}
                               className="flex items-center gap-2 text-xs"
                               style={{ 
                                 backgroundColor: colorTheme === themeOption.value ? themeOption.color + '20' : 'transparent',

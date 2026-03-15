@@ -4,7 +4,8 @@ import React from 'react';
 import { Aperture, Edit2, Check, X, UserPlus, Trash2, Plus } from 'lucide-react';
 import { Shot, ScriptData } from '@/app/types/types';
 import InlineEditor from './InlineEditor';
-import { STYLES } from './constants';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
 interface Props {
   shot: Shot;
@@ -73,34 +74,38 @@ const ShotRow: React.FC<Props> = ({
   };
 
   return (
-    <div className="group bg-[var(--bg-base)] hover:bg-[var(--bg-primary)] transition-colors p-8 flex gap-8">
+    <div className="group bg-background hover:bg-card transition-colors p-8 flex gap-8">
       {/* Shot ID & Tech Data */}
       <div className="w-32 flex-shrink-0 flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-2 text-xs font-mono text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors">
+        <div className="flex items-center justify-between gap-2 text-xs font-mono text-muted-foreground group-hover:text-foreground transition-colors">
           <span>{getShotDisplayNumber()}</span>
           <div className="flex items-center gap-1">
-            <button
+            <Button
               onClick={() => onAddSubShot(shot.id)}
-              className="p-1 rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all opacity-0 group-hover:opacity-100"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 opacity-0 group-hover:opacity-100"
               title="新增子分镜"
             >
               <Plus className="w-3 h-3" />
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => onDeleteShot(shot.id)}
-              className="p-1 rounded-md text-[var(--text-muted)] hover:text-[var(--error)] hover:bg-[var(--error)]/10 transition-all opacity-0 group-hover:opacity-100"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 opacity-0 group-hover:opacity-100"
               title="删除分镜"
             >
               <Trash2 className="w-3 h-3" />
-            </button>
+            </Button>
           </div>
         </div>
         
         <div className="flex flex-col gap-2">
-          <div className="px-2 py-1 bg-[var(--bg-elevated)] border border-[var(--border-primary)] text-[10px] font-mono text-[var(--text-tertiary)] uppercase text-center rounded">
+          <div className="px-2 py-1 bg-card border border-border text-[10px] font-mono text-muted-foreground uppercase text-center rounded">
             {shot.shotSize || 'MED'}
           </div>
-          <div className="px-2 py-1 bg-[var(--bg-elevated)] border border-[var(--border-primary)] text-[10px] font-mono text-[var(--text-tertiary)] uppercase text-center rounded">
+          <div className="px-2 py-1 bg-card border border-border text-[10px] font-mono text-muted-foreground uppercase text-center rounded">
             {shot.cameraMovement}
           </div>
         </div>
@@ -109,58 +114,60 @@ const ShotRow: React.FC<Props> = ({
       {/* Main Action */}
       <div className="flex-1 space-y-4">
         {editingShotActionId === shot.id ? (
-          <div className="space-y-3 p-4 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg">
+          <div className="space-y-3 p-4 bg-card border border-border rounded-lg">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">动作描述</label>
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">动作描述</Label>
               <textarea
                 value={editingShotActionText}
                 onChange={(e) => onEditAction(shot.id, e.target.value, editingShotDialogueText)}
-                className={STYLES.editor.textarea}
+                className="w-full bg-background border border-border text-foreground px-3 py-2 text-sm rounded-md focus:border-primary focus:outline-none resize-none"
                 rows={3}
                 placeholder="输入动作描述..."
               />
             </div>
             
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">台词（可选）</label>
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">台词（可选）</Label>
               <textarea
                 value={editingShotDialogueText}
                 onChange={(e) => onEditAction(shot.id, editingShotActionText, e.target.value)}
-                className={`${STYLES.editor.textarea} ${STYLES.editor.serif}`}
+                className="w-full bg-background border border-border text-foreground px-3 py-2 text-sm rounded-md focus:border-primary focus:outline-none resize-none font-serif italic"
                 rows={2}
                 placeholder="输入台词（留空表示无台词）..."
               />
             </div>
             
-            <div className="flex gap-2 pt-2 border-t border-[var(--border-primary)]">
-              <button onClick={onSaveAction} className="px-3 py-1.5 bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] text-xs font-bold rounded flex items-center gap-1 hover:bg-[var(--btn-primary-hover)] transition-colors">
+            <div className="flex gap-2 pt-2 border-t border-border">
+              <Button onClick={onSaveAction} size="sm" className="text-xs flex items-center gap-1">
                 <Check className="w-3 h-3" />
                 保存
-              </button>
-              <button onClick={onCancelAction} className="px-3 py-1.5 bg-[var(--bg-hover)] text-[var(--text-tertiary)] text-xs font-bold rounded flex items-center gap-1 hover:bg-[var(--border-secondary)] transition-colors">
+              </Button>
+              <Button onClick={onCancelAction} variant="secondary" size="sm" className="text-xs flex items-center gap-1">
                 <X className="w-3 h-3" />
                 取消
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
           <div className="relative group/action">
             <div className="flex items-start gap-2">
-              <p className="text-[var(--text-secondary)] text-sm leading-7 font-medium max-w-2xl flex-1">
+              <p className="text-foreground text-sm leading-7 font-medium max-w-2xl flex-1">
                 {shot.actionSummary}
               </p>
-              <button
+              <Button
                 onClick={() => onEditAction(shot.id, shot.actionSummary, shot.dialogue || '')}
-                className="opacity-0 group-hover/action:opacity-100 transition-opacity p-1.5 hover:bg-[var(--bg-hover)] rounded flex-shrink-0"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 opacity-0 group-hover/action:opacity-100"
                 title="编辑动作和台词"
               >
-                <Edit2 className="w-3.5 h-3.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]" />
-              </button>
+                <Edit2 className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
+              </Button>
             </div>
             
             {shot.dialogue && (
-              <div className="pl-6 border-l-2 border-[var(--border-primary)] group-hover:border-[var(--border-secondary)] transition-colors py-1 mt-3">
-                <p className="text-[var(--text-tertiary)] font-serif italic text-sm">"{shot.dialogue}"</p>
+              <div className="pl-6 border-l-2 border-border group-hover:border-primary transition-colors py-1 mt-3">
+                <p className="text-muted-foreground font-serif italic text-sm">{shot.dialogue}</p>
               </div>
             )}
           </div>
@@ -169,36 +176,40 @@ const ShotRow: React.FC<Props> = ({
         {/* Characters */}
         <div className="pt-2">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">角色</span>
-            <button
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">角色</span>
+            <Button
               onClick={() => onEditCharacters(shot.id)}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-[var(--bg-hover)] rounded"
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 opacity-0 group-hover:opacity-100"
               title="编辑角色列表"
             >
-              <Edit2 className="w-3 h-3 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]" />
-            </button>
+              <Edit2 className="w-3 h-3 text-muted-foreground hover:text-foreground" />
+            </Button>
           </div>
           
           {editingShotCharactersId === shot.id ? (
-            <div className="space-y-3 p-3 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg">
+            <div className="space-y-3 p-3 bg-card border border-border rounded-lg">
               <div className="space-y-2">
-                <div className="text-[10px] text-[var(--text-tertiary)] uppercase tracking-wider">当前角色</div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">当前角色</div>
                 <div className="flex flex-wrap gap-2">
                   {shotChars.length === 0 ? (
-                    <span className="text-xs text-[var(--text-muted)] italic">无角色</span>
+                    <span className="text-xs text-muted-foreground italic">无角色</span>
                   ) : (
                     shotChars.map(cid => {
                       const char = scriptData?.characters.find(c => c.id === cid);
                       return char ? (
-                        <div key={cid} className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-[var(--text-secondary)] border border-[var(--border-secondary)] px-2 py-1 rounded-md bg-[var(--bg-elevated)]">
+                        <div key={cid} className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-foreground border border-border px-2 py-1 rounded-md bg-card">
                           <span>{char.name}</span>
-                          <button
+                          <Button
                             onClick={() => onRemoveCharacter(shot.id, cid)}
-                            className="ml-1 hover:text-[var(--error-text)] transition-colors"
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5"
                             title="移除角色"
                           >
                             <X className="w-3 h-3" />
-                          </button>
+                          </Button>
                         </div>
                       ) : null;
                     })
@@ -207,46 +218,50 @@ const ShotRow: React.FC<Props> = ({
               </div>
               
               <div className="space-y-2">
-                <div className="text-[10px] text-[var(--text-tertiary)] uppercase tracking-wider">添加角色</div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">添加角色</div>
                 <div className="flex flex-wrap gap-2">
                   {scriptData?.characters
                     .filter(char => !shotChars.includes(char.id))
                     .map(char => (
-                      <button
+                      <Button
                         key={char.id}
                         onClick={() => onAddCharacter(shot.id, char.id)}
-                        className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-[var(--text-tertiary)] border border-[var(--border-primary)] px-2 py-1 rounded-md bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-secondary)] transition-colors"
+                        variant="secondary"
+                        size="sm"
+                        className="text-[10px] flex items-center gap-1"
                         title="添加角色"
                       >
                         <UserPlus className="w-3 h-3" />
                         <span>{char.name}</span>
-                      </button>
+                      </Button>
                     ))}
                   {scriptData?.characters.filter(char => !shotChars.includes(char.id)).length === 0 && (
-                    <span className="text-xs text-[var(--text-muted)] italic">所有角色已添加</span>
+                    <span className="text-xs text-muted-foreground italic">所有角色已添加</span>
                   )}
                 </div>
               </div>
               
-              <div className="pt-2 border-t border-[var(--border-primary)]">
-                <button
+              <div className="pt-2 border-t border-border">
+                <Button
                   onClick={onCloseCharactersEdit}
-                  className="px-3 py-1.5 bg-[var(--bg-hover)] text-[var(--text-secondary)] text-xs font-bold rounded flex items-center gap-1 hover:bg-[var(--border-secondary)] transition-colors"
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs flex items-center gap-1"
                 >
                   <Check className="w-3 h-3" />
                   完成
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
             <div className="flex flex-wrap gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
               {shotChars.length === 0 ? (
-                <span className="text-[10px] text-[var(--text-muted)] italic">无角色</span>
+                <span className="text-[10px] text-muted-foreground italic">无角色</span>
               ) : (
                 shotChars.map(cid => {
                   const char = scriptData?.characters.find(c => c.id === cid);
                   return char ? (
-                    <span key={cid} className="text-[10px] uppercase font-bold tracking-wider text-[var(--text-tertiary)] border border-[var(--border-primary)] px-2 py-0.5 rounded-full bg-[var(--bg-elevated)]">
+                    <span key={cid} className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground border border-border px-2 py-0.5 rounded-full bg-card">
                       {char.name}
                     </span>
                   ) : null;
@@ -257,19 +272,21 @@ const ShotRow: React.FC<Props> = ({
         </div>
 
         {/* Mobile Prompt Editor */}
-        <div className="xl:hidden pt-4 border-t border-[var(--border-subtle)]">
-          <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2 flex items-center gap-2 justify-between">
+        <div className="xl:hidden pt-4 border-t border-border">
+          <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2 justify-between">
             <span className="flex items-center gap-2">
               <Aperture className="w-3 h-3" /> 画面提示词
             </span>
             {editingShotId !== shot.id && (
-              <button
+              <Button
                 onClick={() => onEditPrompt(shot.id, shot.keyframes[0]?.visualPrompt || '')}
-                className="p-1.5 bg-[var(--bg-hover)] hover:bg-[var(--border-secondary)] rounded transition-colors"
+                variant="secondary"
+                size="sm"
+                className="text-xs p-1.5"
                 title="编辑提示词"
               >
-                <Edit2 className="w-3 h-3 text-[var(--text-tertiary)]" />
-              </button>
+                <Edit2 className="w-3 h-3" />
+              </Button>
             )}
           </div>
           <InlineEditor
@@ -288,19 +305,21 @@ const ShotRow: React.FC<Props> = ({
       </div>
 
       {/* Prompt Preview (Desktop) */}
-      <div className="w-64 hidden xl:block pl-6 border-l border-[var(--border-subtle)]">
-        <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2 flex items-center gap-2 justify-between">
+      <div className="w-64 hidden xl:block pl-6 border-l border-border">
+        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2 justify-between">
           <span className="flex items-center gap-2">
             <Aperture className="w-3 h-3" /> 画面提示词
           </span>
           {editingShotId !== shot.id && (
-            <button
+            <Button
               onClick={() => onEditPrompt(shot.id, shot.keyframes[0]?.visualPrompt || '')}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-[var(--bg-hover)] rounded"
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 opacity-0 group-hover:opacity-100"
               title="编辑提示词"
             >
-              <Edit2 className="w-3 h-3 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]" />
-            </button>
+              <Edit2 className="w-3 h-3 text-muted-foreground hover:text-foreground" />
+            </Button>
           )}
         </div>
         <InlineEditor
